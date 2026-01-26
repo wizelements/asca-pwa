@@ -1,25 +1,24 @@
-'use client';
-
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { useEffect, useState } from 'react';
 import { IEvent } from '@/lib/models/Event';
 import EventCard from '@/components/EventCard';
 
-export default function Home() {
-  const [upcomingEvents, setUpcomingEvents] = useState<IEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+async function getEvents() {
+  try {
+    const res = await fetch('http://localhost:3000/api/events', {
+      cache: 'no-store',
+    });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
 
-  useEffect(() => {
-    fetch('/api/events')
-      .then((res) => res.json())
-      .then((data) => {
-        setUpcomingEvents(data.slice(0, 3));
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+export default async function Home() {
+  const events = await getEvents();
+  const upcomingEvents = events.slice(0, 3);
 
   return (
     <>
@@ -51,9 +50,7 @@ export default function Home() {
             <p className="text-gray-600 text-center mb-12">
               Join us for our latest events and activities
             </p>
-            {loading ? (
-              <div className="text-center py-12">Loading events...</div>
-            ) : upcomingEvents.length > 0 ? (
+            {upcomingEvents.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
                 {upcomingEvents.map((event) => (
                   <EventCard key={event._id} event={event} />
