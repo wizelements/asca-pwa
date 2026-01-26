@@ -48,3 +48,5 @@ public/workbox-*.js.map
 # OS
 Thumbs.db
 .env.production.local
+
+.vercel

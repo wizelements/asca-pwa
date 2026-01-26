@@ -10,6 +10,9 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: 'default',
   },
+  icons: {
+    icon: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({
@@ -22,7 +25,10 @@ export default function RootLayout({
       <head>
         <meta name="theme-color" content="#1a1a1a" />
         <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
         <style>{`
           :root {
             --color-primary: #1a1a1a;
