@@ -19,10 +19,10 @@ export default async function About() {
           --color-neutral: ${theme.colors.neutral};
         }
       `}</style>
-      <Header settings={settings} />
+      <Header />
       <main>
         <Hero
-          image="/images/hero/about.svg"
+          image="/images/hero/about.jpg"
           title="Our Story"
           subtitle="A legacy of equestrian excellence"
         />
@@ -90,7 +90,7 @@ export default async function About() {
           </div>
         </section>
       </main>
-      <Footer settings={settings} />
+      <Footer />
     </>
   );
 }
