@@ -39,7 +39,7 @@ export default async function Calendar() {
       <Header settings={settings} />
       <main>
         <Hero
-          image="/images/hero-calendar.jpg"
+          image="/images/hero/calendar.svg"
           title="Events Calendar"
           subtitle="Join us for exciting activities and community events"
         />

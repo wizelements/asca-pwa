@@ -24,7 +24,7 @@ export default async function Blog() {
       <Header settings={settings} />
       <main>
         <Hero
-          image="/images/hero-blog.jpg"
+          image="/images/hero/blog.svg"
           title="Blog"
           subtitle="Stories, tips, and updates from the ASCA community"
         />

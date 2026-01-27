@@ -1,0 +1,7 @@
+<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="300" fill="#e0e0e0"/>
+  <circle cx="150" cy="100" r="50" fill="#999"/>
+  <text x="150" y="220" font-size="32" fill="#666" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold">
+    Member
+  </text>
+</svg>

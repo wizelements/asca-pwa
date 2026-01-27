@@ -85,7 +85,7 @@ export default function GetInvolved() {
       <Header settings={settings} />
       <main>
         <Hero
-          image="/images/hero-involved.jpg"
+          image="/images/hero/involved.svg"
           title="Get Involved"
           subtitle="Join the ASCA community"
         />

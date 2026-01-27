@@ -1,0 +1,10 @@
+<svg width="1200" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="400" fill="#4a3728"/>
+  <text x="600" y="120" font-size="72" text-anchor="middle" font-family="Arial, sans-serif">❤️</text>
+  <text x="600" y="240" font-size="48" fill="#f5d800" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold">
+    Support ASCA
+  </text>
+  <text x="600" y="310" font-size="24" fill="#ffffff" text-anchor="middle" font-family="Arial, sans-serif">
+    Make a Difference in Our Community
+  </text>
+</svg>

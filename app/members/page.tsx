@@ -32,7 +32,7 @@ export default async function Members() {
       <Header settings={settings} />
       <main>
         <Hero
-          image="/images/hero-members.jpg"
+          image="/images/hero/members.svg"
           title="Our Team"
           subtitle="Meet the people who make ASCA happen"
         />

@@ -22,7 +22,7 @@ export default async function Donate() {
       <Header settings={settings} />
       <main>
         <Hero
-          image="/images/hero-donate.jpg"
+          image="/images/hero/donate.svg"
           title="Support ASCA"
           subtitle="Make a difference in our community"
         />

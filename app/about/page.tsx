@@ -22,7 +22,7 @@ export default async function About() {
       <Header settings={settings} />
       <main>
         <Hero
-          image="/images/hero-about.jpg"
+          image="/images/hero/about.svg"
           title="Our Story"
           subtitle="A legacy of equestrian excellence"
         />
