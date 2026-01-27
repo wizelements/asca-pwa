@@ -1,28 +1,9 @@
-'use client';
-
-import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import MemberCard from '@/components/MemberCard';
-import { IMember } from '@/lib/models/Member';
 
 export default function Members() {
-  const [members, setMembers] = useState<IMember[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
-
+  const members: any[] = [];
   const roles = ['rider', 'volunteer', 'instructor'];
-
-  useEffect(() => {
-    const url = selectedRole ? `/api/members?role=${selectedRole}` : '/api/members';
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        setMembers(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [selectedRole]);
 
   return (
     <>
@@ -41,25 +22,13 @@ export default function Members() {
           <div className="container">
             {/* Filter Buttons */}
             <div className="flex gap-4 mb-12 justify-center flex-wrap">
-              <button
-                onClick={() => setSelectedRole(null)}
-                className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
-                  selectedRole === null
-                    ? 'bg-primary text-neutral'
-                    : 'bg-gray-200 text-primary hover:bg-gray-300'
-                }`}
-              >
+              <button className="px-6 py-2 rounded-lg font-semibold bg-primary text-neutral">
                 All Members
               </button>
               {roles.map((role) => (
                 <button
                   key={role}
-                  onClick={() => setSelectedRole(role)}
-                  className={`px-6 py-2 rounded-lg font-semibold transition-colors capitalize ${
-                    selectedRole === role
-                      ? 'bg-primary text-neutral'
-                      : 'bg-gray-200 text-primary hover:bg-gray-300'
-                  }`}
+                  className="px-6 py-2 rounded-lg font-semibold transition-colors capitalize bg-gray-200 text-primary hover:bg-gray-300"
                 >
                   {role}s
                 </button>
@@ -67,9 +36,7 @@ export default function Members() {
             </div>
 
             {/* Member Grid */}
-            {loading ? (
-              <div className="text-center py-12">Loading members...</div>
-            ) : members.length > 0 ? (
+            {members.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {members.map((member) => (
                   <MemberCard key={member._id} member={member} />

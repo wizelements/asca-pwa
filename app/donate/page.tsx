@@ -1,30 +1,9 @@
-'use client';
-
-import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { ISettings } from '@/lib/models/Settings';
 
 export default function Donate() {
-  const [settings, setSettings] = useState<ISettings | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [customAmount, setCustomAmount] = useState('');
-
-  useEffect(() => {
-    // Fetch settings for Venmo info
-    fetch('/api/settings')
-      .then((res) => res.json())
-      .then((data) => {
-        setSettings(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
-
-  const venmoURL = (amount: string) => {
-    if (!settings?.venmoUsername) return '#';
-    return `https://venmo.com/${settings.venmoUsername}?txn=pay&amount=${amount}&note=Donation to ASCA`;
-  };
+  const settings = null;
+  const customAmount = '';
 
   return (
     <>
@@ -48,59 +27,9 @@ export default function Donate() {
                 We accept donations via Venmo for easy and secure giving.
               </p>
 
-              {!loading && settings?.venmoUsername ? (
-                <>
-                  <div className="mb-8">
-                    <h3 className="text-xl font-bold mb-4 text-primary">Quick Donation</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {settings.venmoPresets?.map((preset) => (
-                        <a
-                          key={preset.label}
-                          href={venmoURL(preset.amount.toString())}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn-primary px-4 py-3 text-center"
-                        >
-                          ${preset.amount}
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="mb-8">
-                    <h3 className="text-xl font-bold mb-4 text-primary">Custom Amount</h3>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        value={customAmount}
-                        onChange={(e) => setCustomAmount(e.target.value)}
-                        placeholder="Enter amount"
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
-                      />
-                      <a
-                        href={customAmount ? venmoURL(customAmount) : '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`btn-accent px-6 py-2 ${
-                          !customAmount ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
-                      >
-                        Donate
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-700">
-                      <strong>Venmo Handle:</strong> @{settings.venmoUsername}
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-12 text-gray-600">
-                  {loading ? 'Loading donation options...' : 'Donation options not configured yet.'}
-                </div>
-              )}
+              <div className="text-center py-12 text-gray-600">
+                Donation options coming soon!
+              </div>
             </div>
           </div>
         </section>

@@ -1,31 +1,9 @@
-'use client';
-
-import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import EventCard from '@/components/EventCard';
-import { IEvent } from '@/lib/models/Event';
 
 export default function Calendar() {
-  const [events, setEvents] = useState<IEvent[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch('/api/events')
-      .then((res) => res.json())
-      .then((data) => {
-        setEvents(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
-
-  const upcomingEvents = events.filter(
-    (e) => new Date(e.date) >= new Date()
-  );
-  const pastEvents = events.filter(
-    (e) => new Date(e.date) < new Date()
-  );
+  const upcomingEvents: any[] = [];
+  const pastEvents: any[] = [];
 
   return (
     <>
@@ -43,9 +21,7 @@ export default function Calendar() {
         <section className="py-20 bg-neutral">
           <div className="container">
             <h2 className="text-4xl font-bold mb-12 text-primary">Upcoming Events</h2>
-            {loading ? (
-              <div className="text-center py-12">Loading events...</div>
-            ) : upcomingEvents.length > 0 ? (
+            {upcomingEvents.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {upcomingEvents.map((event) => (
                   <EventCard key={event._id} event={event} />
