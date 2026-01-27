@@ -84,7 +84,7 @@ export default function GetInvolved() {
 
   return (
     <>
-      <Header settings={settings} />
+      <Header />
       <main>
         <Hero
           image={heroData.image}
@@ -259,7 +259,7 @@ export default function GetInvolved() {
           </div>
         </section>
       </main>
-      <Footer settings={settings} />
+      <Footer />
     </>
   );
 }
