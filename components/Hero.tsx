@@ -17,22 +17,42 @@ export default function Hero({
   darken = true,
 }: HeroProps) {
   return (
-    <section
-      className="hero py-32 min-h-[400px] flex items-center justify-center relative"
-      style={
-        image
-          ? {
-              backgroundImage: `linear-gradient(rgba(0,0,0,${darken ? 0.5 : 0}), rgba(0,0,0,${darken ? 0.5 : 0})), url(${image})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundAttachment: 'fixed',
-            }
-          : {
-              background: 'var(--color-secondary, #4a4b02)',
-            }
-      }
-    >
-      <div className="container text-center text-white">
+    <section className="hero relative py-32 min-h-[400px] flex items-center justify-center overflow-hidden">
+      {/* Background Image */}
+      {image && (
+        <>
+          <img
+            src={image}
+            alt={title}
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ zIndex: 0 }}
+          />
+          {/* Darken Overlay */}
+          {darken && (
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 1,
+              }}
+            />
+          )}
+        </>
+      )}
+
+      {/* Fallback Background */}
+      {!image && (
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundColor: 'var(--color-secondary, #4a4b02)',
+            zIndex: 0,
+          }}
+        />
+      )}
+
+      {/* Content */}
+      <div className="container text-center text-white relative z-10">
         <h1 className="text-5xl md:text-6xl font-bold mb-4">
           {title}
         </h1>
