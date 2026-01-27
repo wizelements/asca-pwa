@@ -29,7 +29,7 @@ export async function sendEmail({
       to,
       subject,
       html,
-      replyTo: replyTo || 'info@atlantasaddleclub.org',
+      reply_to: replyTo || 'info@atlantasaddleclub.org',
     });
 
     console.log('[EMAIL] Sent:', { to, subject, id: result.id });
