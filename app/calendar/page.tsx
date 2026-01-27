@@ -39,9 +39,9 @@ export default async function Calendar() {
       <Header settings={settings} />
       <main>
         <Hero
-          image="/images/hero/calendar.svg"
-          title="Events Calendar"
-          subtitle="Join us for exciting activities and community events"
+          image={settings.heroes?.calendar?.image || '/images/hero/calendar.jpg'}
+          title={settings.heroes?.calendar?.title || 'Events Calendar'}
+          subtitle={settings.heroes?.calendar?.subtitle || 'Join us for exciting activities and community events'}
         />
 
         {sortedMonths.length > 0 ? (

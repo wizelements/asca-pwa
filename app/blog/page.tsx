@@ -24,9 +24,9 @@ export default async function Blog() {
       <Header settings={settings} />
       <main>
         <Hero
-          image="/images/hero/blog.svg"
-          title="Blog"
-          subtitle="Stories, tips, and updates from the ASCA community"
+          image={settings.heroes?.blog?.image || '/images/hero/blog.jpg'}
+          title={settings.heroes?.blog?.title || 'Blog'}
+          subtitle={settings.heroes?.blog?.subtitle || 'Stories, tips, and updates from the ASCA community'}
         />
 
         <section className="py-20 bg-white">

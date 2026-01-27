@@ -22,9 +22,9 @@ export default async function About() {
       <Header />
       <main>
         <Hero
-          image="/images/hero/about.jpg"
-          title="Our Story"
-          subtitle="A legacy of equestrian excellence"
+          image={settings.heroes?.about?.image || '/images/hero/about.jpg'}
+          title={settings.heroes?.about?.title || 'Our Story'}
+          subtitle={settings.heroes?.about?.subtitle || 'A legacy of equestrian excellence'}
         />
 
         <section className="py-20 container">

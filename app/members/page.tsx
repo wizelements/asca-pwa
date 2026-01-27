@@ -32,9 +32,9 @@ export default async function Members() {
       <Header settings={settings} />
       <main>
         <Hero
-          image="/images/hero/members.svg"
-          title="Our Team"
-          subtitle="Meet the people who make ASCA happen"
+          image={settings.heroes?.members?.image || '/images/hero/members.jpg'}
+          title={settings.heroes?.members?.title || 'Our Team'}
+          subtitle={settings.heroes?.members?.subtitle || 'Meet the people who make ASCA happen'}
         />
 
         {Object.entries(membersByRole).map(([role, groupMembers]: [string, any]) => (

@@ -30,10 +30,10 @@ export default async function Home() {
       <main>
         {/* Hero Section */}
         <Hero
-          image="/images/hero/home.svg"
-          title="We Ride To Inspire"
-          subtitle={settings.tagline}
-          cta={{ text: 'Get Involved', link: '/get-involved' }}
+          image={settings.heroes?.home?.image || '/images/hero/home.jpg'}
+          title={settings.heroes?.home?.title || 'We Ride To Inspire'}
+          subtitle={settings.heroes?.home?.subtitle || settings.tagline}
+          cta={settings.heroes?.home?.cta || { text: 'Get Involved', link: '/get-involved' }}
         />
 
         {/* Upcoming Events */}

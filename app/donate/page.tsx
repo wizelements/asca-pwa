@@ -22,9 +22,9 @@ export default async function Donate() {
       <Header settings={settings} />
       <main>
         <Hero
-          image="/images/hero/donate.svg"
-          title="Support ASCA"
-          subtitle="Make a difference in our community"
+          image={settings.heroes?.donate?.image || '/images/hero/donate.jpg'}
+          title={settings.heroes?.donate?.title || 'Support ASCA'}
+          subtitle={settings.heroes?.donate?.subtitle || 'Make a difference in our community'}
         />
 
         <section className="py-20 bg-white">

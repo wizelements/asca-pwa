@@ -28,6 +28,8 @@ export default function GetInvolved() {
       .catch(console.error);
   }, []);
 
+  const [heroData, setHeroData] = useState({ image: '/images/hero/involved.jpg', title: 'Get Involved', subtitle: 'Join our equestrian community' });
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -85,9 +87,9 @@ export default function GetInvolved() {
       <Header settings={settings} />
       <main>
         <Hero
-          image="/images/hero/involved.svg"
-          title="Get Involved"
-          subtitle="Join the ASCA community"
+          image={heroData.image}
+          title={heroData.title}
+          subtitle={heroData.subtitle}
         />
 
         <section className="py-20 bg-white">
