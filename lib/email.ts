@@ -32,8 +32,9 @@ export async function sendEmail({
       reply_to: replyTo || 'info@atlantasaddleclub.org',
     });
 
-    console.log('[EMAIL] Sent:', { to, subject, id: result.id });
-    return { success: true, id: result.id };
+    const emailId = 'id' in result ? result.id : result.data?.id;
+    console.log('[EMAIL] Sent:', { to, subject, id: emailId });
+    return { success: true, id: emailId };
   } catch (error) {
     console.error('[EMAIL] Failed:', { to, subject, error });
     return { success: false, error: String(error) };
