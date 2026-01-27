@@ -19,7 +19,7 @@ export default async function Donate() {
           --color-neutral: ${theme.colors.neutral};
         }
       `}</style>
-      <Header settings={settings} />
+      <Header />
       <main>
         <Hero
           image={settings.heroes?.donate?.image || '/images/hero/donate.jpg'}
@@ -93,7 +93,7 @@ export default async function Donate() {
           </div>
         </section>
       </main>
-      <Footer settings={settings} />
+      <Footer />
     </>
   );
 }

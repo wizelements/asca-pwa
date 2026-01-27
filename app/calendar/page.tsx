@@ -36,7 +36,7 @@ export default async function Calendar() {
           --color-neutral: ${theme.colors.neutral};
         }
       `}</style>
-      <Header settings={settings} />
+      <Header />
       <main>
         <Hero
           image={settings.heroes?.calendar?.image || '/images/hero/calendar.jpg'}
@@ -76,7 +76,7 @@ export default async function Calendar() {
           </section>
         )}
       </main>
-      <Footer settings={settings} />
+      <Footer />
     </>
   );
 }
