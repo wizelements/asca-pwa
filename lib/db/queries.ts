@@ -49,6 +49,44 @@ function getDefaultSettings() {
       presets: [10, 25, 50, 100],
     },
     cashApp: '$therealasca1',
+    heroes: {
+      home: {
+        image: '/images/hero/home.jpg',
+        title: 'We Ride To Inspire',
+        subtitle: 'Promoting horsemanship, sportsmanship, and community',
+        cta: { text: 'Get Involved', link: '/get-involved' },
+      },
+      about: {
+        image: '/images/hero/about.jpg',
+        title: 'Our Story',
+        subtitle: 'A legacy of equestrian excellence',
+      },
+      members: {
+        image: '/images/hero/members.jpg',
+        title: 'Our Team',
+        subtitle: 'Meet the people who make ASCA happen',
+      },
+      calendar: {
+        image: '/images/hero/calendar.jpg',
+        title: 'Events Calendar',
+        subtitle: 'Join us for exciting activities and community events',
+      },
+      blog: {
+        image: '/images/hero/blog.jpg',
+        title: 'Blog',
+        subtitle: 'Stories, tips, and updates from the ASCA community',
+      },
+      donate: {
+        image: '/images/hero/donate.jpg',
+        title: 'Support ASCA',
+        subtitle: 'Make a difference in our community',
+      },
+      involved: {
+        image: '/images/hero/involved.jpg',
+        title: 'Get Involved',
+        subtitle: 'Join our equestrian community',
+      },
+    },
   };
 }
 
