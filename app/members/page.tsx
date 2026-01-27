@@ -1,5 +1,6 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import MemberCard from '@/components/MemberCard';
 
 export default function Members() {
   const members: any[] = [];
