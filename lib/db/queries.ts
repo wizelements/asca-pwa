@@ -213,6 +213,11 @@ export async function getGalleryImages(category?: string) {
   }
 }
 
+// Alias for getGalleryImages
+export async function getGallery(category?: string) {
+  return getGalleryImages(category);
+}
+
 // Form Submissions
 export async function saveFormSubmission(
   type: string,
