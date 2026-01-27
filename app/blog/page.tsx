@@ -21,7 +21,7 @@ export default async function Blog() {
           --color-neutral: ${theme.colors.neutral};
         }
       `}</style>
-      <Header settings={settings} />
+      <Header />
       <main>
         <Hero
           image={settings.heroes?.blog?.image || '/images/hero/blog.jpg'}
@@ -54,7 +54,7 @@ export default async function Blog() {
           </div>
         </section>
       </main>
-      <Footer settings={settings} />
+      <Footer />
     </>
   );
 }

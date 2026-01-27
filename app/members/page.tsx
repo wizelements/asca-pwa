@@ -29,7 +29,7 @@ export default async function Members() {
           --color-neutral: ${theme.colors.neutral};
         }
       `}</style>
-      <Header settings={settings} />
+      <Header />
       <main>
         <Hero
           image={settings.heroes?.members?.image || '/images/hero/members.jpg'}
@@ -67,7 +67,7 @@ export default async function Members() {
           </section>
         )}
       </main>
-      <Footer settings={settings} />
+      <Footer />
     </>
   );
 }

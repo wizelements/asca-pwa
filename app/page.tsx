@@ -26,7 +26,7 @@ export default async function Home() {
           --color-neutral: ${theme.colors.neutral};
         }
       `}</style>
-      <Header settings={settings} />
+      <Header />
       <main>
         {/* Hero Section */}
         <Hero
@@ -126,7 +126,7 @@ export default async function Home() {
           </div>
         </section>
       </main>
-      <Footer settings={settings} />
+      <Footer />
     </>
   );
 }
