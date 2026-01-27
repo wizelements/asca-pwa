@@ -1,43 +1,21 @@
-import { connectDB } from '@/lib/db';
-import { Settings } from '@/lib/models/Settings';
-import { NextRequest, NextResponse } from 'next/server';
+import { getSettings, getTheme } from '@/lib/db/queries';
+import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    await connectDB();
-    let settings = await Settings.findOne().lean();
-    
-    if (!settings) {
-      // Create default settings
-      const defaultSettings = new Settings({
-        siteTitle: 'Atlanta Saddle Club Association',
-        siteDescription: 'We Ride To Inspire',
-        siteUrl: 'https://atlantasaddleclub.com',
-      });
-      settings = await defaultSettings.save();
-    }
+    const [settings, theme] = await Promise.all([
+      getSettings(),
+      getTheme(),
+    ]);
 
-    return NextResponse.json(settings);
+    return NextResponse.json({
+      ...settings,
+      theme,
+    });
   } catch (error) {
+    console.error('Error fetching settings:', error);
     return NextResponse.json(
       { error: 'Failed to fetch settings' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function PUT(request: NextRequest) {
-  try {
-    await connectDB();
-    const data = await request.json();
-    const settings = await Settings.findOneAndUpdate({}, data, {
-      new: true,
-      upsert: true,
-    });
-    return NextResponse.json(settings);
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to update settings' },
       { status: 500 }
     );
   }

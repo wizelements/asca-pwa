@@ -1,57 +1,73 @@
+import Hero from '@/components/Hero';
+import MemberCard from '@/components/Cards/MemberCard';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import MemberCard from '@/components/MemberCard';
+import { getSettings, getTheme, getMembers } from '@/lib/db/queries';
 
-export default function Members() {
-  const members: any[] = [];
-  const roles = ['rider', 'volunteer', 'instructor'];
+export default async function Members() {
+  const [settings, theme, members] = await Promise.all([
+    getSettings(),
+    getTheme(),
+    getMembers(),
+  ]);
+
+  // Group members by role
+  const membersByRole = members.reduce((acc: any, member: any) => {
+    const role = member.role || 'Other';
+    if (!acc[role]) acc[role] = [];
+    acc[role].push(member);
+    return acc;
+  }, {});
 
   return (
     <>
-      <Header />
+      <style>{`
+        :root {
+          --color-primary: ${theme.colors.primary};
+          --color-secondary: ${theme.colors.secondary};
+          --color-accent: ${theme.colors.accent};
+          --color-neutral: ${theme.colors.neutral};
+        }
+      `}</style>
+      <Header settings={settings} />
       <main>
-        {/* Hero */}
-        <section className="py-20 bg-gradient-to-r from-primary to-secondary text-neutral">
-          <div className="container text-center">
-            <h1 className="text-5xl font-bold mb-4">Our Members</h1>
-            <p className="text-xl">Meet the riders, volunteers, and instructors of ASCA</p>
-          </div>
-        </section>
+        <Hero
+          image="/images/hero-members.jpg"
+          title="Our Team"
+          subtitle="Meet the people who make ASCA happen"
+        />
 
-        {/* Filters & Members */}
-        <section className="py-20 bg-neutral">
-          <div className="container">
-            {/* Filter Buttons */}
-            <div className="flex gap-4 mb-12 justify-center flex-wrap">
-              <button className="px-6 py-2 rounded-lg font-semibold bg-primary text-neutral">
-                All Members
-              </button>
-              {roles.map((role) => (
-                <button
-                  key={role}
-                  className="px-6 py-2 rounded-lg font-semibold transition-colors capitalize bg-gray-200 text-primary hover:bg-gray-300"
-                >
-                  {role}s
-                </button>
-              ))}
-            </div>
-
-            {/* Member Grid */}
-            {members.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {members.map((member) => (
-                  <MemberCard key={member._id} member={member} />
+        {Object.entries(membersByRole).map(([role, groupMembers]: [string, any]) => (
+          <section key={role} className="py-20 bg-white">
+            <div className="container">
+              <h2 className="text-3xl font-bold mb-12 text-center" style={{ color: 'var(--color-primary)' }}>
+                {role}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {groupMembers.map((member: any) => (
+                  <MemberCard
+                    key={member._id.toString()}
+                    name={member.name}
+                    role={member.role}
+                    bio={member.bio}
+                    image={member.image}
+                    email={member.email}
+                  />
                 ))}
               </div>
-            ) : (
-              <div className="text-center py-12 text-gray-600">
-                No members found in this category.
-              </div>
-            )}
-          </div>
-        </section>
+            </div>
+          </section>
+        ))}
+
+        {members.length === 0 && (
+          <section className="py-20 bg-white">
+            <div className="container text-center">
+              <p className="text-gray-600 text-lg">Team members coming soon!</p>
+            </div>
+          </section>
+        )}
       </main>
-      <Footer />
+      <Footer settings={settings} />
     </>
   );
 }

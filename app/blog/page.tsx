@@ -1,31 +1,60 @@
+import Hero from '@/components/Hero';
+import BlogCard from '@/components/Cards/BlogCard';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { getSettings, getTheme, getBlogPosts } from '@/lib/db/queries';
 
-export default function Blog() {
-  const data = null;
+export default async function Blog() {
+  const [settings, theme, posts] = await Promise.all([
+    getSettings(),
+    getTheme(),
+    getBlogPosts(100), // Get all posts
+  ]);
 
   return (
     <>
-      <Header />
+      <style>{`
+        :root {
+          --color-primary: ${theme.colors.primary};
+          --color-secondary: ${theme.colors.secondary};
+          --color-accent: ${theme.colors.accent};
+          --color-neutral: ${theme.colors.neutral};
+        }
+      `}</style>
+      <Header settings={settings} />
       <main>
-        {/* Hero */}
-        <section className="py-20 bg-gradient-to-r from-primary to-secondary text-neutral">
-          <div className="container text-center">
-            <h1 className="text-5xl font-bold mb-4">Blog</h1>
-            <p className="text-xl">Stories, tips, and updates from ASCA</p>
-          </div>
-        </section>
+        <Hero
+          image="/images/hero-blog.jpg"
+          title="Blog"
+          subtitle="Stories, tips, and updates from the ASCA community"
+        />
 
-        {/* Posts Grid */}
-        <section className="py-20 bg-neutral">
+        <section className="py-20 bg-white">
           <div className="container">
-            <div className="text-center py-12 text-gray-600">
-              No blog posts yet. Check back soon!
-            </div>
+            {posts.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {posts.map((post: any) => (
+                  <BlogCard
+                    key={post._id.toString()}
+                    title={post.title}
+                    excerpt={post.excerpt}
+                    author={post.author}
+                    date={new Date(post.publishedAt).toLocaleDateString()}
+                    image={post.image}
+                    link={`/blog/${post.slug}`}
+                    category={post.category}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-600 text-lg">Blog posts coming soon!</p>
+              </div>
+            )}
           </div>
         </section>
       </main>
-      <Footer />
+      <Footer settings={settings} />
     </>
   );
 }
