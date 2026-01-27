@@ -8,9 +8,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const role = searchParams.get('role');
 
-    let query = { isActive: true };
+    const query: any = { isActive: true };
     if (role) {
-      query = { ...query, roles: role };
+      query.roles = role;
     }
 
     const members = await Member.find(query)
