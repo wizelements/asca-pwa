@@ -13,6 +13,10 @@ export interface IMember {
   experience?: string;
   isVerified: boolean;
   isActive: boolean;
+  duesLastPaidAt?: Date;
+  duesNextDueAt?: Date;
+  duesReminderSentAt?: Date;
+  duesOverdueSentAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -30,6 +34,10 @@ const memberSchema = new mongoose.Schema<IMember>(
     experience: { type: String },
     isVerified: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
+    duesLastPaidAt: { type: Date },
+    duesNextDueAt: { type: Date },
+    duesReminderSentAt: { type: Date },
+    duesOverdueSentAt: { type: Date },
   },
   { timestamps: true }
 );

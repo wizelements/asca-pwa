@@ -8,7 +8,7 @@ export default async function Blog() {
   const [settings, theme, posts] = await Promise.all([
     getSettings(),
     getTheme(),
-    getBlogPosts(100), // Get all posts
+    getBlogPosts(100),
   ]);
 
   return (
@@ -29,10 +29,14 @@ export default async function Blog() {
           subtitle={settings.heroes?.blog?.subtitle || 'Stories, tips, and updates from the ASCA community'}
         />
 
-        <section className="py-20 bg-white">
+        <section className="py-20">
           <div className="container">
+            <div className="text-center">
+              <p className="section-label">Stories</p>
+              <h2 className="section-title">Latest From The Club</h2>
+            </div>
             {posts.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
                 {posts.map((post: any) => (
                   <BlogCard
                     key={post._id.toString()}
@@ -48,7 +52,7 @@ export default async function Blog() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-gray-600 text-lg">Blog posts coming soon!</p>
+                <p className="text-brand-fg-secondary">Blog posts coming soon.</p>
               </div>
             )}
           </div>

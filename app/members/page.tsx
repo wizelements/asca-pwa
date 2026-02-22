@@ -11,7 +11,6 @@ export default async function Members() {
     getMembers(),
   ]);
 
-  // Group members by role
   const membersByRole = members.reduce((acc: any, member: any) => {
     const role = member.role || 'Other';
     if (!acc[role]) acc[role] = [];
@@ -38,12 +37,13 @@ export default async function Members() {
         />
 
         {Object.entries(membersByRole).map(([role, groupMembers]: [string, any]) => (
-          <section key={role} className="py-20 bg-white">
+          <section key={role} className="py-20">
             <div className="container">
-              <h2 className="text-3xl font-bold mb-12 text-center" style={{ color: 'var(--color-primary)' }}>
-                {role}
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="mb-12 text-center">
+                <p className="section-label">{role}</p>
+                <h2 className="section-title">Meet The Team</h2>
+              </div>
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
                 {groupMembers.map((member: any) => (
                   <MemberCard
                     key={member._id.toString()}
@@ -60,9 +60,9 @@ export default async function Members() {
         ))}
 
         {members.length === 0 && (
-          <section className="py-20 bg-white">
+          <section className="py-20">
             <div className="container text-center">
-              <p className="text-gray-600 text-lg">Team members coming soon!</p>
+              <p className="text-brand-fg-secondary">Team members coming soon.</p>
             </div>
           </section>
         )}

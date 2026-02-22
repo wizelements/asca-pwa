@@ -18,8 +18,7 @@ export default function FormButton({
       type={type}
       disabled={disabled || loading}
       onClick={onClick}
-      className="w-full px-6 py-3 font-bold text-white rounded hover:opacity-90 disabled:opacity-50 transition-opacity"
-      style={{ backgroundColor: 'var(--color-accent)' }}
+      className="btn-primary w-full"
     >
       {loading ? 'Sending...' : children}
     </button>

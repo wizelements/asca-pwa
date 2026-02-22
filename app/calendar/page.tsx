@@ -11,7 +11,6 @@ export default async function Calendar() {
     getAllEvents(),
   ]);
 
-  // Group events by month
   const eventsByMonth = events.reduce((acc: any, event: any) => {
     const monthKey = new Date(event.date).toLocaleString('default', {
       month: 'long',
@@ -46,12 +45,13 @@ export default async function Calendar() {
 
         {sortedMonths.length > 0 ? (
           sortedMonths.map((monthKey) => (
-            <section key={monthKey} className="py-20 bg-white">
+            <section key={monthKey} className="py-20">
               <div className="container">
-                <h2 className="text-3xl font-bold mb-12" style={{ color: 'var(--color-primary)' }}>
-                  {monthKey}
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="mb-10">
+                  <p className="section-label">{monthKey}</p>
+                  <h2 className="section-title">Upcoming Events</h2>
+                </div>
+                <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
                   {eventsByMonth[monthKey].map((event: any) => (
                     <EventCard
                       key={event._id.toString()}
@@ -69,9 +69,9 @@ export default async function Calendar() {
             </section>
           ))
         ) : (
-          <section className="py-20 bg-white">
+          <section className="py-20">
             <div className="container text-center">
-              <p className="text-gray-600 text-lg">No events scheduled yet. Check back soon!</p>
+              <p className="text-brand-fg-secondary">No events scheduled yet. Check back soon.</p>
             </div>
           </section>
         )}

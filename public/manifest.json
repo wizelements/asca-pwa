@@ -1,65 +1,119 @@
 {
   "name": "Atlanta Saddle Club Association",
   "short_name": "ASCA",
-  "description": "We Ride To Inspire",
+  "description": "We Ride To Inspire - Premier equestrian community for training, events, and connections",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#1a1a1a",
   "orientation": "portrait-primary",
+  "background_color": "#f7f3ea",
+  "theme_color": "#1f6b3a",
+  "categories": ["community", "events", "sports"],
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-192-maskable.png",
+      "src": "/icons/icon-192-maskable.png",
       "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512-maskable.png",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     }
   ],
-  "categories": ["lifestyle", "sports"],
   "screenshots": [
     {
-      "src": "/screenshot-1.png",
+      "src": "/screenshots/narrow-540x720.png",
       "sizes": "540x720",
       "type": "image/png",
-      "form_factor": "narrow"
+      "form_factor": "narrow",
+      "label": "ASCA App Home"
+    },
+    {
+      "src": "/screenshots/wide-1280x720.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "ASCA Calendar View"
     }
   ],
   "shortcuts": [
     {
-      "name": "Calendar",
-      "short_name": "Calendar",
-      "description": "View upcoming events",
+      "name": "View Events",
+      "short_name": "Events",
+      "description": "See upcoming ASCA events",
       "url": "/calendar",
       "icons": [
         {
-          "src": "/icon-96.png",
-          "sizes": "96x96"
+          "src": "/icons/shortcuts/calendar-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
         }
       ]
     },
     {
-      "name": "Members",
+      "name": "Join ASCA",
+      "short_name": "Join",
+      "description": "Start your ASCA membership",
+      "url": "/get-involved",
+      "icons": [
+        {
+          "src": "/icons/shortcuts/join-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Members Directory",
       "short_name": "Members",
-      "description": "Browse members",
+      "description": "Browse ASCA members",
       "url": "/members",
       "icons": [
         {
-          "src": "/icon-96.png",
-          "sizes": "96x96"
+          "src": "/icons/shortcuts/members-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Donate",
+      "short_name": "Donate",
+      "description": "Support ASCA's mission",
+      "url": "/donate",
+      "icons": [
+        {
+          "src": "/icons/shortcuts/donate-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
         }
       ]
     }
-  ]
+  ],
+  "share_target": {
+    "action": "/api/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "prefer_related_applications": false
 }

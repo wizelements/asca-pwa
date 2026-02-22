@@ -47,6 +47,51 @@ export async function sendEmail({
   }
 }
 
+export function duesReminderTemplate(data: {
+  name: string;
+  dueDate: string;
+  daysRemaining: number;
+}): string {
+  return `
+    <html>
+      <body style="font-family: system-ui, -apple-system, sans-serif; color: #1f1f1f; background: #f7f3ea; padding: 24px;">
+        <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 12px; padding: 24px; border: 1px solid #e3dac9;">
+          <h2 style="color: #1f6b3a; margin-top: 0;">Quarterly Dues Reminder</h2>
+          <p>Hi ${data.name},</p>
+          <p>This is a friendly reminder that your quarterly dues are due on <strong>${data.dueDate}</strong> (${data.daysRemaining} days from today).</p>
+          <p>Please submit your dues and let us know if you have any questions.</p>
+          <p style="margin-top: 24px; color: #4f4f4f;">
+            Atlanta Saddle Club Association<br />
+            We Ride To Inspire
+          </p>
+        </div>
+      </body>
+    </html>
+  `;
+}
+
+export function duesOverdueTemplate(data: {
+  name: string;
+  dueDate: string;
+}): string {
+  return `
+    <html>
+      <body style="font-family: system-ui, -apple-system, sans-serif; color: #1f1f1f; background: #f7f3ea; padding: 24px;">
+        <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 12px; padding: 24px; border: 1px solid #e3dac9;">
+          <h2 style="color: #d8514a; margin-top: 0;">Quarterly Dues Due Now</h2>
+          <p>Hi ${data.name},</p>
+          <p>Your quarterly dues were due on <strong>${data.dueDate}</strong>. Please submit your dues as soon as possible.</p>
+          <p>If you have already paid, thank you and please disregard this reminder.</p>
+          <p style="margin-top: 24px; color: #4f4f4f;">
+            Atlanta Saddle Club Association<br />
+            We Ride To Inspire
+          </p>
+        </div>
+      </body>
+    </html>
+  `;
+}
+
 /**
  * Contact Form Submission Email (to admin)
  */

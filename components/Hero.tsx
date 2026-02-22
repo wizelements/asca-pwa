@@ -17,7 +17,7 @@ export default function Hero({
   darken = true,
 }: HeroProps) {
   return (
-    <section className="hero relative py-32 min-h-[400px] flex items-center justify-center overflow-hidden">
+    <section className="hero relative flex min-h-[420px] items-center justify-center overflow-hidden py-28">
       {/* Background Image */}
       {image && (
         <>
@@ -32,7 +32,8 @@ export default function Hero({
             <div
               className="absolute inset-0"
               style={{
-                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                background:
+                  'linear-gradient(135deg, rgba(24, 18, 12, 0.72), rgba(31, 107, 58, 0.35))',
                 zIndex: 1,
               }}
             />
@@ -45,27 +46,28 @@ export default function Hero({
         <div
           className="absolute inset-0"
           style={{
-            backgroundColor: 'var(--color-secondary, #4a4b02)',
+            background:
+              'radial-gradient(circle at top, rgba(231, 188, 71, 0.35), transparent 60%), linear-gradient(135deg, #1f1f1f, #1f6b3a)',
             zIndex: 0,
           }}
         />
       )}
 
       {/* Content */}
-      <div className="container text-center text-white relative z-10">
-        <h1 className="text-5xl md:text-6xl font-bold mb-4">
+      <div className="container relative z-10 text-center text-white">
+        <p className="section-label text-brand-accent">Atlanta Saddle Club Association</p>
+        <h1 className="text-4xl md:text-6xl font-bold mb-5">
           {title}
         </h1>
         {subtitle && (
-          <p className="text-xl md:text-2xl mb-8 text-amber-300">
+          <p className="mx-auto max-w-3xl text-lg md:text-2xl text-amber-200">
             {subtitle}
           </p>
         )}
         {cta && (
           <a
             href={cta.link}
-            className="inline-block px-8 py-3 font-bold rounded hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: 'var(--color-accent, #f5d800)' }}
+            className="btn-accent mt-8 inline-flex"
           >
             {cta.text}
           </a>

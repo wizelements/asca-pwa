@@ -21,9 +21,9 @@ export default function FormTextarea({
 }: FormTextareaProps) {
   return (
     <div className="mb-4">
-      <label htmlFor={name} className="block font-semibold mb-2">
+      <label htmlFor={name} className="input-label">
         {label}
-        {required && <span className="text-red-600 ml-1">*</span>}
+        {required && <span className="ml-1 text-brand-danger">*</span>}
       </label>
       <textarea
         id={name}
@@ -33,13 +33,9 @@ export default function FormTextarea({
         rows={rows}
         value={value}
         onChange={onChange}
-        className={`w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 ${
-          error
-            ? 'border-red-500 focus:ring-red-500'
-            : 'border-gray-300 focus:ring-blue-500'
-        }`}
+        className={`input-field ${error ? 'border-brand-danger focus:border-brand-danger focus:ring-brand-danger/20' : ''}`}
       />
-      {error && <p className="text-red-600 text-sm mt-1">{error}</p>}
+      {error && <p className="mt-1 text-xs text-brand-danger">{error}</p>}
     </div>
   );
 }

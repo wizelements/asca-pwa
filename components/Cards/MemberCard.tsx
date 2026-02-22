@@ -14,26 +14,22 @@ export default function MemberCard({
   email,
 }: MemberCardProps) {
   return (
-    <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow text-center overflow-hidden">
+    <div className="card text-center">
       {image && (
         <img
           src={image}
           alt={name}
-          className="w-full h-64 object-cover"
+          className="h-56 w-full rounded-lg object-cover"
         />
       )}
-      <div className="p-6">
-        <h3 className="text-xl font-bold mb-1" style={{ color: 'var(--color-primary)' }}>
-          {name}
-        </h3>
-        <p className="text-sm font-semibold mb-3" style={{ color: 'var(--color-accent)' }}>
-          {role}
-        </p>
-        {bio && <p className="text-gray-600 text-sm mb-4">{bio}</p>}
+      <div className="mt-5">
+        <p className="text-xs uppercase tracking-[0.2em] text-brand-fg-muted">{role}</p>
+        <h3 className="mt-2 text-xl font-bold text-brand-fg-primary">{name}</h3>
+        {bio && <p className="mt-3 text-sm text-brand-fg-secondary">{bio}</p>}
         {email && (
           <a
             href={`mailto:${email}`}
-            className="text-blue-600 text-sm hover:underline"
+            className="mt-4 inline-flex text-xs uppercase tracking-[0.18em] text-brand-forest hover:text-brand-forest-muted"
           >
             {email}
           </a>

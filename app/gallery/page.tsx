@@ -29,10 +29,14 @@ export default async function Gallery() {
           subtitle={settings.heroes?.gallery?.subtitle || 'Moments from ASCA events and activities'}
         />
 
-        <section className="py-20 bg-white">
+        <section className="bg-brand-bg-subtle py-20">
           <div className="container">
+            <div className="text-center">
+              <p className="section-label">Gallery</p>
+              <h2 className="section-title">Captured Moments</h2>
+            </div>
             {gallery.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
                 {gallery.map((item: any) => (
                   <GalleryCard
                     key={item._id?.toString() || Math.random()}
@@ -44,7 +48,7 @@ export default async function Gallery() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-gray-600 text-lg">Gallery photos coming soon!</p>
+                <p className="text-brand-fg-secondary">Gallery photos coming soon.</p>
               </div>
             )}
           </div>

@@ -28,7 +28,6 @@ export default async function Home() {
       `}</style>
       <Header />
       <main>
-        {/* Hero Section */}
         <Hero
           image={settings.heroes?.home?.image || '/images/hero/home.jpg'}
           title={settings.heroes?.home?.title || 'We Ride To Inspire'}
@@ -36,18 +35,16 @@ export default async function Home() {
           cta={settings.heroes?.home?.cta || { text: 'Get Involved', link: '/get-involved' }}
         />
 
-        {/* Upcoming Events */}
-        <section className="py-20 bg-white">
+        <section className="bg-brand-bg-subtle py-20">
           <div className="container">
-            <h2 className="text-4xl font-bold mb-4 text-center" style={{ color: 'var(--color-primary)' }}>
-              Upcoming Events
-            </h2>
-            <p className="text-gray-600 text-center mb-12">
-              Join us for our latest events and activities
+            <p className="section-label text-center">Calendar Preview</p>
+            <h2 className="section-title text-center">Upcoming Events</h2>
+            <p className="mx-auto mb-12 max-w-2xl text-center text-brand-fg-secondary">
+              Join us for our latest events and activities.
             </p>
             {upcomingEvents.length > 0 ? (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
                   {upcomingEvents.map((event: any) => (
                     <EventCard
                       key={event._id.toString()}
@@ -61,16 +58,16 @@ export default async function Home() {
                     />
                   ))}
                 </div>
-                <div className="text-center">
-                  <Link href="/calendar" className="px-8 py-3 font-bold rounded hover:opacity-90" style={{ backgroundColor: 'var(--color-accent)' }}>
+                <div className="mt-12 text-center">
+                  <Link href="/calendar" className="btn-secondary">
                     View All Events
                   </Link>
                 </div>
               </>
             ) : (
               <div className="text-center py-12">
-                <p className="text-gray-600 mb-6">Check back soon for upcoming events!</p>
-                <Link href="/calendar" className="px-8 py-3 font-bold rounded hover:opacity-90" style={{ backgroundColor: 'var(--color-accent)' }}>
+                <p className="text-brand-fg-secondary mb-6">Check back soon for upcoming events.</p>
+                <Link href="/calendar" className="btn-secondary">
                   View Calendar
                 </Link>
               </div>
@@ -78,49 +75,46 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* Features Section */}
-        <section className="py-20 bg-gray-50">
+        <section className="py-20">
           <div className="container">
-            <h2 className="text-4xl font-bold mb-12 text-center" style={{ color: 'var(--color-primary)' }}>Why Join ASCA?</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <p className="section-label text-center">Why Join</p>
+            <h2 className="section-title text-center">A Club Built on Purpose</h2>
+            <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3">
               {[
                 {
                   title: 'Community',
-                  description: 'Connect with fellow riders and equestrian enthusiasts',
-                  icon: '👥',
+                  description: 'Connect with fellow riders and equestrian enthusiasts in a supportive network.',
+                  accent: 'Together we grow',
                 },
                 {
                   title: 'Training',
-                  description: 'Access expert instruction and horse care education',
-                  icon: '🏇',
+                  description: 'Access expert instruction and resources that improve horsemanship and care.',
+                  accent: 'Skill with heart',
                 },
                 {
                   title: 'Charity',
-                  description: 'Make a difference through our community initiatives',
-                  icon: '❤️',
+                  description: 'Give back through events and outreach that uplift the Atlanta community.',
+                  accent: 'Serve with pride',
                 },
               ].map((feature) => (
-                <div
-                  key={feature.title}
-                  className="bg-white p-8 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center"
-                >
-                  <div className="text-5xl mb-4">{feature.icon}</div>
-                  <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--color-primary)' }}>{feature.title}</h3>
-                  <p className="text-gray-600">{feature.description}</p>
+                <div key={feature.title} className="card">
+                  <p className="text-xs uppercase tracking-[0.2em] text-brand-forest">{feature.accent}</p>
+                  <h3 className="mt-4 text-xl font-bold text-brand-fg-primary">{feature.title}</h3>
+                  <p className="mt-3 text-sm text-brand-fg-secondary">{feature.description}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="py-20 text-white" style={{ backgroundColor: 'var(--color-secondary)' }}>
+        <section className="bg-brand-forest text-white py-20">
           <div className="container text-center">
-            <h2 className="text-4xl font-bold mb-4">Ready to Ride With Us?</h2>
-            <p className="text-lg mb-8 text-gray-200">
-              Learn more about membership or get involved with ASCA today
+            <p className="section-label text-brand-accent">Membership</p>
+            <h2 className="text-3xl md:text-4xl font-bold">Ready to Ride With Us?</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-amber-100">
+              Learn more about membership or get involved with ASCA today.
             </p>
-            <Link href="/get-involved" className="inline-block px-8 py-3 font-bold rounded hover:opacity-90" style={{ backgroundColor: 'var(--color-accent)' }}>
+            <Link href="/get-involved" className="btn-accent mt-8 inline-flex">
               Join Now
             </Link>
           </div>

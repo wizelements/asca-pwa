@@ -18,31 +18,25 @@ export default function EventCard({
   rsvpLink,
 }: EventCardProps) {
   return (
-    <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow overflow-hidden">
+    <div className="card overflow-hidden">
       {image && (
         <img
           src={image}
           alt={title}
-          className="w-full h-48 object-cover"
+          className="h-48 w-full object-cover"
         />
       )}
       <div className="p-6">
-        <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--color-primary)' }}>
-          {title}
-        </h3>
-        <div className="text-sm text-gray-600 mb-4 space-y-1">
-          <p>📅 {date} at {time}</p>
-          <p>📍 {location}</p>
+        <h3 className="mb-2 text-xl font-bold text-brand-fg-primary">{title}</h3>
+        <div className="mb-4 space-y-1 text-sm text-brand-fg-secondary">
+          <p>Date: {date} at {time}</p>
+          <p>Location: {location}</p>
         </div>
         {description && (
-          <p className="text-gray-700 mb-4 text-sm line-clamp-2">{description}</p>
+          <p className="mb-4 text-sm text-brand-fg-secondary line-clamp-2">{description}</p>
         )}
         {rsvpLink && (
-          <a
-            href={rsvpLink}
-            className="inline-block px-4 py-2 text-white font-bold rounded hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: 'var(--color-accent)' }}
-          >
+          <a href={rsvpLink} className="btn-primary inline-flex text-xs">
             RSVP
           </a>
         )}

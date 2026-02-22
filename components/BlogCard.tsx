@@ -8,28 +8,28 @@ interface BlogCardProps {
 
 export default function BlogCard({ post }: BlogCardProps) {
   return (
-    <article className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+    <article className="card overflow-hidden">
       {post.imageUrl && (
         <img
           src={post.imageUrl}
           alt={post.imageAlt || post.title}
-          className="w-full h-48 object-cover"
+          className="h-48 w-full rounded-lg object-cover"
         />
       )}
-      <div className="p-6">
-        <div className="flex items-center gap-2 mb-2">
+      <div className="mt-5">
+        <div className="flex flex-wrap gap-2">
           {post.categories.map((cat) => (
-            <span key={cat} className="text-xs text-accent font-semibold">
-              #{cat}
+            <span key={cat} className="rounded-full bg-brand-bg-soft px-3 py-1 text-xs uppercase tracking-[0.2em] text-brand-fg-secondary">
+              {cat}
             </span>
           ))}
         </div>
-        <h2 className="text-2xl font-bold text-primary mb-2">{post.title}</h2>
-        <p className="text-gray-600 text-sm mb-4">
-          By {post.author} • {formatDate(post.publishedAt || new Date())}
+        <h2 className="mt-4 text-xl font-bold text-brand-fg-primary">{post.title}</h2>
+        <p className="mt-2 text-xs uppercase tracking-[0.18em] text-brand-fg-muted">
+          {post.author} - {formatDate(post.publishedAt || new Date())}
         </p>
-        <p className="text-gray-700 mb-4">{post.excerpt}</p>
-        <Link href={`/blog/${post.slug}`} className="btn-accent">
+        <p className="mt-4 text-sm text-brand-fg-secondary">{post.excerpt}</p>
+        <Link href={`/blog/${post.slug}`} className="mt-5 inline-flex text-xs uppercase tracking-[0.18em] text-brand-forest hover:text-brand-forest-muted">
           Read More
         </Link>
       </div>
