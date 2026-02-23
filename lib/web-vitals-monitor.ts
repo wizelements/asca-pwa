@@ -34,13 +34,13 @@ export const webVitalsMonitor = {
     // LCP (Largest Contentful Paint)
     const observer = new PerformanceObserver((list) => {
       const entries = list.getEntries();
-      const lastEntry = entries[entries.length - 1];
+      const lastEntry = entries[entries.length - 1] as any;
       const lcpValue = lastEntry.renderTime || lastEntry.loadTime;
       
       console.log('[LCP]', {
         value: lcpValue,
         rating: getRating('lcp', lcpValue),
-        element: (lastEntry as any).element?.tagName || 'unknown',
+        element: lastEntry.element?.tagName || 'unknown',
       });
     });
 
