@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <!-- Background circle (optional for PWA icon) -->
+  <circle cx="250.0" cy="250.0" r="250.0" fill="#f7f3ea" opacity="0.05"/>
+  
+  <!-- Horse Head Main Shape -->
+  <g transform="translate(250.0, 250.0)">
+    <!-- Ear 1 (left) -->
+    <ellipse cx="-45" cy="-80" rx="18" ry="55" fill="#1f6b3a" opacity="0.9" transform="rotate(-20 -45 -80)"/>
+    <ellipse cx="-45" cy="-75" rx="10" ry="35" fill="#f7f3ea" transform="rotate(-20 -45 -75)"/>
+    
+    <!-- Ear 2 (right) -->
+    <ellipse cx="45" cy="-80" rx="18" ry="55" fill="#1f6b3a" opacity="0.9" transform="rotate(20 45 -80)"/>
+    <ellipse cx="45" cy="-75" rx="10" ry="35" fill="#f7f3ea" transform="rotate(20 45 -75)"/>
+    
+    <!-- Mane -->
+    <path d="M -30,-70 Q -25,-40 -20,-10 Q -18,20 -15,40" 
+          stroke="#1f6b3a" stroke-width="16" fill="none" stroke-linecap="round" opacity="0.85"/>
+    <path d="M 0,-95 Q 5,-50 8,-10 Q 10,25 12,50" 
+          stroke="#1f6b3a" stroke-width="14" fill="none" stroke-linecap="round" opacity="0.9"/>
+    <path d="M 30,-70 Q 28,-40 25,-10 Q 23,20 20,40" 
+          stroke="#1f6b3a" stroke-width="14" fill="none" stroke-linecap="round" opacity="0.8"/>
+    
+    <!-- Head main shape -->
+    <path d="M -50,-50 Q -65,-30 -68,10 L -60,45 L -20,55 L 20,55 L 60,45 Q 65,10 50,-50 Q 0,-100 -50,-50 Z" 
+          fill="#1f6b3a"/>
+    
+    <!-- Face lighter shade -->
+    <path d="M -45,-35 Q -55,-20 -58,5 L -52,35 L -10,42 L 10,42 L 52,35 Q 55,5 45,-35 Q 0,-75 -45,-35 Z" 
+          fill="#1f6b3a" opacity="0.95"/>
+    
+    <!-- Snout -->
+    <ellipse cx="0" cy="40" rx="22" ry="18" fill="#f7f3ea" opacity="0.3"/>
+    
+    <!-- Nostril 1 -->
+    <ellipse cx="-12" cy="42" rx="6" ry="5" fill="#1f6b3a" opacity="0.7"/>
+    
+    <!-- Nostril 2 -->
+    <ellipse cx="12" cy="42" rx="6" ry="5" fill="#1f6b3a" opacity="0.7"/>
+    
+    <!-- Eye white -->
+    <circle cx="-25" cy="-15" r="12" fill="#ffffff"/>
+    
+    <!-- Eye iris -->
+    <circle cx="-25" cy="-15" r="8" fill="#1f6b3a"/>
+    
+    <!-- Eye pupil -->
+    <circle cx="-23" cy="-17" r="4" fill="black"/>
+    
+    <!-- Eye shine -->
+    <circle cx="-22" cy="-18" r="2" fill="white"/>
+    
+    <!-- Neck/shoulder transition -->
+    <path d="M -35,50 Q -50,70 -45,95 L 45,95 Q 50,70 35,50 Z" 
+          fill="#1f6b3a" opacity="0.85"/>
+    
+    <!-- Muzzle definition -->
+    <line x1="-20" y1="35" x2="-15" y2="48" stroke="#1f6b3a" stroke-width="2" opacity="0.6"/>
+    <line x1="20" y1="35" x2="15" y2="48" stroke="#1f6b3a" stroke-width="2" opacity="0.6"/>
+  </g>
+</svg>
