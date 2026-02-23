@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 interface GalleryCardProps {
   title: string;
   image: string;
@@ -14,11 +16,15 @@ export default function GalleryCard({
   return (
     <div className="card overflow-hidden">
       {image && (
-        <img
-          src={image}
-          alt={title}
-          className="h-56 w-full rounded-lg object-cover"
-        />
+        <div className="relative h-56 w-full">
+          <Image
+            src={image}
+            alt={title}
+            fill
+            className="rounded-lg object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        </div>
       )}
       <div className="mt-5">
         <h3 className="text-lg font-bold text-brand-fg-primary">{title}</h3>

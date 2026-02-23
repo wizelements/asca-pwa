@@ -15,7 +15,7 @@ export default function AdminGallery() {
       </div>
 
       <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg text-sm text-blue-800">
-        <p><strong>Tip:</strong> All images require alt text for accessibility. Don't forget to add descriptive alt text for each image.</p>
+        <p><strong>Tip:</strong> All images require alt text for accessibility. Don&apos;t forget to add descriptive alt text for each image.</p>
       </div>
     </div>
   );

@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 interface EventCardProps {
   title: string;
   date: string;
@@ -20,11 +22,15 @@ export default function EventCard({
   return (
     <div className="card overflow-hidden">
       {image && (
-        <img
-          src={image}
-          alt={title}
-          className="h-48 w-full object-cover"
-        />
+        <div className="relative h-48 w-full">
+          <Image
+            src={image}
+            alt={title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        </div>
       )}
       <div className="p-6">
         <h3 className="mb-2 text-xl font-bold text-brand-fg-primary">{title}</h3>

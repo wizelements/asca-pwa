@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 interface HeroProps {
   image?: string;
   title: string;
@@ -21,11 +23,13 @@ export default function Hero({
       {/* Background Image */}
       {image && (
         <>
-          <img
+          <Image
             src={image}
             alt={title}
+            fill
             className="absolute inset-0 w-full h-full object-cover"
             style={{ zIndex: 0 }}
+            priority
           />
           {/* Darken Overlay */}
           {darken && (

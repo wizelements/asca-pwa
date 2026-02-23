@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 interface MemberCardProps {
   name: string;
   role: string;
@@ -16,11 +18,15 @@ export default function MemberCard({
   return (
     <div className="card text-center">
       {image && (
-        <img
-          src={image}
-          alt={name}
-          className="h-56 w-full rounded-lg object-cover"
-        />
+        <div className="relative h-56 w-full">
+          <Image
+            src={image}
+            alt={name}
+            fill
+            className="rounded-lg object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        </div>
       )}
       <div className="mt-5">
         <p className="text-xs uppercase tracking-[0.2em] text-brand-fg-muted">{role}</p>

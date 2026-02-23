@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 interface BlogCardProps {
   title: string;
   excerpt: string;
@@ -20,11 +22,15 @@ export default function BlogCard({
   return (
     <article className="card overflow-hidden">
       {image && (
-        <img
-          src={image}
-          alt={title}
-          className="h-48 w-full rounded-lg object-cover"
-        />
+        <div className="relative h-48 w-full">
+          <Image
+            src={image}
+            alt={title}
+            fill
+            className="rounded-lg object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        </div>
       )}
       <div className="mt-5">
         {category && (

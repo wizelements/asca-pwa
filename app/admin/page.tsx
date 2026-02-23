@@ -73,7 +73,7 @@ export default function AdminDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-4xl font-bold text-brand-fg-primary">Dashboard</h1>
-          <p className="mt-1 text-brand-fg-secondary">Welcome back. Here's what's happening with your site.</p>
+          <p className="mt-1 text-brand-fg-secondary">Welcome back. Here&apos;s what&apos;s happening with your site.</p>
         </div>
         <button className="px-6 py-3 rounded-full bg-brand-forest text-white font-semibold hover:bg-brand-forest/90 transition-colors">
           Last 30 Days

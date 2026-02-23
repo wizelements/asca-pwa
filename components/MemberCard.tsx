@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { IMember } from '@/lib/models/Member';
 
 interface MemberCardProps {
@@ -8,11 +9,15 @@ export default function MemberCard({ member }: MemberCardProps) {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
       {member.profileImage && (
-        <img
-          src={member.profileImage}
-          alt={`${member.firstName} ${member.lastName}`}
-          className="w-full h-48 object-cover rounded-lg mb-4"
-        />
+        <div className="relative w-full h-48 mb-4">
+          <Image
+            src={member.profileImage}
+            alt={`${member.firstName} ${member.lastName}`}
+            fill
+            className="object-cover rounded-lg"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        </div>
       )}
       <h3 className="text-lg font-bold text-primary mb-2">
         {member.firstName} {member.lastName}

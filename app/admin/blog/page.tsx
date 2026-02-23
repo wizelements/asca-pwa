@@ -20,7 +20,7 @@ export default function AdminBlog() {
           <tbody>
             <tr className="border-b hover:bg-gray-50">
               <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                No blog posts yet. Click "+ Write Post" to create one.
+                No blog posts yet. Click &quot;+ Write Post&quot; to create one.
               </td>
             </tr>
           </tbody>

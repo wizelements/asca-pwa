@@ -21,7 +21,7 @@ export default function AdminEvents() {
           <tbody>
             <tr className="border-b hover:bg-gray-50">
               <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                No events yet. Click "+ New Event" to create one.
+                No events yet. Click &quot;+ New Event&quot; to create one.
               </td>
             </tr>
           </tbody>

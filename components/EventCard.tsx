@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { IEvent } from '@/lib/models/Event';
 import { formatDate } from '@/lib/utils';
 
@@ -10,11 +11,15 @@ export default function EventCard({ event }: EventCardProps) {
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
       {event.imageUrl && (
-        <img
-          src={event.imageUrl}
-          alt={event.imageAlt}
-          className="w-full h-48 object-cover"
-        />
+        <div className="relative w-full h-48">
+          <Image
+            src={event.imageUrl}
+            alt={event.imageAlt || event.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        </div>
       )}
       <div className="p-6">
         <h3 className="text-xl font-bold mb-2 text-primary">{event.title}</h3>

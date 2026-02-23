@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { IBlogPost } from '@/lib/models/BlogPost';
 import { formatDate } from '@/lib/utils';
 
@@ -10,11 +11,15 @@ export default function BlogCard({ post }: BlogCardProps) {
   return (
     <article className="card overflow-hidden">
       {post.imageUrl && (
-        <img
-          src={post.imageUrl}
-          alt={post.imageAlt || post.title}
-          className="h-48 w-full rounded-lg object-cover"
-        />
+        <div className="relative h-48 w-full">
+          <Image
+            src={post.imageUrl}
+            alt={post.imageAlt || post.title}
+            fill
+            className="rounded-lg object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        </div>
       )}
       <div className="mt-5">
         <div className="flex flex-wrap gap-2">
