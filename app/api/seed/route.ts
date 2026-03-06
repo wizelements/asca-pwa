@@ -5,9 +5,8 @@ export async function POST(request: Request) {
   const { searchParams } = new URL(request.url);
   const key = searchParams.get('key');
 
-  // Temporary: allow seeding with hardcoded key for initial data population
-  const validKey = process.env.SEED_KEY || process.env.NEXTAUTH_SECRET || 'asca-seed-2024-temp';
-  if (key !== validKey) {
+  const validKey = process.env.SEED_KEY || process.env.NEXTAUTH_SECRET;
+  if (!validKey || key !== validKey) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
