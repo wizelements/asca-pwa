@@ -1,7 +1,13 @@
+import type { Metadata } from 'next';
 import Hero from '@/components/Hero';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getSettings, getTheme } from '@/lib/db/queries';
+
+export const metadata: Metadata = {
+  title: 'Donate',
+  description: 'Support ASCA\'s mission. Donate via Venmo or CashApp to help maintain riding facilities, fund youth programs, and support community outreach.',
+};
 
 export default async function Donate() {
   const [settings, theme] = await Promise.all([

@@ -1,9 +1,15 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Hero from '@/components/Hero';
 import GalleryCard from '@/components/Cards/GalleryCard';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getSettings, getTheme, getGallery } from '@/lib/db/queries';
+
+export const metadata: Metadata = {
+  title: 'Photo Gallery',
+  description: 'Photos from ASCA events, trail rides, and community activities. See our horses, riders, and members in action.',
+};
 
 const staticGallery = [
   { src: '/images/gallery/horse-closeup.jpg', alt: 'Horse close-up at ASCA', title: 'Our Horses' },

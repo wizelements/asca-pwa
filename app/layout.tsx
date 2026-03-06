@@ -20,10 +20,27 @@ const jetbrains = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Atlanta Saddle Club Association',
-  description: 'We Ride To Inspire - Premier equestrian community',
+  title: {
+    default: 'Atlanta Saddle Club Association | We Ride To Inspire',
+    template: '%s | ASCA',
+  },
+  description: 'Atlanta Saddle Club Association (ASCA) — Atlanta\'s premiere saddle club promoting positive horsemanship, trail rides, riding lessons, and community.',
   viewport: 'width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover',
   manifest: '/manifest.json',
+  metadataBase: new URL('https://asca-pwa.vercel.app'),
+  openGraph: {
+    type: 'website',
+    siteName: 'Atlanta Saddle Club Association',
+    title: 'Atlanta Saddle Club Association | We Ride To Inspire',
+    description: 'Atlanta\'s premiere saddle club promoting positive horsemanship, trail rides, riding lessons, and community.',
+    images: [{ url: '/images/asca/logo.png', width: 494, height: 406, alt: 'ASCA Logo' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Atlanta Saddle Club Association',
+    description: 'We Ride To Inspire — Atlanta\'s premiere saddle club.',
+    images: ['/images/asca/logo.png'],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
@@ -31,12 +48,13 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: '/favicon.ico',
-    apple: '/images/asca/logo.png',
+    apple: '/icons/apple-touch-icon.png',
+    shortcut: '/favicon.ico',
   },
   other: {
     'mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-capable': 'yes',
-    'theme-color': '#1f6b3a',
+    'theme-color': '#e6d543',
   },
 }
 
@@ -71,13 +89,13 @@ export default function RootLayout({
             --font-serif: Georgia, serif;
           }
         `}</style>
-        <meta name="theme-color" content="#1f6b3a" />
+        <meta name="theme-color" content="#e6d543" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="ASCA" />
         <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/images/asca/logo.png" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="bg-brand-bg-body text-brand-fg-primary font-sans">

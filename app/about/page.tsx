@@ -1,8 +1,14 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Hero from '@/components/Hero';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getSettings, getTheme } from '@/lib/db/queries';
+
+export const metadata: Metadata = {
+  title: 'About ASCA',
+  description: 'ASCA sponsors and promotes horse trail rides, horseback riding lessons, camp outs and other activities promoting horsemanship in Atlanta.',
+};
 
 export default async function About() {
   const [settings, theme] = await Promise.all([
@@ -25,7 +31,7 @@ export default async function About() {
         <Hero
           image={settings.heroes?.about?.image || '/images/hero/about.jpg'}
           title={settings.heroes?.about?.title || 'About ASCA'}
-          subtitle={settings.heroes?.about?.subtitle || 'We Ride To Inspire'}
+          subtitle={settings.heroes?.about?.subtitle || 'Atlanta\'s premiere saddle club. We exist to promote positive horsemanship within the community.'}
         />
 
         <section className="py-20">
@@ -50,6 +56,21 @@ export default async function About() {
                 </p>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Join the Club */}
+        <section className="bg-brand-forest text-white py-16">
+          <div className="container max-w-3xl text-center">
+            <p className="section-label text-brand-accent">Join the Club</p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Become a Member</h2>
+            <p className="text-lg text-amber-100 leading-relaxed">
+              If you would like to become a member we ask that you attend a club meeting and attend activities
+              and events that we have to learn more about the club and some of the members.
+            </p>
+            <a href="/get-involved" className="btn-accent mt-8 inline-flex">
+              Get Involved
+            </a>
           </div>
         </section>
 

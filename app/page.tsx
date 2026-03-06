@@ -56,13 +56,13 @@ export default async function Home() {
                   title: 'Connect',
                   accent: 'Together we grow',
                   description:
-                    'Horses are very sensitive and pick up on others\' emotions quickly. Horses are gentle and provide a means of building confidence on many levels. We believe your experience interacting with the horse will help you reach your personal goals and equip you with skills that can be applied to everyday life.',
+                    'Horses are very sensitive and pick up on others\' emotions quickly, and they accurately reflect these feelings back to the student. This creates a feedback loop that allows the student to learn new positive ways of thinking and being.',
                 },
                 {
                   title: 'Learn',
                   accent: 'Skill with heart',
                   description:
-                    'Through working closely with the horse, our members build a gradual sense of acceptance, trust, self-awareness, effective communication, and personal development. ASCA offers riding lessons, educational experiences, and trail ride events.',
+                    'Through working closely with the horse, our members build a gradual sense of acceptance and feeling "liked." This enhances a person\'s positive self-concept and identity. The bonding with the horse is key.',
                 },
                 {
                   title: 'Give',

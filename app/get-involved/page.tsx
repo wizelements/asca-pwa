@@ -23,7 +23,7 @@ interface Settings {
 
 export default function GetInvolved() {
   const [settings, setSettings] = useState<Settings>({});
-  const [activeTab, setActiveTab] = useState<'contact' | 'membership' | 'volunteer' | 'application'>('contact');
+  const [activeTab, setActiveTab] = useState<'contact' | 'membership' | 'volunteer' | 'application'>('application');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 

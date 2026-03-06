@@ -1,8 +1,14 @@
+import type { Metadata } from 'next';
 import Hero from '@/components/Hero';
 import BlogCard from '@/components/Cards/BlogCard';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getSettings, getTheme, getBlogPosts } from '@/lib/db/queries';
+
+export const metadata: Metadata = {
+  title: 'Blog',
+  description: 'Stories, tips, and updates from the ASCA equestrian community. Learn about equine-assisted therapy and horsemanship.',
+};
 
 export default async function Blog() {
   const [settings, theme, posts] = await Promise.all([

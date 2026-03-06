@@ -1,9 +1,15 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Hero from '@/components/Hero';
 import MemberCard from '@/components/Cards/MemberCard';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getSettings, getTheme, getMembers } from '@/lib/db/queries';
+
+export const metadata: Metadata = {
+  title: 'Meet ASCA',
+  description: 'Meet the members of Atlanta Saddle Club Association. We inspire a culture that we can be more than what is expected of us.',
+};
 
 export default async function Members() {
   const [settings, theme, members] = await Promise.all([
@@ -45,6 +51,7 @@ export default async function Members() {
             <p className="text-lg text-brand-fg-secondary leading-relaxed">
               We inspire a culture both young &amp; old; rich &amp; poor; black &amp; white; that we can be more
               than what is expected of us. We ride to inspire those that thought it wasn&apos;t possible is now possible.
+              Those that dreamed of living out their childhood dreams is in reach cowboys and cowgirls alike.
             </p>
             <div className="mt-10 grid grid-cols-2 gap-4">
               <div className="relative aspect-[4/3] overflow-hidden rounded-xl">

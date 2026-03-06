@@ -40,9 +40,9 @@ function getDefaultSettings() {
     phone: '(404) 555-0123',
     address: 'Atlanta, Georgia',
     social: {
-      facebook: 'https://www.facebook.com/ASCAHorsemen',
-      instagram: 'https://www.instagram.com/ascahorsemen/',
-      youtube: 'https://www.youtube.com/channel/UCHqFOgNrYRSvbwVAJ4zphqw',
+      facebook: 'https://www.facebook.com/TheRealASCA',
+      instagram: 'https://www.instagram.com/therealasca/',
+      twitter: 'https://twitter.com/TheRealASCA',
     },
     venmo: {
       username: '@therealasca1',
@@ -58,13 +58,13 @@ function getDefaultSettings() {
       },
       about: {
         image: '/images/hero/about.jpg',
-        title: 'Our Story',
-        subtitle: 'A legacy of equestrian excellence',
+        title: 'About ASCA',
+        subtitle: 'Atlanta\'s premiere saddle club. We exist to promote positive horsemanship within the community.',
       },
       members: {
-        image: '/images/hero/members.jpg',
-        title: 'Our Team',
-        subtitle: 'Meet the people who make ASCA happen',
+        image: '/images/gallery/activity.jpg',
+        title: 'Meet ASCA',
+        subtitle: 'We ride to inspire those that thought it wasn\'t possible is now possible.',
       },
       calendar: {
         image: '/images/hero/calendar.jpg',
