@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Hero from '@/components/Hero';
@@ -8,6 +9,15 @@ import {
   getTheme,
   getUpcomingEvents,
 } from '@/lib/db/queries';
+
+const galleryPhotos = [
+  { src: '/images/gallery/horse-closeup.jpg', alt: 'Horse close-up at ASCA' },
+  { src: '/images/gallery/rider.jpg', alt: 'ASCA rider on horseback' },
+  { src: '/images/gallery/blog-member.jpg', alt: 'ASCA member activity' },
+  { src: '/images/gallery/activity.jpg', alt: 'ASCA trail ride activity' },
+  { src: '/images/gallery/event.jpg', alt: 'ASCA community event' },
+  { src: '/images/members/member-1.jpg', alt: 'ASCA member' },
+];
 
 export default async function Home() {
   const [settings, theme, upcomingEvents] = await Promise.all([
@@ -35,7 +45,70 @@ export default async function Home() {
           cta={settings.heroes?.home?.cta || { text: 'Get Involved', link: '/get-involved' }}
         />
 
+        {/* Connect / Learn / Give */}
+        <section className="py-20">
+          <div className="container">
+            <p className="section-label text-center">Our Purpose</p>
+            <h2 className="section-title text-center">Connect · Learn · Give</h2>
+            <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3">
+              {[
+                {
+                  title: 'Connect',
+                  accent: 'Together we grow',
+                  description:
+                    'Horses are very sensitive and pick up on others\' emotions quickly. Horses are gentle and provide a means of building confidence on many levels. We believe your experience interacting with the horse will help you reach your personal goals and equip you with skills that can be applied to everyday life.',
+                },
+                {
+                  title: 'Learn',
+                  accent: 'Skill with heart',
+                  description:
+                    'Through working closely with the horse, our members build a gradual sense of acceptance, trust, self-awareness, effective communication, and personal development. ASCA offers riding lessons, educational experiences, and trail ride events.',
+                },
+                {
+                  title: 'Give',
+                  accent: 'Serve with pride',
+                  description:
+                    'Funds that the club collects gives us the opportunity to give back to the community. We value our local community and desire to be an asset for both the young and the young at heart.',
+                },
+              ].map((feature) => (
+                <div key={feature.title} className="card">
+                  <p className="text-xs uppercase tracking-[0.2em] text-brand-accent font-semibold">{feature.accent}</p>
+                  <h3 className="mt-4 text-xl font-bold text-brand-fg-primary">{feature.title}</h3>
+                  <p className="mt-3 text-sm text-brand-fg-secondary leading-relaxed">{feature.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Photo Gallery */}
         <section className="bg-brand-bg-subtle py-20">
+          <div className="container">
+            <p className="section-label text-center">Gallery</p>
+            <h2 className="section-title text-center">Life at ASCA</h2>
+            <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {galleryPhotos.map((photo) => (
+                <div key={photo.src} className="relative aspect-[4/3] overflow-hidden rounded-xl">
+                  <Image
+                    src={photo.src}
+                    alt={photo.alt}
+                    fill
+                    className="object-cover transition-transform duration-300 hover:scale-105"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="mt-10 text-center">
+              <Link href="/gallery" className="btn-secondary">
+                View Full Gallery
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Upcoming Events */}
+        <section className="py-20">
           <div className="container">
             <p className="section-label text-center">Calendar Preview</p>
             <h2 className="section-title text-center">Upcoming Events</h2>
@@ -75,38 +148,41 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="py-20">
+        {/* Blog Preview */}
+        <section className="bg-brand-bg-subtle py-20">
           <div className="container">
-            <p className="section-label text-center">Why Join</p>
-            <h2 className="section-title text-center">A Club Built on Purpose</h2>
-            <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3">
-              {[
-                {
-                  title: 'Community',
-                  description: 'Connect with fellow riders and equestrian enthusiasts in a supportive network.',
-                  accent: 'Together we grow',
-                },
-                {
-                  title: 'Training',
-                  description: 'Access expert instruction and resources that improve horsemanship and care.',
-                  accent: 'Skill with heart',
-                },
-                {
-                  title: 'Charity',
-                  description: 'Give back through events and outreach that uplift the Atlanta community.',
-                  accent: 'Serve with pride',
-                },
-              ].map((feature) => (
-                <div key={feature.title} className="card">
-                  <p className="text-xs uppercase tracking-[0.2em] text-brand-forest">{feature.accent}</p>
-                  <h3 className="mt-4 text-xl font-bold text-brand-fg-primary">{feature.title}</h3>
-                  <p className="mt-3 text-sm text-brand-fg-secondary">{feature.description}</p>
+            <p className="section-label text-center">From The Blog</p>
+            <h2 className="section-title text-center">Latest Stories</h2>
+            <div className="mt-12 mx-auto max-w-3xl">
+              <div className="card overflow-hidden md:flex">
+                <div className="relative h-56 md:h-auto md:w-72 flex-shrink-0">
+                  <Image
+                    src="/images/gallery/blog-member.jpg"
+                    alt="Equine Assisted Therapy"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 288px"
+                  />
                 </div>
-              ))}
+                <div className="p-6 md:p-8">
+                  <p className="text-xs uppercase tracking-[0.2em] text-brand-accent font-semibold">Featured</p>
+                  <h3 className="mt-2 text-lg font-bold text-brand-fg-primary">
+                    Feeling good with Horses: Benefits of Equine Assisted Therapy
+                  </h3>
+                  <p className="mt-1 text-xs text-brand-fg-muted">By Clariece Pinkney</p>
+                  <p className="mt-3 text-sm text-brand-fg-secondary leading-relaxed">
+                    Equine-Assisted Therapy (EAT) or equine-assisted learning or, the more well-known horseback riding, can be beneficial for people of all ages in numerous ways. Here&apos;s how you can benefit from the healing power of horses.
+                  </p>
+                  <Link href="/blog" className="mt-4 inline-flex text-sm font-semibold text-brand-forest hover:text-brand-forest-muted transition-colors">
+                    Read More →
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
+        {/* CTA */}
         <section className="bg-brand-forest text-white py-20">
           <div className="container text-center">
             <p className="section-label text-brand-accent">Membership</p>

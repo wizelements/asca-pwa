@@ -1,13 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Hero from '@/components/Hero';
 import FormInput from '@/components/Forms/FormInput';
 import FormTextarea from '@/components/Forms/FormTextarea';
 import FormButton from '@/components/Forms/FormButton';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { useEffect } from 'react';
 
 interface Settings {
   siteName?: string;
@@ -24,7 +23,7 @@ interface Settings {
 
 export default function GetInvolved() {
   const [settings, setSettings] = useState<Settings>({});
-  const [activeTab, setActiveTab] = useState<'contact' | 'membership' | 'volunteer'>('contact');
+  const [activeTab, setActiveTab] = useState<'contact' | 'membership' | 'volunteer' | 'application'>('contact');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -34,8 +33,6 @@ export default function GetInvolved() {
       .then(data => setSettings(data))
       .catch(console.error);
   }, []);
-
-  const [heroData, setHeroData] = useState({ image: '/images/hero/involved.jpg', title: 'Get Involved', subtitle: 'Join our equestrian community' });
 
   const [formData, setFormData] = useState({
     name: '',
@@ -102,9 +99,9 @@ export default function GetInvolved() {
       <Header />
       <main>
         <Hero
-          image={heroData.image}
-          title={heroData.title}
-          subtitle={heroData.subtitle}
+          image="/images/hero/involved.jpg"
+          title="Get Involved"
+          subtitle="Join our equestrian community"
         />
 
         <section className="py-20">
@@ -118,7 +115,7 @@ export default function GetInvolved() {
             </div>
 
             <div className="flex flex-wrap justify-center gap-3 rounded-full border border-brand-border-subtle bg-brand-bg-soft px-3 py-2">
-              {(['contact', 'membership', 'volunteer'] as const).map(tab => (
+              {(['contact', 'membership', 'volunteer', 'application'] as const).map(tab => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -128,150 +125,84 @@ export default function GetInvolved() {
                       : 'text-brand-fg-secondary hover:text-brand-forest'
                   }`}
                 >
-                  {tab === 'contact' ? 'Contact Us' : tab === 'membership' ? 'Join' : 'Volunteer'}
+                  {tab === 'contact' ? 'Contact Us' : tab === 'membership' ? 'Join' : tab === 'volunteer' ? 'Volunteer' : 'Apply Now'}
                 </button>
               ))}
             </div>
 
-            <form onSubmit={handleSubmit} className="mt-10 rounded-2xl border border-brand-border-subtle bg-brand-bg-elevated/80 p-8 shadow-sm backdrop-blur">
-              {message && (
-                <div
-                  className={`mb-6 rounded-lg px-4 py-3 text-center text-sm ${
-                    message.includes('Thank') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
-                  }`}
-                >
-                  {message}
-                </div>
-              )}
+            {/* JotForm Membership Application */}
+            {activeTab === 'application' && (
+              <div className="mt-10 rounded-2xl border border-brand-border-subtle bg-brand-bg-elevated/80 p-4 shadow-sm overflow-hidden">
+                <h3 className="text-lg font-bold font-display text-brand-fg-primary mb-4 text-center">ASCA Membership Application</h3>
+                <iframe
+                  src="https://form.jotform.com/TheRealASCA/MembershipApplication"
+                  title="ASCA Membership Application"
+                  width="100%"
+                  height="800"
+                  style={{ border: 'none', minHeight: '800px' }}
+                  allowFullScreen
+                />
+              </div>
+            )}
 
-              {activeTab === 'contact' && (
-                <>
-                  <FormInput
-                    label="Name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                  />
-                  <FormInput
-                    label="Email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                  />
-                  <FormInput
-                    label="Phone"
-                    name="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={handleChange}
-                  />
-                  <FormTextarea
-                    label="Message"
-                    name="message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    required
-                  />
-                </>
-              )}
-
-              {activeTab === 'membership' && (
-                <>
-                  <FormInput
-                    label="Full Name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                  />
-                  <FormInput
-                    label="Email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                  />
-                  <FormInput
-                    label="Phone"
-                    name="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    required
-                  />
-                  <div className="mb-4">
-                    <label htmlFor="role" className="input-label">
-                      What best describes you?
-                    </label>
-                    <select
-                      id="role"
-                      name="role"
-                      value={formData.role}
-                      onChange={handleChange}
-                      className="input-field"
-                    >
-                      <option value="rider">Rider</option>
-                      <option value="volunteer">Volunteer</option>
-                      <option value="instructor">Instructor</option>
-                      <option value="other">Other</option>
-                    </select>
+            {/* Standard Forms */}
+            {activeTab !== 'application' && (
+              <form onSubmit={handleSubmit} className="mt-10 rounded-2xl border border-brand-border-subtle bg-brand-bg-elevated/80 p-8 shadow-sm backdrop-blur">
+                {message && (
+                  <div
+                    className={`mb-6 rounded-lg px-4 py-3 text-center text-sm ${
+                      message.includes('Thank') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                    }`}
+                  >
+                    {message}
                   </div>
-                  <FormTextarea
-                    label="Tell us about your riding experience"
-                    name="experience"
-                    value={formData.experience}
-                    onChange={handleChange}
-                  />
-                </>
-              )}
+                )}
 
-              {activeTab === 'volunteer' && (
-                <>
-                  <FormInput
-                    label="Name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                  />
-                  <FormInput
-                    label="Email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                  />
-                  <FormInput
-                    label="Phone"
-                    name="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    required
-                  />
-                  <FormTextarea
-                    label="What areas are you interested in helping with?"
-                    name="interests"
-                    value={formData.interests}
-                    onChange={handleChange}
-                    required
-                  />
-                </>
-              )}
+                {activeTab === 'contact' && (
+                  <>
+                    <FormInput label="Name" name="name" value={formData.name} onChange={handleChange} required />
+                    <FormInput label="Email" name="email" type="email" value={formData.email} onChange={handleChange} required />
+                    <FormInput label="Phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} />
+                    <FormTextarea label="Message" name="message" value={formData.message} onChange={handleChange} required />
+                  </>
+                )}
 
-              <FormButton loading={loading}>
-                {activeTab === 'contact'
-                  ? 'Send Message'
-                  : activeTab === 'membership'
-                  ? 'Apply for Membership'
-                  : 'Sign Up to Volunteer'}
-              </FormButton>
-            </form>
+                {activeTab === 'membership' && (
+                  <>
+                    <FormInput label="Full Name" name="name" value={formData.name} onChange={handleChange} required />
+                    <FormInput label="Email" name="email" type="email" value={formData.email} onChange={handleChange} required />
+                    <FormInput label="Phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} required />
+                    <div className="mb-4">
+                      <label htmlFor="role" className="input-label">What best describes you?</label>
+                      <select id="role" name="role" value={formData.role} onChange={handleChange} className="input-field">
+                        <option value="rider">Rider</option>
+                        <option value="volunteer">Volunteer</option>
+                        <option value="instructor">Instructor</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                    <FormTextarea label="Tell us about your riding experience" name="experience" value={formData.experience} onChange={handleChange} />
+                  </>
+                )}
+
+                {activeTab === 'volunteer' && (
+                  <>
+                    <FormInput label="Name" name="name" value={formData.name} onChange={handleChange} required />
+                    <FormInput label="Email" name="email" type="email" value={formData.email} onChange={handleChange} required />
+                    <FormInput label="Phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} required />
+                    <FormTextarea label="What areas are you interested in helping with?" name="interests" value={formData.interests} onChange={handleChange} required />
+                  </>
+                )}
+
+                <FormButton loading={loading}>
+                  {activeTab === 'contact'
+                    ? 'Send Message'
+                    : activeTab === 'membership'
+                    ? 'Apply for Membership'
+                    : 'Sign Up to Volunteer'}
+                </FormButton>
+              </form>
+            )}
           </div>
         </section>
       </main>

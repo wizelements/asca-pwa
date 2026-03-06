@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Hero from '@/components/Hero';
 import MemberCard from '@/components/Cards/MemberCard';
 import Header from '@/components/Header';
@@ -31,10 +32,42 @@ export default async function Members() {
       <Header />
       <main>
         <Hero
-          image={settings.heroes?.members?.image || '/images/hero/members.jpg'}
-          title={settings.heroes?.members?.title || 'Our Team'}
-          subtitle={settings.heroes?.members?.subtitle || 'Meet the people who make ASCA happen'}
+          image={settings.heroes?.members?.image || '/images/gallery/activity.jpg'}
+          title={settings.heroes?.members?.title || 'Meet ASCA'}
+          subtitle={settings.heroes?.members?.subtitle || 'We ride to inspire those that thought it wasn\'t possible is now possible.'}
         />
+
+        {/* Inspirational Copy */}
+        <section className="py-16 bg-brand-bg-subtle">
+          <div className="container max-w-3xl text-center">
+            <p className="section-label">Our Community</p>
+            <h2 className="section-title">We Inspire</h2>
+            <p className="text-lg text-brand-fg-secondary leading-relaxed">
+              We inspire a culture both young &amp; old; rich &amp; poor; black &amp; white; that we can be more
+              than what is expected of us. We ride to inspire those that thought it wasn&apos;t possible is now possible.
+            </p>
+            <div className="mt-10 grid grid-cols-2 gap-4">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
+                <Image
+                  src="/images/gallery/activity.jpg"
+                  alt="ASCA activity"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 50vw, 33vw"
+                />
+              </div>
+              <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
+                <Image
+                  src="/images/gallery/event.jpg"
+                  alt="ASCA event"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 50vw, 33vw"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
 
         {Object.entries(membersByRole).map(([role, groupMembers]: [string, any]) => (
           <section key={role} className="py-20">

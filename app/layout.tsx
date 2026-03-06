@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: '/favicon.ico',
-    apple: '/icons/icon-192.png',
+    apple: '/images/asca/logo.png',
   },
   other: {
     'mobile-web-app-capable': 'yes',
@@ -61,8 +61,8 @@ export default function RootLayout({
             --brand-fg-on-soft: #2b2521;
             --brand-border-subtle: rgba(111, 97, 84, 0.18);
             --brand-border-strong: #d2c4ad;
-            --brand-accent: #e7bc47;
-            --brand-accent-muted: #f0c65d;
+            --brand-accent: #e6d543;
+            --brand-accent-muted: #f0d95d;
             --brand-forest: #1f6b3a;
             --brand-forest-muted: #2f7c4c;
             --brand-danger: #d8514a;
@@ -77,7 +77,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="ASCA" />
         <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <link rel="apple-touch-icon" href="/images/asca/logo.png" />
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="bg-brand-bg-body text-brand-fg-primary font-sans">
