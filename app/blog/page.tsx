@@ -51,8 +51,16 @@ export default async function Blog() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12">
-                <p className="text-brand-fg-secondary">Blog posts coming soon.</p>
+              <div className="mt-12 max-w-3xl mx-auto">
+                <BlogCard
+                  title="Feeling good with Horses: Benefits of Equine Assisted Therapy"
+                  excerpt="Equine-Assisted Therapy (EAT) or equine-assisted learning or, the more well-known horseback riding, can be beneficial for people of all ages in numerous ways. Here's how you can benefit from the healing power of horses."
+                  author="Clariece Pinkney"
+                  date="2024"
+                  image="/images/gallery/blog-member.jpg"
+                  link="/blog"
+                  category="Wellness"
+                />
               </div>
             )}
           </div>
