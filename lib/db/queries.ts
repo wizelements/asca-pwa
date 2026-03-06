@@ -1,32 +1,34 @@
-import { MongoClient, Db, ObjectId } from 'mongodb';
+import { MongoClient, Db } from 'mongodb';
 
 let cachedDb: Db | null = null;
 
-async function connectToDatabase(): Promise<Db> {
+async function connectToDatabase(): Promise<Db | null> {
   if (cachedDb) {
     return cachedDb;
   }
 
   if (!process.env.MONGODB_URI) {
-    throw new Error('MONGODB_URI environment variable is not set');
+    return null;
   }
 
-  const client = new MongoClient(process.env.MONGODB_URI);
-  await client.connect();
-  cachedDb = client.db('asca-pwa');
-  return cachedDb;
+  try {
+    const client = new MongoClient(process.env.MONGODB_URI);
+    await client.connect();
+    cachedDb = client.db('asca-pwa');
+    return cachedDb;
+  } catch {
+    return null;
+  }
 }
 
 // Settings
 export async function getSettings() {
+  const db = await connectToDatabase();
+  if (!db) return getDefaultSettings();
   try {
-    const db = await connectToDatabase();
-    const settings = await db
-      .collection('Settings')
-      .findOne({});
+    const settings = await db.collection('Settings').findOne({});
     return settings || getDefaultSettings();
-  } catch (error) {
-    console.error('Error fetching settings:', error);
+  } catch {
     return getDefaultSettings();
   }
 }
@@ -68,7 +70,7 @@ function getDefaultSettings() {
       },
       calendar: {
         image: '/images/hero/calendar.jpg',
-        title: 'Events Calendar',
+        title: 'Calendar of Events',
         subtitle: 'Join us for exciting activities and community events',
       },
       blog: {
@@ -92,14 +94,12 @@ function getDefaultSettings() {
 
 // Theme
 export async function getTheme() {
+  const db = await connectToDatabase();
+  if (!db) return getDefaultTheme();
   try {
-    const db = await connectToDatabase();
-    const theme = await db
-      .collection('Theme')
-      .findOne({});
+    const theme = await db.collection('Theme').findOne({});
     return theme || getDefaultTheme();
-  } catch (error) {
-    console.error('Error fetching theme:', error);
+  } catch {
     return getDefaultTheme();
   }
 }
@@ -115,10 +115,55 @@ function getDefaultTheme() {
   };
 }
 
+// Static fallback data
+const staticBlogPost = {
+  _id: 'static-1',
+  title: 'Feeling good with Horses: Benefits of Equine Assisted Therapy',
+  slug: 'benefits-of-equine-assisted-therapy',
+  excerpt: 'Equine-Assisted Therapy (EAT) or equine-assisted learning or, the more well-known horseback riding, can be beneficial for people of all ages in numerous ways. Here\'s how you can benefit from the healing power of horses.',
+  content: `Equine-assisted therapy encompasses a range of treatments that involve activities with horses and other equines to promote human physical and mental health.
+
+Equine-Assisted Therapy (EAT) or equine-assisted learning or, the more well-known horseback riding, can be beneficial for people of all ages in numerous ways.
+
+Here are some of the benefits:
+
+**Physical Benefits:**
+- Improved balance, coordination, and motor skills
+- Strengthened core muscles
+- Better posture and flexibility
+
+**Emotional Benefits:**
+- Reduced anxiety and stress
+- Increased self-confidence and self-esteem
+- Enhanced emotional awareness
+
+**Social Benefits:**
+- Improved communication skills
+- Better teamwork and cooperation
+- Increased empathy and trust
+
+Horses are very sensitive and pick up on others' emotions quickly, and they accurately reflect these feelings back to the student. This creates a feedback loop that allows the student to learn new positive ways of thinking and being.`,
+  author: 'Clariece Pinkney',
+  image: '/images/gallery/blog-member.jpg',
+  category: 'Wellness',
+  published: true,
+  publishedAt: new Date('2024-01-15'),
+};
+
+const staticGalleryImages = [
+  { _id: 'g1', title: 'Our Horses', image: '/images/gallery/horse-closeup.jpg', description: 'Beautiful horses at ASCA', category: 'Horses' },
+  { _id: 'g2', title: 'Trail Rides', image: '/images/gallery/rider.jpg', description: 'ASCA members on the trail', category: 'Trail Rides' },
+  { _id: 'g3', title: 'Community', image: '/images/gallery/blog-member.jpg', description: 'ASCA community activities', category: 'Community' },
+  { _id: 'g4', title: 'Activities', image: '/images/gallery/activity.jpg', description: 'Trail riding activities', category: 'Activities' },
+  { _id: 'g5', title: 'Events', image: '/images/gallery/event.jpg', description: 'ASCA community event', category: 'Events' },
+  { _id: 'g6', title: 'Members', image: '/images/members/member-1.jpg', description: 'ASCA members', category: 'Members' },
+];
+
 // Events
 export async function getUpcomingEvents(limit = 6) {
+  const db = await connectToDatabase();
+  if (!db) return [];
   try {
-    const db = await connectToDatabase();
     const now = new Date();
     const events = await db
       .collection('Events')
@@ -127,15 +172,15 @@ export async function getUpcomingEvents(limit = 6) {
       .limit(limit)
       .toArray();
     return events;
-  } catch (error) {
-    console.error('Error fetching events:', error);
+  } catch {
     return [];
   }
 }
 
 export async function getAllEvents() {
+  const db = await connectToDatabase();
+  if (!db) return [];
   try {
-    const db = await connectToDatabase();
     const now = new Date();
     const events = await db
       .collection('Events')
@@ -143,16 +188,16 @@ export async function getAllEvents() {
       .sort({ date: 1 })
       .toArray();
     return events;
-  } catch (error) {
-    console.error('Error fetching all events:', error);
+  } catch {
     return [];
   }
 }
 
 // Members
 export async function getMembers(role?: string) {
+  const db = await connectToDatabase();
+  if (!db) return [];
   try {
-    const db = await connectToDatabase();
     const query = role ? { role } : {};
     const members = await db
       .collection('Members')
@@ -160,60 +205,62 @@ export async function getMembers(role?: string) {
       .sort({ name: 1 })
       .toArray();
     return members;
-  } catch (error) {
-    console.error('Error fetching members:', error);
+  } catch {
     return [];
   }
 }
 
 // Blog Posts
 export async function getBlogPosts(limit = 5) {
+  const db = await connectToDatabase();
+  if (!db) return [staticBlogPost];
   try {
-    const db = await connectToDatabase();
     const posts = await db
       .collection('BlogPosts')
       .find({ published: true })
       .sort({ publishedAt: -1 })
       .limit(limit)
       .toArray();
-    return posts;
-  } catch (error) {
-    console.error('Error fetching blog posts:', error);
-    return [];
+    return posts.length > 0 ? posts : [staticBlogPost];
+  } catch {
+    return [staticBlogPost];
   }
 }
 
 export async function getSingleBlogPost(slug: string) {
+  const db = await connectToDatabase();
+  if (!db) {
+    return slug === staticBlogPost.slug ? staticBlogPost : null;
+  }
   try {
-    const db = await connectToDatabase();
-    const post = await db
-      .collection('BlogPosts')
-      .findOne({ slug });
-    return post;
-  } catch (error) {
-    console.error('Error fetching blog post:', error);
-    return null;
+    const post = await db.collection('BlogPosts').findOne({ slug });
+    return post || (slug === staticBlogPost.slug ? staticBlogPost : null);
+  } catch {
+    return slug === staticBlogPost.slug ? staticBlogPost : null;
   }
 }
 
 // Gallery
 export async function getGalleryImages(category?: string) {
+  const db = await connectToDatabase();
+  if (!db) {
+    return category
+      ? staticGalleryImages.filter((img) => img.category === category)
+      : staticGalleryImages;
+  }
   try {
-    const db = await connectToDatabase();
     const query = category ? { category } : {};
     const images = await db
       .collection('GalleryImages')
       .find(query)
       .sort({ uploadedAt: -1 })
       .toArray();
-    return images;
-  } catch (error) {
-    console.error('Error fetching gallery:', error);
-    return [];
+    return images.length > 0 ? images : staticGalleryImages;
+  } catch {
+    return staticGalleryImages;
   }
 }
 
-// Alias for getGalleryImages
 export async function getGallery(category?: string) {
   return getGalleryImages(category);
 }
@@ -223,16 +270,15 @@ export async function saveFormSubmission(
   type: string,
   data: Record<string, string>
 ) {
-  try {
-    const db = await connectToDatabase();
-    await db.collection('FormSubmissions').insertOne({
-      type,
-      data,
-      submittedAt: new Date(),
-      status: 'new',
-    });
-  } catch (error) {
-    console.error('Error saving form submission:', error);
-    throw error;
+  const db = await connectToDatabase();
+  if (!db) {
+    console.warn('No database connection — form submission not saved');
+    return;
   }
+  await db.collection('FormSubmissions').insertOne({
+    type,
+    data,
+    submittedAt: new Date(),
+    status: 'new',
+  });
 }
