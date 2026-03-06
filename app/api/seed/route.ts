@@ -5,7 +5,8 @@ export async function POST(request: Request) {
   const { searchParams } = new URL(request.url);
   const key = searchParams.get('key');
 
-  if (key !== process.env.NEXTAUTH_SECRET) {
+  const validKey = process.env.SEED_KEY || process.env.NEXTAUTH_SECRET;
+  if (!validKey || key !== validKey) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

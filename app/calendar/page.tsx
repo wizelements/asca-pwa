@@ -39,7 +39,7 @@ export default async function Calendar() {
       <main>
         <Hero
           image={settings.heroes?.calendar?.image || '/images/hero/calendar.jpg'}
-          title={settings.heroes?.calendar?.title || 'Events Calendar'}
+          title={settings.heroes?.calendar?.title || 'Calendar of Events'}
           subtitle={settings.heroes?.calendar?.subtitle || 'Join us for exciting activities and community events'}
         />
 
