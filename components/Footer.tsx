@@ -175,7 +175,9 @@ export default function Footer() {
             </div>
 
             <div className="mt-8">
-              <Image src="/images/asca/logo.png" alt="ASCA Logo" width={80} height={66} className="opacity-80" />
+              <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-brand-forest p-2 shadow-sm">
+                <Image src="/images/asca/logo.png" alt="ASCA Logo" width={80} height={66} className="h-full w-auto" />
+              </span>
             </div>
           </div>
         </div>

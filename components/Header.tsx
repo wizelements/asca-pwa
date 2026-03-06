@@ -51,15 +51,20 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-brand-border-subtle bg-brand-bg-body/90 backdrop-blur">
       <nav className="container flex items-center justify-between py-4">
-        <Link href="/" className="flex items-center gap-3 font-display text-lg tracking-[0.3em] text-brand-fg-primary">
-          <Image
-            src="/images/asca/logo.png"
-            alt="ASCA Logo"
-            height={40}
-            width={40}
-            className="h-10 w-auto"
-          />
-          <span className="hidden text-xs uppercase text-brand-fg-muted md:inline">Atlanta Saddle Club</span>
+        <Link href="/" className="flex items-center gap-3">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-forest p-1.5 shadow-sm">
+            <Image
+              src="/images/asca/logo.png"
+              alt="ASCA Logo"
+              height={48}
+              width={48}
+              className="h-full w-auto"
+            />
+          </span>
+          <span className="hidden flex-col md:flex">
+            <span className="font-display text-sm font-bold tracking-[0.15em] text-brand-fg-primary">ASCA</span>
+            <span className="text-[10px] uppercase tracking-[0.1em] text-brand-fg-muted">Atlanta Saddle Club</span>
+          </span>
         </Link>
 
         <ul className="hidden items-center gap-6 text-sm uppercase tracking-[0.2em] text-brand-fg-secondary lg:flex">
