@@ -6,7 +6,7 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#f7f3ea",
+  "background_color": "#ffffff",
   "theme_color": "#e6d543",
   "categories": ["community", "events", "sports"],
   "icons": [
@@ -56,7 +56,7 @@
       "name": "View Events",
       "short_name": "Events",
       "description": "See upcoming ASCA events",
-      "url": "/calendar",
+      "url": "/where-to-find-us",
       "icons": [
         {
           "src": "/icons/shortcuts/calendar-96.png",
@@ -95,7 +95,7 @@
       "name": "Donate",
       "short_name": "Donate",
       "description": "Support ASCA's mission",
-      "url": "/donate",
+      "url": "/support-asca",
       "icons": [
         {
           "src": "/icons/shortcuts/donate-96.png",

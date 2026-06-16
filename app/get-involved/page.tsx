@@ -1,208 +1,133 @@
-'use client';
-
-import { useState, useEffect } from 'react';
+import type { Metadata } from 'next';
+import Link from 'next/link';
 import Hero from '@/components/Hero';
-import FormInput from '@/components/Forms/FormInput';
-import FormTextarea from '@/components/Forms/FormTextarea';
-import FormButton from '@/components/Forms/FormButton';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { MEMBERSHIP_APPLICATION_URL } from '@/lib/content/site';
 
-interface Settings {
-  siteName?: string;
-  contactEmail?: string;
-  theme?: {
-    colors?: {
-      primary?: string;
-      secondary?: string;
-      accent?: string;
-      neutral?: string;
-    };
-  };
+export const metadata: Metadata = {
+  title: 'Get Involved',
+  description:
+    "There's a place for everyone at the Atlanta Saddle Club Association — become a member, attend an event, volunteer, or partner with us.",
+};
+
+interface InvolveCard {
+  title: string;
+  body: string;
+  cta: string;
+  href: string;
+  external?: boolean;
 }
 
+const CARDS: InvolveCard[] = [
+  {
+    title: 'Become a Member',
+    body: 'Join a network of horse enthusiasts who share a passion for riding, learning, service, and fellowship.',
+    cta: 'ASCA Membership Application',
+    href: MEMBERSHIP_APPLICATION_URL,
+    external: true,
+  },
+  {
+    title: 'Attend an Event',
+    body: 'From trail rides and educational programs to community outreach and special events, there are many opportunities to participate throughout the year.',
+    cta: 'Where to Find Us',
+    href: '/where-to-find-us',
+  },
+  {
+    title: 'Volunteer',
+    body: 'Help support our events, youth programs, fundraising efforts, and community service projects.',
+    cta: 'Contact Us',
+    href: '/#contact',
+  },
+  {
+    title: 'Partner With Us',
+    body: 'Businesses, organizations, and community leaders can support our mission through sponsorships and partnerships.',
+    cta: 'Support ASCA',
+    href: '/support-asca',
+  },
+];
+
 export default function GetInvolved() {
-  const [settings, setSettings] = useState<Settings>({});
-  const [activeTab, setActiveTab] = useState<'contact' | 'membership' | 'volunteer' | 'application'>('application');
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    fetch('/api/settings')
-      .then(res => res.json())
-      .then(data => setSettings(data))
-      .catch(console.error);
-  }, []);
-
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    message: '',
-    phone: '',
-    role: 'rider',
-    experience: 'beginner',
-    interests: '',
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage('');
-
-    try {
-      const response = await fetch('/api/forms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: activeTab,
-          data: formData,
-        }),
-      });
-
-      if (response.ok) {
-        setMessage('Thank you! We received your submission and will be in touch soon.');
-        setFormData({
-          name: '',
-          email: '',
-          message: '',
-          phone: '',
-          role: 'rider',
-          experience: 'beginner',
-          interests: '',
-        });
-      } else {
-        setMessage('Something went wrong. Please try again.');
-      }
-    } catch (error) {
-      console.error('Form submission error:', error);
-      setMessage('Error submitting form. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <>
-      <style>{`
-        :root {
-          --color-primary: ${settings.theme?.colors?.primary || '#1a1a1a'};
-          --color-secondary: ${settings.theme?.colors?.secondary || '#4a4b02'};
-          --color-accent: ${settings.theme?.colors?.accent || '#f5d800'};
-          --color-neutral: ${settings.theme?.colors?.neutral || '#ffffff'};
-        }
-      `}</style>
       <Header />
       <main>
         <Hero
           image="/images/hero/involved.jpg"
           title="Get Involved"
-          subtitle="Join our equestrian community"
+          subtitle="Join our equestrian community — there's a place for everyone."
         />
 
-        <section className="py-20">
-          <div className="container max-w-3xl">
-            <div className="mb-10 text-center">
-              <p className="section-label">Connect</p>
-              <h2 className="section-title">Get Involved With ASCA</h2>
-              <p className="mx-auto mt-4 max-w-2xl text-sm text-brand-fg-secondary">
-                Send us a note, apply for membership, or volunteer to serve alongside the ASCA community.
-              </p>
-            </div>
+        {/* Opening */}
+        <section className="py-16">
+          <div className="container max-w-3xl text-center">
+            <p className="section-label">Connect</p>
+            <h2 className="section-title">Ways to Take Part</h2>
+            <p className="text-lg leading-relaxed text-brand-fg-secondary">
+              There&apos;s a place for everyone at the Atlanta Saddle Club Association. Whether you&apos;re an
+              experienced rider, new to horses, looking to volunteer, or simply interested in becoming part of a
+              welcoming community, we&apos;d love to meet you.
+            </p>
+          </div>
+        </section>
 
-            <div className="flex flex-wrap justify-center gap-3 rounded-full border border-brand-border-subtle bg-brand-bg-soft px-3 py-2">
-              {(['contact', 'membership', 'volunteer', 'application'] as const).map(tab => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`rounded-full px-5 py-2 text-xs uppercase tracking-[0.2em] transition-colors ${
-                    activeTab === tab
-                      ? 'bg-brand-forest text-white'
-                      : 'text-brand-fg-secondary hover:text-brand-forest'
-                  }`}
-                >
-                  {tab === 'contact' ? 'Contact Us' : tab === 'membership' ? 'Join' : tab === 'volunteer' ? 'Volunteer' : 'Apply Now'}
-                </button>
+        {/* Pathway cards */}
+        <section className="pb-8">
+          <div className="container">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {CARDS.map((card) => (
+                <div key={card.title} className="card flex flex-col">
+                  <h3 className="text-xl font-bold text-brand-fg-primary">{card.title}</h3>
+                  <p className="mt-3 flex-1 text-brand-fg-secondary">{card.body}</p>
+                  {card.external ? (
+                    <a
+                      href={card.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-primary mt-6 inline-flex self-start text-xs"
+                    >
+                      {card.cta}
+                    </a>
+                  ) : (
+                    <Link href={card.href} className="btn-primary mt-6 inline-flex self-start text-xs">
+                      {card.cta}
+                    </Link>
+                  )}
+                </div>
               ))}
             </div>
+          </div>
+        </section>
 
-            {/* JotForm Membership Application */}
-            {activeTab === 'application' && (
-              <div className="mt-10 rounded-2xl border border-brand-border-subtle bg-brand-bg-elevated/80 p-4 shadow-sm overflow-hidden">
-                <h3 className="text-lg font-bold font-display text-brand-fg-primary mb-4 text-center">ASCA Membership Application</h3>
-                <iframe
-                  src="https://form.jotform.com/TheRealASCA/MembershipApplication"
-                  title="ASCA Membership Application"
-                  width="100%"
-                  height="800"
-                  style={{ border: 'none', minHeight: '800px' }}
-                  allowFullScreen
-                />
-              </div>
-            )}
+        {/* Membership application embed */}
+        <section className="py-16">
+          <div className="container max-w-3xl">
+            <div className="rounded-2xl border border-brand-border-subtle bg-brand-bg-elevated p-4 shadow-sm">
+              <h2 className="mb-4 text-center text-xl font-bold font-display text-brand-fg-primary">
+                ASCA Membership Application
+              </h2>
+              <iframe
+                src={MEMBERSHIP_APPLICATION_URL}
+                title="ASCA Membership Application"
+                width="100%"
+                height="800"
+                style={{ border: 'none', minHeight: '800px' }}
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </section>
 
-            {/* Standard Forms */}
-            {activeTab !== 'application' && (
-              <form onSubmit={handleSubmit} className="mt-10 rounded-2xl border border-brand-border-subtle bg-brand-bg-elevated/80 p-8 shadow-sm backdrop-blur">
-                {message && (
-                  <div
-                    className={`mb-6 rounded-lg px-4 py-3 text-center text-sm ${
-                      message.includes('Thank') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
-                    }`}
-                  >
-                    {message}
-                  </div>
-                )}
-
-                {activeTab === 'contact' && (
-                  <>
-                    <FormInput label="Name" name="name" value={formData.name} onChange={handleChange} required />
-                    <FormInput label="Email" name="email" type="email" value={formData.email} onChange={handleChange} required />
-                    <FormInput label="Phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} />
-                    <FormTextarea label="Message" name="message" value={formData.message} onChange={handleChange} required />
-                  </>
-                )}
-
-                {activeTab === 'membership' && (
-                  <>
-                    <FormInput label="Full Name" name="name" value={formData.name} onChange={handleChange} required />
-                    <FormInput label="Email" name="email" type="email" value={formData.email} onChange={handleChange} required />
-                    <FormInput label="Phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} required />
-                    <div className="mb-4">
-                      <label htmlFor="role" className="input-label">What best describes you?</label>
-                      <select id="role" name="role" value={formData.role} onChange={handleChange} className="input-field">
-                        <option value="rider">Rider</option>
-                        <option value="volunteer">Volunteer</option>
-                        <option value="instructor">Instructor</option>
-                        <option value="other">Other</option>
-                      </select>
-                    </div>
-                    <FormTextarea label="Tell us about your riding experience" name="experience" value={formData.experience} onChange={handleChange} />
-                  </>
-                )}
-
-                {activeTab === 'volunteer' && (
-                  <>
-                    <FormInput label="Name" name="name" value={formData.name} onChange={handleChange} required />
-                    <FormInput label="Email" name="email" type="email" value={formData.email} onChange={handleChange} required />
-                    <FormInput label="Phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} required />
-                    <FormTextarea label="What areas are you interested in helping with?" name="interests" value={formData.interests} onChange={handleChange} required />
-                  </>
-                )}
-
-                <FormButton loading={loading}>
-                  {activeTab === 'contact'
-                    ? 'Send Message'
-                    : activeTab === 'membership'
-                    ? 'Apply for Membership'
-                    : 'Sign Up to Volunteer'}
-                </FormButton>
-              </form>
-            )}
+        {/* Closing */}
+        <section className="bg-brand-bg-subtle py-12">
+          <div className="container max-w-2xl text-center">
+            <p className="text-lg text-brand-fg-secondary">
+              Ready to get started? Complete our membership application or{' '}
+              <Link href="/#contact" className="font-semibold text-brand-forest hover:text-brand-forest-muted">
+                contact us
+              </Link>{' '}
+              to learn more.
+            </p>
           </div>
         </section>
       </main>

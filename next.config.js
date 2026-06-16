@@ -17,6 +17,18 @@ const nextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 365, // 1 year
   },
 
+  // Redirects from old/renamed routes to canonical destinations
+  redirects: async () => {
+    return [
+      { source: '/blog', destination: '/gallery', permanent: true },
+      { source: '/blog/:slug', destination: '/gallery', permanent: true },
+      { source: '/calendar', destination: '/where-to-find-us', permanent: true },
+      { source: '/calendar-of-events', destination: '/where-to-find-us', permanent: true },
+      { source: '/donate', destination: '/support-asca', permanent: true },
+      { source: '/visit', destination: '/#connect', permanent: true },
+    ];
+  },
+
   // Headers for PWA and caching
   headers: async () => {
     return [

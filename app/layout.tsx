@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Poppins, Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
@@ -25,7 +25,6 @@ export const metadata: Metadata = {
     template: '%s | ASCA',
   },
   description: 'Atlanta Saddle Club Association (ASCA) — Atlanta\'s premiere saddle club promoting positive horsemanship, trail rides, riding lessons, and community.',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover',
   manifest: '/manifest.json',
   metadataBase: new URL('https://asca-pwa.vercel.app'),
   openGraph: {
@@ -54,8 +53,15 @@ export const metadata: Metadata = {
   other: {
     'mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-capable': 'yes',
-    'theme-color': '#e6d543',
   },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: 'cover',
+  themeColor: '#e6d543',
 }
 
 export default function RootLayout({
@@ -68,9 +74,9 @@ export default function RootLayout({
       <head>
         <style>{`
           :root {
-            --brand-bg-body: #f7f3ea;
+            --brand-bg-body: #ffffff;
             --brand-bg-elevated: #ffffff;
-            --brand-bg-subtle: #f0e9dd;
+            --brand-bg-subtle: #f6f3ec;
             --brand-bg-soft: #ece3d3;
             --brand-bg-soft-alt: #e3dac9;
             --brand-fg-primary: #1f1f1f;
