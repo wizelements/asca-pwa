@@ -8,9 +8,9 @@
     "start": "next start",
     "lint": "eslint . --ext ts,tsx",
     "type-check": "tsc --noEmit",
-    "db:migrate": "node scripts/migrate.js",
-    "db:seed": "node scripts/seed.js",
-    "db:seed-complete": "node scripts/seed-complete.js"
+    "db:check": "drizzle-kit check --config=drizzle.config.ts",
+    "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
+    "db:migrate": "drizzle-kit push --config=drizzle.config.ts"
   },
   "dependencies": {
     "next": "^15.0.0",
@@ -24,7 +24,7 @@
     "@libsql/client": "^0.14.0",
     "clsx": "^2.0.0",
     "dotenv": "^16.3.1",
-    "drizzle-orm": "^0.33.0",
+    "drizzle-orm": "^0.45.2",
     "drizzle-kit": "^0.27.1",
     "firebase": "^10.6.0",
     "framer-motion": "^10.16.0",

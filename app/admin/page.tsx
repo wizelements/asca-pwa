@@ -196,9 +196,7 @@ export default function AdminDashboard() {
       <div className="bg-brand-bg-elevated rounded-xl shadow-sm border border-brand-border-subtle p-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-brand-fg-primary">Recent Activity</h2>
-          <Link href="/admin/activity" className="text-sm font-medium text-brand-forest hover:underline">
-            View All →
-          </Link>
+          <span className="text-sm font-medium text-brand-fg-muted">Latest 5</span>
         </div>
 
         {recentActivity.length > 0 ? (
@@ -228,7 +226,7 @@ export default function AdminDashboard() {
       <div className="rounded-xl bg-gradient-to-r from-brand-forest to-brand-forest-muted p-8 text-white border border-brand-forest/30">
         <h3 className="text-lg font-bold mb-2">Welcome to ASCA Admin</h3>
         <p className="text-sm opacity-90">
-          All changes are saved to MongoDB and reflected on the public site instantly. Your service worker ensures the app works offline too.
+          All changes are saved to Turso and reflected on the public site instantly. Your service worker ensures the app works offline too.
         </p>
       </div>
     </div>

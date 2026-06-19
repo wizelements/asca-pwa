@@ -10,6 +10,12 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
+  const pathname = usePathname();
+
+  if (pathname === '/admin/login') {
+    return <>{children}</>;
+  }
+
   return (
     <AdminGuard>
       <LayoutInner>{children}</LayoutInner>

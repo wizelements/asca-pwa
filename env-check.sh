@@ -34,7 +34,8 @@ check_var() {
 }
 
 # Required variables
-check_var "MONGODB_URI"
+check_var "TURSO_DATABASE_URL"
+check_var "TURSO_AUTH_TOKEN"
 check_var "NEXTAUTH_SECRET"
 check_var "NEXTAUTH_URL"
 

@@ -12,6 +12,8 @@ import {
 
 export async function GET(request: NextRequest) {
   try {
+    await requireAuth(request);
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     const activeParam = searchParams.get('active');
@@ -27,8 +29,11 @@ export async function GET(request: NextRequest) {
     const active = activeParam !== null ? activeParam === 'true' : undefined;
     const members = await getMembers(active);
     return NextResponse.json(members);
-  } catch (error) {
+  } catch (error: any) {
     console.error('[MEMBERS GET]', error);
+    if (error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json(
       { error: 'Failed to fetch members' },
       { status: 500 }
