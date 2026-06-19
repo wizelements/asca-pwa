@@ -1,284 +1,790 @@
-import { MongoClient, Db } from 'mongodb';
+import { getDb } from '@/lib/db';
 
-let cachedDb: Db | null = null;
+export type Role = 'admin' | 'editor' | 'viewer';
 
-async function connectToDatabase(): Promise<Db | null> {
-  if (cachedDb) {
-    return cachedDb;
-  }
+export interface Social {
+  facebook?: string;
+  instagram?: string;
+  twitter?: string;
+  youtube?: string;
+}
 
-  if (!process.env.MONGODB_URI) {
-    return null;
-  }
+export interface Venmo {
+  username?: string;
+  presets?: number[];
+}
 
+export interface Hero {
+  image?: string;
+  title?: string;
+  subtitle?: string;
+  cta?: { text: string; link: string };
+}
+
+export interface Settings {
+  id: number;
+  siteName: string;
+  siteDescription: string;
+  tagline: string;
+  contactEmail: string;
+  phone: string;
+  address: string;
+  social: Social;
+  venmo: Venmo;
+  cashApp: string;
+  heroes: Record<string, Hero>;
+  notificationsEnabled: boolean;
+  maintenanceMode: boolean;
+  updatedAt?: Date;
+}
+
+export interface Theme {
+  id: number;
+  colors: {
+    primary: string;
+    secondary: string;
+    accent: string;
+    neutral: string;
+  };
+  fonts: {
+    sans: string;
+    serif: string;
+  };
+  logo: string;
+  favicon: string;
+  updatedAt?: Date;
+}
+
+export interface User {
+  id: number;
+  email: string;
+  password: string;
+  name?: string;
+  role: Role;
+  isActive: boolean;
+  lastLogin?: Date;
+  createdAt?: Date;
+}
+
+export interface Event {
+  id: number;
+  title: string;
+  description: string;
+  date: Date;
+  endDate: Date;
+  location: string;
+  imageUrl?: string;
+  imageAlt: string;
+  capacity?: number;
+  registrationDeadline?: Date;
+  rsvpList: string[];
+  category: string;
+  published: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface Member {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  bio?: string;
+  photo?: string;
+  roles: string[];
+  isActive: boolean;
+  isVerified: boolean;
+  joinDate?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface BlogPost {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt?: string;
+  content: string;
+  author: string;
+  image?: string;
+  category: string;
+  published: boolean;
+  viewCount: number;
+  publishedAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface GalleryImage {
+  id: number;
+  title: string;
+  description?: string;
+  category: string;
+  image: string;
+  alt: string;
+  uploadedAt?: Date;
+}
+
+export interface FormSubmission {
+  id: number;
+  type: string;
+  data: Record<string, string>;
+  status: 'new' | 'replied' | 'resolved';
+  submittedAt?: Date;
+}
+
+function parseJson<T>(value: string | null | undefined, fallback: T): T {
+  if (!value) return fallback;
   try {
-    const client = new MongoClient(process.env.MONGODB_URI);
-    await client.connect();
-    cachedDb = client.db('asca-pwa');
-    return cachedDb;
+    return JSON.parse(value) as T;
   } catch {
-    return null;
+    return fallback;
   }
 }
 
-// Settings
-export async function getSettings() {
-  const db = await connectToDatabase();
-  if (!db) return getDefaultSettings();
-  try {
-    const settings = await db.collection('Settings').findOne({});
-    return settings || getDefaultSettings();
-  } catch {
-    return getDefaultSettings();
-  }
-}
-
-function getDefaultSettings() {
+function rowToSettings(row: any): Settings {
   return {
-    siteName: 'Atlanta Saddle Club Association',
-    siteDescription: 'We Ride To Inspire',
-    tagline: 'Promoting horsemanship, sportsmanship, and community',
-    contactEmail: 'info@atlantasaddleclub.org',
-    phone: '(404) 555-0123',
-    address: 'Atlanta, Georgia',
-    social: {
-      facebook: 'https://www.facebook.com/TheRealASCA',
-      instagram: 'https://www.instagram.com/therealasca/',
-      twitter: 'https://twitter.com/TheRealASCA',
-    },
-    venmo: {
-      username: '@therealasca1',
-      presets: [10, 25, 50, 100],
-    },
-    cashApp: '$therealasca1',
-    heroes: {
-      home: {
-        image: '/images/hero/home.jpg',
-        title: 'We Ride To Inspire',
-        subtitle: 'Promoting horsemanship, sportsmanship, and community',
-        cta: { text: 'Get Involved', link: '/get-involved' },
-      },
-      about: {
-        image: '/images/hero/about.jpg',
-        title: 'About ASCA',
-        subtitle: 'Atlanta\'s premiere saddle club. We exist to promote positive horsemanship within the community.',
-      },
-      members: {
-        image: '/images/gallery/activity.jpg',
-        title: 'Meet ASCA',
-        subtitle: 'We ride to inspire those that thought it wasn\'t possible is now possible.',
-      },
-      calendar: {
-        image: '/images/hero/calendar.jpg',
-        title: 'Calendar of Events',
-        subtitle: 'Join us for exciting activities and community events',
-      },
-      blog: {
-        image: '/images/hero/blog.jpg',
-        title: 'Blog',
-        subtitle: 'Stories, tips, and updates from the ASCA community',
-      },
-      donate: {
-        image: '/images/hero/donate.jpg',
-        title: 'Support ASCA',
-        subtitle: 'Make a difference in our community',
-      },
-      involved: {
-        image: '/images/hero/involved.jpg',
-        title: 'Get Involved',
-        subtitle: 'Join our equestrian community',
-      },
-    },
+    id: row.id,
+    siteName: row.site_name,
+    siteDescription: row.site_description,
+    tagline: row.tagline,
+    contactEmail: row.contact_email,
+    phone: row.phone,
+    address: row.address,
+    social: parseJson<Social>(row.social, {}),
+    venmo: parseJson<Venmo>(row.venmo, {}),
+    cashApp: row.cash_app,
+    heroes: parseJson<Record<string, Hero>>(row.heroes, {}),
+    notificationsEnabled: Boolean(row.notifications_enabled),
+    maintenanceMode: Boolean(row.maintenance_mode),
+    updatedAt: row.updated_at ? new Date(row.updated_at * 1000) : undefined,
   };
 }
 
-// Theme
-export async function getTheme() {
-  const db = await connectToDatabase();
-  if (!db) return getDefaultTheme();
-  try {
-    const theme = await db.collection('Theme').findOne({});
-    return theme || getDefaultTheme();
-  } catch {
-    return getDefaultTheme();
-  }
-}
-
-function getDefaultTheme() {
+function rowToTheme(row: any): Theme {
   return {
-    colors: {
-      primary: '#1a1a1a',
-      secondary: '#4a4b02',
-      accent: '#f5d800',
-      neutral: '#ffffff',
-    },
+    id: row.id,
+    colors: parseJson(row.colors, { primary: '#1a1a1a', secondary: '#4a4b02', accent: '#f5d800', neutral: '#ffffff' }),
+    fonts: parseJson(row.fonts, { sans: 'system-ui', serif: 'Georgia' }),
+    logo: row.logo,
+    favicon: row.favicon,
+    updatedAt: row.updated_at ? new Date(row.updated_at * 1000) : undefined,
   };
 }
 
-// Static fallback data
-const staticBlogPost = {
-  _id: 'static-1',
-  title: 'Feeling good with Horses: Benefits of Equine Assisted Therapy',
-  slug: 'benefits-of-equine-assisted-therapy',
-  excerpt: 'Equine-Assisted Therapy (EAT) or equine-assisted learning or, the more well-known horseback riding, can be beneficial for people of all ages in numerous ways. Here\'s how you can benefit from the healing power of horses.',
-  content: `Equine-assisted therapy encompasses a range of treatments that involve activities with horses and other equines to promote human physical and mental health.
-
-Equine-Assisted Therapy (EAT) or equine-assisted learning or, the more well-known horseback riding, can be beneficial for people of all ages in numerous ways.
-
-Here are some of the benefits:
-
-**Physical Benefits:**
-- Improved balance, coordination, and motor skills
-- Strengthened core muscles
-- Better posture and flexibility
-
-**Emotional Benefits:**
-- Reduced anxiety and stress
-- Increased self-confidence and self-esteem
-- Enhanced emotional awareness
-
-**Social Benefits:**
-- Improved communication skills
-- Better teamwork and cooperation
-- Increased empathy and trust
-
-Horses are very sensitive and pick up on others' emotions quickly, and they accurately reflect these feelings back to the student. This creates a feedback loop that allows the student to learn new positive ways of thinking and being.`,
-  author: 'Clariece Pinkney',
-  image: '/images/gallery/blog-member.jpg',
-  category: 'Wellness',
-  published: true,
-  publishedAt: new Date('2024-01-15'),
-};
-
-const staticGalleryImages = [
-  { _id: 'g1', title: 'Our Horses', image: '/images/gallery/horse-closeup.jpg', description: 'Beautiful horses at ASCA', category: 'Horses' },
-  { _id: 'g2', title: 'Trail Rides', image: '/images/gallery/rider.jpg', description: 'ASCA members on the trail', category: 'Trail Rides' },
-  { _id: 'g3', title: 'Community', image: '/images/gallery/blog-member.jpg', description: 'ASCA community activities', category: 'Community' },
-  { _id: 'g4', title: 'Activities', image: '/images/gallery/activity.jpg', description: 'Trail riding activities', category: 'Activities' },
-  { _id: 'g5', title: 'Events', image: '/images/gallery/event.jpg', description: 'ASCA community event', category: 'Events' },
-  { _id: 'g6', title: 'Members', image: '/images/members/member-1.jpg', description: 'ASCA members', category: 'Members' },
-];
-
-// Events
-export async function getUpcomingEvents(limit = 6) {
-  const db = await connectToDatabase();
-  if (!db) return [];
-  try {
-    const now = new Date();
-    const events = await db
-      .collection('Events')
-      .find({ date: { $gte: now }, published: true })
-      .sort({ date: 1 })
-      .limit(limit)
-      .toArray();
-    return events;
-  } catch {
-    return [];
-  }
+function rowToUser(row: any): User {
+  return {
+    id: row.id,
+    email: row.email,
+    password: row.password,
+    name: row.name,
+    role: row.role as Role,
+    isActive: Boolean(row.is_active),
+    lastLogin: row.last_login ? new Date(row.last_login * 1000) : undefined,
+    createdAt: row.created_at ? new Date(row.created_at * 1000) : undefined,
+  };
 }
 
-export async function getAllEvents() {
-  const db = await connectToDatabase();
-  if (!db) return [];
-  try {
-    const now = new Date();
-    const events = await db
-      .collection('Events')
-      .find({ date: { $gte: now }, published: true })
-      .sort({ date: 1 })
-      .toArray();
-    return events;
-  } catch {
-    return [];
-  }
+function rowToEvent(row: any): Event {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    date: new Date(row.date * 1000),
+    endDate: new Date(row.end_date * 1000),
+    location: row.location,
+    imageUrl: row.image_url,
+    imageAlt: row.image_alt,
+    capacity: row.capacity ?? undefined,
+    registrationDeadline: row.registration_deadline ? new Date(row.registration_deadline * 1000) : undefined,
+    rsvpList: parseJson<string[]>(row.rsvp_list, []),
+    category: row.category,
+    published: Boolean(row.published),
+    createdAt: row.created_at ? new Date(row.created_at * 1000) : undefined,
+    updatedAt: row.updated_at ? new Date(row.updated_at * 1000) : undefined,
+  };
 }
 
-// Members
-export async function getMembers(role?: string) {
-  const db = await connectToDatabase();
-  if (!db) return [];
-  try {
-    const query = role ? { role } : {};
-    const members = await db
-      .collection('Members')
-      .find(query)
-      .sort({ name: 1 })
-      .toArray();
-    return members;
-  } catch {
-    return [];
-  }
+function rowToMember(row: any): Member {
+  return {
+    id: row.id,
+    firstName: row.first_name,
+    lastName: row.last_name,
+    email: row.email,
+    bio: row.bio,
+    photo: row.photo,
+    roles: parseJson<string[]>(row.roles, []),
+    isActive: Boolean(row.is_active),
+    isVerified: Boolean(row.is_verified),
+    joinDate: row.join_date ? new Date(row.join_date * 1000) : undefined,
+    createdAt: row.created_at ? new Date(row.created_at * 1000) : undefined,
+    updatedAt: row.updated_at ? new Date(row.updated_at * 1000) : undefined,
+  };
 }
 
-// Blog Posts
-export async function getBlogPosts(limit = 5) {
-  const db = await connectToDatabase();
-  if (!db) return [staticBlogPost];
-  try {
-    const posts = await db
-      .collection('BlogPosts')
-      .find({ published: true })
-      .sort({ publishedAt: -1 })
-      .limit(limit)
-      .toArray();
-    return posts.length > 0 ? posts : [staticBlogPost];
-  } catch {
-    return [staticBlogPost];
-  }
+function rowToBlogPost(row: any): BlogPost {
+  return {
+    id: row.id,
+    title: row.title,
+    slug: row.slug,
+    excerpt: row.excerpt,
+    content: row.content,
+    author: row.author,
+    image: row.image,
+    category: row.category,
+    published: Boolean(row.published),
+    viewCount: row.view_count,
+    publishedAt: row.published_at ? new Date(row.published_at * 1000) : undefined,
+    createdAt: row.created_at ? new Date(row.created_at * 1000) : undefined,
+    updatedAt: row.updated_at ? new Date(row.updated_at * 1000) : undefined,
+  };
 }
 
-export async function getSingleBlogPost(slug: string) {
-  const db = await connectToDatabase();
-  if (!db) {
-    return slug === staticBlogPost.slug ? staticBlogPost : null;
-  }
-  try {
-    const post = await db.collection('BlogPosts').findOne({ slug });
-    return post || (slug === staticBlogPost.slug ? staticBlogPost : null);
-  } catch {
-    return slug === staticBlogPost.slug ? staticBlogPost : null;
-  }
+function rowToGalleryImage(row: any): GalleryImage {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    category: row.category,
+    image: row.image,
+    alt: row.alt,
+    uploadedAt: row.uploaded_at ? new Date(row.uploaded_at * 1000) : undefined,
+  };
 }
 
-// Gallery
-export async function getGalleryImages(category?: string) {
-  const db = await connectToDatabase();
-  if (!db) {
-    return category
-      ? staticGalleryImages.filter((img) => img.category === category)
-      : staticGalleryImages;
-  }
-  try {
-    const query = category ? { category } : {};
-    const images = await db
-      .collection('GalleryImages')
-      .find(query)
-      .sort({ uploadedAt: -1 })
-      .toArray();
-    return images.length > 0 ? images : staticGalleryImages;
-  } catch {
-    return staticGalleryImages;
-  }
+function rowToFormSubmission(row: any): FormSubmission {
+  return {
+    id: row.id,
+    type: row.type,
+    data: parseJson<Record<string, string>>(row.data, {}),
+    status: row.status as FormSubmission['status'],
+    submittedAt: row.submitted_at ? new Date(row.submitted_at * 1000) : undefined,
+  };
 }
 
-export async function getGallery(category?: string) {
-  return getGalleryImages(category);
+export async function getSettings(): Promise<Settings> {
+  const db = getDb();
+  const result = await db.execute('SELECT * FROM settings WHERE id = 1');
+  if (result.rows.length === 0) {
+    throw new Error('Settings not found');
+  }
+  return rowToSettings(result.rows[0]);
 }
 
-// Form Submissions
-export async function saveFormSubmission(
-  type: string,
-  data: Record<string, string>
-) {
-  const db = await connectToDatabase();
-  if (!db) {
-    console.warn('No database connection — form submission not saved');
-    return;
+export async function updateSettings(data: Partial<Settings>): Promise<Settings> {
+  const db = getDb();
+  const current = await getSettings();
+  const merged = { ...current, ...data };
+
+  await db.execute({
+    sql: `UPDATE settings SET
+      site_name = ?, site_description = ?, tagline = ?, contact_email = ?, phone = ?, address = ?,
+      social = ?, venmo = ?, cash_app = ?, heroes = ?, notifications_enabled = ?, maintenance_mode = ?,
+      updated_at = unixepoch()
+    WHERE id = 1`,
+    args: [
+      merged.siteName,
+      merged.siteDescription,
+      merged.tagline,
+      merged.contactEmail,
+      merged.phone,
+      merged.address,
+      JSON.stringify(merged.social),
+      JSON.stringify(merged.venmo),
+      merged.cashApp,
+      JSON.stringify(merged.heroes),
+      Number(merged.notificationsEnabled),
+      Number(merged.maintenanceMode),
+    ],
+  });
+
+  return getSettings();
+}
+
+export async function getTheme(): Promise<Theme> {
+  const db = getDb();
+  const result = await db.execute('SELECT * FROM theme WHERE id = 1');
+  if (result.rows.length === 0) {
+    throw new Error('Theme not found');
   }
-  await db.collection('FormSubmissions').insertOne({
-    type,
-    data,
-    submittedAt: new Date(),
-    status: 'new',
+  return rowToTheme(result.rows[0]);
+}
+
+export async function updateTheme(data: Partial<Theme>): Promise<Theme> {
+  const db = getDb();
+  const current = await getTheme();
+  const merged = { ...current, ...data };
+
+  await db.execute({
+    sql: `UPDATE theme SET
+      colors = ?, fonts = ?, logo = ?, favicon = ?, updated_at = unixepoch()
+    WHERE id = 1`,
+    args: [
+      JSON.stringify(merged.colors),
+      JSON.stringify(merged.fonts),
+      merged.logo,
+      merged.favicon,
+    ],
+  });
+
+  return getTheme();
+}
+
+export async function getUserByEmail(email: string): Promise<User | null> {
+  const db = getDb();
+  const result = await db.execute({
+    sql: 'SELECT * FROM users WHERE email = ?',
+    args: [email.toLowerCase()],
+  });
+  if (result.rows.length === 0) return null;
+  return rowToUser(result.rows[0]);
+}
+
+export async function updateUserLogin(userId: number): Promise<void> {
+  const db = getDb();
+  await db.execute({
+    sql: 'UPDATE users SET last_login = unixepoch() WHERE id = ?',
+    args: [userId],
+  });
+}
+
+export async function getEvents(published?: boolean): Promise<Event[]> {
+  const db = getDb();
+  let sql = 'SELECT * FROM events';
+  const args: any[] = [];
+  if (published !== undefined) {
+    sql += ' WHERE published = ?';
+    args.push(Number(published));
+  }
+  sql += ' ORDER BY date DESC';
+  const result = await db.execute({ sql, args });
+  return result.rows.map(rowToEvent);
+}
+
+export async function getEventById(id: number): Promise<Event | null> {
+  const db = getDb();
+  const result = await db.execute({
+    sql: 'SELECT * FROM events WHERE id = ?',
+    args: [id],
+  });
+  if (result.rows.length === 0) return null;
+  return rowToEvent(result.rows[0]);
+}
+
+export async function createEvent(data: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>): Promise<Event> {
+  const db = getDb();
+  const result = await db.execute({
+    sql: `INSERT INTO events (title, description, date, end_date, location, image_url, image_alt, capacity, registration_deadline, rsvp_list, category, published, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, unixepoch(), unixepoch())`,
+    args: [
+      data.title,
+      data.description,
+      Math.floor(data.date.getTime() / 1000),
+      Math.floor(data.endDate.getTime() / 1000),
+      data.location,
+      data.imageUrl ?? null,
+      data.imageAlt,
+      data.capacity ?? null,
+      data.registrationDeadline ? Math.floor(data.registrationDeadline.getTime() / 1000) : null,
+      JSON.stringify(data.rsvpList),
+      data.category,
+      Number(data.published),
+    ],
+  });
+  const id = Number(result.lastInsertRowid);
+  return (await getEventById(id))!;
+}
+
+export async function updateEvent(id: number, data: Partial<Event>): Promise<Event | null> {
+  const db = getDb();
+  const existing = await getEventById(id);
+  if (!existing) return null;
+  const merged = { ...existing, ...data };
+
+  await db.execute({
+    sql: `UPDATE events SET
+      title = ?, description = ?, date = ?, end_date = ?, location = ?, image_url = ?, image_alt = ?,
+      capacity = ?, registration_deadline = ?, rsvp_list = ?, category = ?, published = ?, updated_at = unixepoch()
+    WHERE id = ?`,
+    args: [
+      merged.title,
+      merged.description,
+      Math.floor(merged.date.getTime() / 1000),
+      Math.floor(merged.endDate.getTime() / 1000),
+      merged.location,
+      merged.imageUrl ?? null,
+      merged.imageAlt,
+      merged.capacity ?? null,
+      merged.registrationDeadline ? Math.floor(merged.registrationDeadline.getTime() / 1000) : null,
+      JSON.stringify(merged.rsvpList),
+      merged.category,
+      Number(merged.published),
+      id,
+    ],
+  });
+
+  return getEventById(id);
+}
+
+export async function deleteEvent(id: number): Promise<boolean> {
+  const db = getDb();
+  const result = await db.execute({
+    sql: 'DELETE FROM events WHERE id = ?',
+    args: [id],
+  });
+  return Number(result.rowsAffected) > 0;
+}
+
+export async function getMembers(active?: boolean): Promise<Member[]> {
+  const db = getDb();
+  let sql = 'SELECT * FROM members';
+  const args: any[] = [];
+  if (active !== undefined) {
+    sql += ' WHERE is_active = ?';
+    args.push(Number(active));
+  }
+  sql += ' ORDER BY first_name, last_name';
+  const result = await db.execute({ sql, args });
+  return result.rows.map(rowToMember);
+}
+
+export async function getMemberById(id: number): Promise<Member | null> {
+  const db = getDb();
+  const result = await db.execute({
+    sql: 'SELECT * FROM members WHERE id = ?',
+    args: [id],
+  });
+  if (result.rows.length === 0) return null;
+  return rowToMember(result.rows[0]);
+}
+
+export async function createMember(data: Omit<Member, 'id' | 'createdAt' | 'updatedAt'>): Promise<Member> {
+  const db = getDb();
+  const result = await db.execute({
+    sql: `INSERT INTO members (first_name, last_name, email, bio, photo, roles, is_active, is_verified, join_date, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, unixepoch(), unixepoch())`,
+    args: [
+      data.firstName,
+      data.lastName,
+      data.email,
+      data.bio ?? null,
+      data.photo ?? null,
+      JSON.stringify(data.roles),
+      Number(data.isActive),
+      Number(data.isVerified),
+      data.joinDate ? Math.floor(data.joinDate.getTime() / 1000) : Math.floor(Date.now() / 1000),
+    ],
+  });
+  const id = Number(result.lastInsertRowid);
+  return (await getMemberById(id))!;
+}
+
+export async function updateMember(id: number, data: Partial<Member>): Promise<Member | null> {
+  const db = getDb();
+  const existing = await getMemberById(id);
+  if (!existing) return null;
+  const merged = { ...existing, ...data };
+
+  await db.execute({
+    sql: `UPDATE members SET
+      first_name = ?, last_name = ?, email = ?, bio = ?, photo = ?, roles = ?, is_active = ?, is_verified = ?, updated_at = unixepoch()
+    WHERE id = ?`,
+    args: [
+      merged.firstName,
+      merged.lastName,
+      merged.email,
+      merged.bio ?? null,
+      merged.photo ?? null,
+      JSON.stringify(merged.roles),
+      Number(merged.isActive),
+      Number(merged.isVerified),
+      id,
+    ],
+  });
+
+  return getMemberById(id);
+}
+
+export async function deleteMember(id: number): Promise<boolean> {
+  const db = getDb();
+  const result = await db.execute({
+    sql: 'DELETE FROM members WHERE id = ?',
+    args: [id],
+  });
+  return Number(result.rowsAffected) > 0;
+}
+
+export async function getBlogPosts(published?: boolean): Promise<BlogPost[]> {
+  const db = getDb();
+  let sql = 'SELECT * FROM blog_posts';
+  const args: any[] = [];
+  if (published !== undefined) {
+    sql += ' WHERE published = ?';
+    args.push(Number(published));
+  }
+  sql += ' ORDER BY published_at DESC, created_at DESC';
+  const result = await db.execute({ sql, args });
+  return result.rows.map(rowToBlogPost);
+}
+
+export async function getBlogPostById(id: number): Promise<BlogPost | null> {
+  const db = getDb();
+  const result = await db.execute({
+    sql: 'SELECT * FROM blog_posts WHERE id = ?',
+    args: [id],
+  });
+  if (result.rows.length === 0) return null;
+  return rowToBlogPost(result.rows[0]);
+}
+
+export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
+  const db = getDb();
+  const result = await db.execute({
+    sql: 'SELECT * FROM blog_posts WHERE slug = ?',
+    args: [slug],
+  });
+  if (result.rows.length === 0) return null;
+  return rowToBlogPost(result.rows[0]);
+}
+
+export async function createBlogPost(data: Omit<BlogPost, 'id' | 'createdAt' | 'updatedAt' | 'viewCount'>): Promise<BlogPost> {
+  const db = getDb();
+  const publishedAt = data.published ? Math.floor(Date.now() / 1000) : null;
+  const result = await db.execute({
+    sql: `INSERT INTO blog_posts (title, slug, excerpt, content, author, image, category, published, view_count, published_at, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, unixepoch(), unixepoch())`,
+    args: [
+      data.title,
+      data.slug,
+      data.excerpt ?? null,
+      data.content,
+      data.author,
+      data.image ?? null,
+      data.category,
+      Number(data.published),
+      0,
+      publishedAt,
+    ],
+  });
+  const id = Number(result.lastInsertRowid);
+  return (await getBlogPostById(id))!;
+}
+
+export async function updateBlogPost(id: number, data: Partial<BlogPost>): Promise<BlogPost | null> {
+  const db = getDb();
+  const existing = await getBlogPostById(id);
+  if (!existing) return null;
+  const merged = { ...existing, ...data };
+
+  let publishedAt: number | null = existing.publishedAt ? Math.floor(existing.publishedAt.getTime() / 1000) : null;
+  if (data.published && !existing.published) {
+    publishedAt = Math.floor(Date.now() / 1000);
+  }
+
+  await db.execute({
+    sql: `UPDATE blog_posts SET
+      title = ?, slug = ?, excerpt = ?, content = ?, author = ?, image = ?, category = ?, published = ?, view_count = ?, published_at = ?, updated_at = unixepoch()
+    WHERE id = ?`,
+    args: [
+      merged.title,
+      merged.slug,
+      merged.excerpt ?? null,
+      merged.content,
+      merged.author,
+      merged.image ?? null,
+      merged.category,
+      Number(merged.published),
+      merged.viewCount,
+      publishedAt,
+      id,
+    ],
+  });
+
+  return getBlogPostById(id);
+}
+
+export async function deleteBlogPost(id: number): Promise<boolean> {
+  const db = getDb();
+  const result = await db.execute({
+    sql: 'DELETE FROM blog_posts WHERE id = ?',
+    args: [id],
+  });
+  return Number(result.rowsAffected) > 0;
+}
+
+export async function getGalleryImages(category?: string): Promise<GalleryImage[]> {
+  const db = getDb();
+  let sql = 'SELECT * FROM gallery_images';
+  const args: any[] = [];
+  if (category) {
+    sql += ' WHERE category = ?';
+    args.push(category);
+  }
+  sql += ' ORDER BY uploaded_at DESC';
+  const result = await db.execute({ sql, args });
+  return result.rows.map(rowToGalleryImage);
+}
+
+export async function getGalleryImageById(id: number): Promise<GalleryImage | null> {
+  const db = getDb();
+  const result = await db.execute({
+    sql: 'SELECT * FROM gallery_images WHERE id = ?',
+    args: [id],
+  });
+  if (result.rows.length === 0) return null;
+  return rowToGalleryImage(result.rows[0]);
+}
+
+export async function createGalleryImage(data: Omit<GalleryImage, 'id' | 'uploadedAt'>): Promise<GalleryImage> {
+  const db = getDb();
+  const result = await db.execute({
+    sql: `INSERT INTO gallery_images (title, description, category, image, alt, uploaded_at)
+          VALUES (?, ?, ?, ?, ?, unixepoch())`,
+    args: [
+      data.title,
+      data.description ?? null,
+      data.category,
+      data.image,
+      data.alt,
+    ],
+  });
+  const id = Number(result.lastInsertRowid);
+  return (await getGalleryImageById(id))!;
+}
+
+export async function updateGalleryImage(id: number, data: Partial<GalleryImage>): Promise<GalleryImage | null> {
+  const db = getDb();
+  const existing = await getGalleryImageById(id);
+  if (!existing) return null;
+  const merged = { ...existing, ...data };
+
+  await db.execute({
+    sql: `UPDATE gallery_images SET
+      title = ?, description = ?, category = ?, image = ?, alt = ?
+    WHERE id = ?`,
+    args: [
+      merged.title,
+      merged.description ?? null,
+      merged.category,
+      merged.image,
+      merged.alt,
+      id,
+    ],
+  });
+
+  return getGalleryImageById(id);
+}
+
+export async function deleteGalleryImage(id: number): Promise<boolean> {
+  const db = getDb();
+  const result = await db.execute({
+    sql: 'DELETE FROM gallery_images WHERE id = ?',
+    args: [id],
+  });
+  return Number(result.rowsAffected) > 0;
+}
+
+export async function getFormSubmissions(type?: string): Promise<FormSubmission[]> {
+  const db = getDb();
+  let sql = 'SELECT * FROM form_submissions';
+  const args: any[] = [];
+  if (type) {
+    sql += ' WHERE type = ?';
+    args.push(type);
+  }
+  sql += ' ORDER BY submitted_at DESC';
+  const result = await db.execute({ sql, args });
+  return result.rows.map(rowToFormSubmission);
+}
+
+export async function getFormSubmissionById(id: number): Promise<FormSubmission | null> {
+  const db = getDb();
+  const result = await db.execute({
+    sql: 'SELECT * FROM form_submissions WHERE id = ?',
+    args: [id],
+  });
+  if (result.rows.length === 0) return null;
+  return rowToFormSubmission(result.rows[0]);
+}
+
+export async function createFormSubmission(type: string, data: Record<string, string>): Promise<FormSubmission> {
+  const db = getDb();
+  const result = await db.execute({
+    sql: `INSERT INTO form_submissions (type, data, status, submitted_at)
+          VALUES (?, ?, 'new', unixepoch())`,
+    args: [type, JSON.stringify(data)],
+  });
+  const id = Number(result.lastInsertRowid);
+  return (await getFormSubmissionById(id))!;
+}
+
+export async function updateFormSubmissionStatus(id: number, status: FormSubmission['status']): Promise<FormSubmission | null> {
+  const db = getDb();
+  await db.execute({
+    sql: 'UPDATE form_submissions SET status = ? WHERE id = ?',
+    args: [status, id],
+  });
+  return getFormSubmissionById(id);
+}
+
+export async function getStats(): Promise<{
+  totalEvents: number;
+  publishedEvents: number;
+  totalMembers: number;
+  activeMembers: number;
+  totalBlogPosts: number;
+  publishedBlogPosts: number;
+  totalFormSubmissions: number;
+}> {
+  const db = getDb();
+  const [events, members, blog, forms] = await Promise.all([
+    db.execute('SELECT COUNT(*) as c FROM events'),
+    db.execute('SELECT COUNT(*) as c FROM members'),
+    db.execute('SELECT COUNT(*) as c FROM blog_posts'),
+    db.execute('SELECT COUNT(*) as c FROM form_submissions'),
+  ]);
+
+  const totalEvents = Number(events.rows[0]?.c ?? 0);
+  const totalMembers = Number(members.rows[0]?.c ?? 0);
+  const totalBlogPosts = Number(blog.rows[0]?.c ?? 0);
+  const totalFormSubmissions = Number(forms.rows[0]?.c ?? 0);
+
+  const [publishedEvents, activeMembers, publishedBlogPosts] = await Promise.all([
+    db.execute('SELECT COUNT(*) as c FROM events WHERE published = 1'),
+    db.execute('SELECT COUNT(*) as c FROM members WHERE is_active = 1'),
+    db.execute('SELECT COUNT(*) as c FROM blog_posts WHERE published = 1'),
+  ]);
+
+  return {
+    totalEvents,
+    publishedEvents: Number(publishedEvents.rows[0]?.c ?? 0),
+    totalMembers,
+    activeMembers: Number(activeMembers.rows[0]?.c ?? 0),
+    totalBlogPosts,
+    publishedBlogPosts: Number(publishedBlogPosts.rows[0]?.c ?? 0),
+    totalFormSubmissions,
+  };
+}
+
+export async function getRecentActivity(limit = 10): Promise<any[]> {
+  const db = getDb();
+  const result = await db.execute({
+    sql: 'SELECT * FROM activities ORDER BY timestamp DESC LIMIT ?',
+    args: [limit],
+  });
+  return result.rows.map((row: any) => ({
+    id: String(row.id),
+    type: row.type,
+    title: row.title,
+    user: row.user,
+    timestamp: row.timestamp ? new Date(row.timestamp * 1000).toISOString() : new Date().toISOString(),
+  }));
+}
+
+export async function logActivity(type: string, title: string, user: string): Promise<void> {
+  const db = getDb();
+  await db.execute({
+    sql: 'INSERT INTO activities (type, title, user, timestamp) VALUES (?, ?, ?, unixepoch())',
+    args: [type, title, user],
   });
 }

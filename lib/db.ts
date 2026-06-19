@@ -1,45 +1,21 @@
-import mongoose from 'mongoose';
+import { createClient, type Client } from '@libsql/client';
 
-const MONGODB_URI = process.env.MONGODB_URI;
+let client: Client | null = null;
 
-let cached = global.mongoose;
+export function getDb(): Client {
+  if (client) return client;
 
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
-}
+  const url = process.env.TURSO_DATABASE_URL;
+  const authToken = process.env.TURSO_AUTH_TOKEN;
 
-export async function connectDB() {
-  if (cached.conn) {
-    return cached.conn;
+  if (!url) {
+    throw new Error('TURSO_DATABASE_URL is not set');
   }
 
-  if (!MONGODB_URI) {
-    throw new Error('MONGODB_URI is not set');
-  }
+  client = createClient({
+    url,
+    authToken,
+  });
 
-  if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-    };
-
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      return mongoose;
-    });
-  }
-
-  try {
-    cached.conn = await cached.promise;
-  } catch (e) {
-    cached.promise = null;
-    throw e;
-  }
-
-  return cached.conn;
-}
-
-declare global {
-  var mongoose: {
-    conn: any;
-    promise: Promise<any> | null;
-  };
+  return client;
 }

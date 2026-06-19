@@ -1,9 +1,10 @@
-import { connectDB } from '@/lib/db';
+import { getDb } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    await connectDB();
+    const db = getDb();
+    await db.execute('SELECT 1');
     return NextResponse.json({
       status: 'ok',
       timestamp: new Date().toISOString(),

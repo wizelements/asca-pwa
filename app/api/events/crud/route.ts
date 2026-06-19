@@ -1,39 +1,32 @@
-import { connectDB } from '@/lib/db';
-import { Event, type IEvent } from '@/lib/models/Event';
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/auth';
+import {
+  createEvent,
+  deleteEvent,
+  getEventById,
+  getEvents,
+  updateEvent,
+  logActivity,
+  type Event,
+} from '@/lib/db/queries';
 
-// Helper to check auth from header
-function getAuthFromHeader(request: NextRequest): boolean {
-  const auth = request.headers.get('authorization');
-  // In production, verify JWT token here
-  return !!auth && auth.startsWith('Bearer ');
-}
-
-// GET all events or by ID
 export async function GET(request: NextRequest) {
   try {
-    await connectDB();
-
     const { searchParams } = new URL(request.url);
+    const publishedParam = searchParams.get('published');
     const id = searchParams.get('id');
-    const published = searchParams.get('published');
 
     if (id) {
-      const event = await Event.findById(id);
+      const event = await getEventById(Number(id));
       if (!event) {
         return NextResponse.json({ error: 'Event not found' }, { status: 404 });
       }
       return NextResponse.json(event);
     }
 
-    const query = published !== null ? { published: published === 'true' } : {};
-    const events = await Event.find(query).sort({ date: -1 });
-
-    return NextResponse.json(events, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
-      },
-    });
+    const published = publishedParam !== null ? publishedParam === 'true' : undefined;
+    const events = await getEvents(published);
+    return NextResponse.json(events);
   } catch (error) {
     console.error('[EVENTS GET]', error);
     return NextResponse.json(
@@ -43,40 +36,35 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// CREATE event
 export async function POST(request: NextRequest) {
   try {
-    // Check authorization (will implement full JWT validation)
-    const auth = request.headers.get('authorization');
-    if (!auth?.startsWith('Bearer ')) {
+    const user = await requireAuth(request);
+    const body = await request.json();
+
+    const data = {
+      title: body.title,
+      description: body.description,
+      date: new Date(body.date),
+      endDate: new Date(body.endDate),
+      location: body.location,
+      imageUrl: body.imageUrl,
+      imageAlt: body.imageAlt || '',
+      capacity: body.capacity,
+      registrationDeadline: body.registrationDeadline ? new Date(body.registrationDeadline) : undefined,
+      rsvpList: body.rsvpList || [],
+      category: body.category || 'general',
+      published: Boolean(body.published),
+    };
+
+    const event = await createEvent(data as any);
+    await logActivity('event', `Created event "${event.title}"`, user.name || user.email);
+
+    return NextResponse.json(event, { status: 201 });
+  } catch (error: any) {
+    console.error('[EVENTS POST]', error);
+    if (error.message === 'Unauthorized') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    await connectDB();
-    const data = await request.json();
-
-    // Validate required fields
-    const { title, description, date, endDate, location, imageAlt } = data;
-    if (!title || !description || !date || !endDate || !location || !imageAlt) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
-    }
-
-    const event = new Event({
-      ...data,
-      date: new Date(date),
-      endDate: new Date(endDate),
-      registrationDeadline: data.registrationDeadline
-        ? new Date(data.registrationDeadline)
-        : undefined,
-    });
-
-    const saved = await event.save();
-    return NextResponse.json(saved, { status: 201 });
-  } catch (error) {
-    console.error('[EVENTS POST]', error);
     return NextResponse.json(
       { error: 'Failed to create event' },
       { status: 500 }
@@ -84,41 +72,45 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// UPDATE event
 export async function PUT(request: NextRequest) {
   try {
-    const auth = request.headers.get('authorization');
-    if (!auth?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    await connectDB();
-    const { id, ...data } = await request.json();
+    const user = await requireAuth(request);
+    const body = await request.json();
+    const { id, ...updates } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Event ID required' }, { status: 400 });
     }
 
-    // Convert date strings to Date objects
-    const updateData: any = { ...data };
-    if (updateData.date) updateData.date = new Date(updateData.date);
-    if (updateData.endDate) updateData.endDate = new Date(updateData.endDate);
-    if (updateData.registrationDeadline) {
-      updateData.registrationDeadline = new Date(updateData.registrationDeadline);
+    const data: Partial<Event> = {};
+    if (updates.title !== undefined) data.title = updates.title;
+    if (updates.description !== undefined) data.description = updates.description;
+    if (updates.date !== undefined) data.date = new Date(updates.date);
+    if (updates.endDate !== undefined) data.endDate = new Date(updates.endDate);
+    if (updates.location !== undefined) data.location = updates.location;
+    if (updates.imageUrl !== undefined) data.imageUrl = updates.imageUrl;
+    if (updates.imageAlt !== undefined) data.imageAlt = updates.imageAlt;
+    if (updates.capacity !== undefined) data.capacity = updates.capacity;
+    if (updates.registrationDeadline !== undefined) {
+      data.registrationDeadline = updates.registrationDeadline ? new Date(updates.registrationDeadline) : undefined;
     }
+    if (updates.rsvpList !== undefined) data.rsvpList = updates.rsvpList;
+    if (updates.category !== undefined) data.category = updates.category;
+    if (updates.published !== undefined) data.published = Boolean(updates.published);
 
-    const updated = await Event.findByIdAndUpdate(id, updateData, {
-      new: true,
-      runValidators: true,
-    });
-
-    if (!updated) {
+    const event = await updateEvent(Number(id), data);
+    if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    return NextResponse.json(updated);
-  } catch (error) {
+    await logActivity('event', `Updated event "${event.title}"`, user.name || user.email);
+
+    return NextResponse.json(event);
+  } catch (error: any) {
     console.error('[EVENTS PUT]', error);
+    if (error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json(
       { error: 'Failed to update event' },
       { status: 500 }
@@ -126,15 +118,9 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE event
 export async function DELETE(request: NextRequest) {
   try {
-    const auth = request.headers.get('authorization');
-    if (!auth?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    await connectDB();
+    const user = await requireAuth(request);
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
@@ -142,15 +128,20 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Event ID required' }, { status: 400 });
     }
 
-    const deleted = await Event.findByIdAndDelete(id);
-
-    if (!deleted) {
+    const event = await getEventById(Number(id));
+    if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
+    await deleteEvent(Number(id));
+    await logActivity('event', `Deleted event "${event.title}"`, user.name || user.email);
+
     return NextResponse.json({ success: true, message: 'Event deleted' });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[EVENTS DELETE]', error);
+    if (error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     return NextResponse.json(
       { error: 'Failed to delete event' },
       { status: 500 }

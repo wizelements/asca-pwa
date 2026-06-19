@@ -3,12 +3,21 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
+import AdminGuard, { logout } from '@/components/AdminGuard';
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  return (
+    <AdminGuard>
+      <LayoutInner>{children}</LayoutInner>
+    </AdminGuard>
+  );
+}
+
+function LayoutInner({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const pathname = usePathname();
 
@@ -27,11 +36,9 @@ export default function AdminLayout({
 
   return (
     <div className="flex h-screen bg-brand-bg-body overflow-hidden">
-      {/* Sidebar */}
       <aside className={`${
         sidebarOpen ? 'w-64' : 'w-20'
       } bg-brand-forest text-white shadow-xl transition-all duration-300 flex flex-col`}>
-        {/* Header */}
         <div className="p-6 border-b border-brand-forest-muted">
           <div className="flex items-center justify-between">
             {sidebarOpen && (
@@ -49,7 +56,6 @@ export default function AdminLayout({
           </div>
         </div>
 
-        {/* Navigation */}
         <nav className="flex-1 mt-8 px-3 space-y-2 overflow-y-auto">
           {adminNav.map((item) => (
             <Link
@@ -68,19 +74,20 @@ export default function AdminLayout({
           ))}
         </nav>
 
-        {/* Footer */}
         <div className="p-4 border-t border-brand-forest-muted">
-          <button className={`w-full text-left px-4 py-2 rounded-lg hover:bg-brand-forest-muted transition-colors text-sm font-medium ${
-            sidebarOpen ? '' : 'text-center'
-          }`} title="Logout">
+          <button
+            onClick={logout}
+            className={`w-full text-left px-4 py-2 rounded-lg hover:bg-brand-forest-muted transition-colors text-sm font-medium ${
+              sidebarOpen ? '' : 'text-center'
+            }`}
+            title="Logout"
+          >
             {sidebarOpen ? '🚪 Logout' : '🚪'}
           </button>
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 overflow-auto flex flex-col bg-brand-bg-body">
-        {/* Top Bar */}
         <div className="h-16 bg-brand-bg-elevated border-b border-brand-border-subtle flex items-center justify-between px-8 shadow-sm">
           <div>
             <p className="text-sm text-brand-fg-muted">Welcome back</p>
@@ -92,7 +99,6 @@ export default function AdminLayout({
           </div>
         </div>
 
-        {/* Content */}
         <div className="flex-1 overflow-auto">
           <div className="p-8 max-w-7xl mx-auto">
             {children}

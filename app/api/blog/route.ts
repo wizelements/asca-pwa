@@ -1,30 +1,21 @@
-import { connectDB } from '@/lib/db';
-import { BlogPost } from '@/lib/models/BlogPost';
 import { NextRequest, NextResponse } from 'next/server';
+import { getBlogPosts } from '@/lib/db/queries';
 
 export async function GET(request: NextRequest) {
   try {
-    await connectDB();
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1', 10);
-    const limit = parseInt(searchParams.get('limit') || '10', 10);
-    const skip = (page - 1) * limit;
+    const limit = searchParams.get('limit');
+    const posts = await getBlogPosts(true);
 
-    const posts = await BlogPost.find({ published: true })
-      .sort({ publishedAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
+    const result = limit ? posts.slice(0, Number(limit)) : posts;
 
-    const total = await BlogPost.countDocuments({ published: true });
-
-    return NextResponse.json({
-      posts,
-      total,
-      page,
-      pages: Math.ceil(total / limit),
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+      },
     });
   } catch (error) {
+    console.error('[BLOG PUBLIC GET]', error);
     return NextResponse.json(
       { error: 'Failed to fetch blog posts' },
       { status: 500 }

@@ -40,14 +40,9 @@ yarn-error.log*
 *.pid.lock
 .turbo/
 
-# PWA
-public/sw.js
-public/sw.js.map
-public/workbox-*.js
-public/workbox-*.js.map
-
 # OS
 Thumbs.db
 .env.production.local
 
 .vercel
+.env*

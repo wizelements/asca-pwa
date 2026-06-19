@@ -1,8 +1,59 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { useEffect, ReactNode } from 'react';
+
+export interface AuthUser {
+  id: number;
+  email: string;
+  name: string;
+  role: 'admin' | 'editor' | 'viewer';
+  token: string;
+}
+
+const ROLES = ['viewer', 'editor', 'admin'];
+
+export function useAuth(): { user: AuthUser | null; isLoading: boolean; logout: () => void } {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('asca_admin_user');
+      if (stored) {
+        setUser(JSON.parse(stored));
+      }
+    } catch {
+      // ignore
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const logout = () => {
+    localStorage.removeItem('asca_admin_user');
+    window.location.href = '/';
+  };
+
+  return { user, isLoading, logout };
+}
+
+export function getAdminToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = localStorage.getItem('asca_admin_user');
+    if (!stored) return null;
+    const user = JSON.parse(stored) as AuthUser;
+    return user.token || null;
+  } catch {
+    return null;
+  }
+}
+
+export function logout(): void {
+  localStorage.removeItem('asca_admin_user');
+  window.location.href = '/';
+}
 
 interface AdminGuardProps {
   children: ReactNode;
@@ -10,28 +61,23 @@ interface AdminGuardProps {
 }
 
 export default function AdminGuard({ children, requiredRole = 'admin' }: AdminGuardProps) {
-  const { data: session, status } = useSession();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin');
+    if (isLoading) return;
+    if (!user) {
+      router.replace('/admin/login');
       return;
     }
-
-    if (status === 'authenticated') {
-      const userRole = (session?.user as any)?.role;
-      const roles = ['admin', 'editor', 'viewer'];
-      const requiredIndex = roles.indexOf(requiredRole);
-      const userIndex = roles.indexOf(userRole);
-
-      if (userIndex < requiredIndex) {
-        router.push('/unauthorized');
-      }
+    const userIndex = ROLES.indexOf(user.role);
+    const requiredIndex = ROLES.indexOf(requiredRole);
+    if (userIndex < requiredIndex) {
+      router.replace('/unauthorized');
     }
-  }, [status, session, router, requiredRole]);
+  }, [isLoading, user, router, requiredRole]);
 
-  if (status === 'loading') {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-brand-bg-body">
         <div className="text-center">
@@ -42,18 +88,7 @@ export default function AdminGuard({ children, requiredRole = 'admin' }: AdminGu
     );
   }
 
-  if (status === 'unauthenticated') {
-    return null; // Redirect in effect
-  }
-
-  const userRole = (session?.user as any)?.role;
-  const roles = ['admin', 'editor', 'viewer'];
-  const requiredIndex = roles.indexOf(requiredRole);
-  const userIndex = roles.indexOf(userRole);
-
-  if (userIndex < requiredIndex) {
-    return null; // Redirect in effect
-  }
+  if (!user) return null;
 
   return <>{children}</>;
 }

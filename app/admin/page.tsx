@@ -3,11 +3,16 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+import { getAdminToken } from '@/components/AdminGuard';
+
 interface DashboardStats {
   totalEvents: number;
+  publishedEvents: number;
   totalMembers: number;
+  activeMembers: number;
   totalBlogPosts: number;
-  formSubmissions: number;
+  publishedBlogPosts: number;
+  totalFormSubmissions: number;
 }
 
 interface RecentActivity {
@@ -21,9 +26,12 @@ interface RecentActivity {
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
     totalEvents: 0,
+    publishedEvents: 0,
     totalMembers: 0,
+    activeMembers: 0,
     totalBlogPosts: 0,
-    formSubmissions: 0,
+    publishedBlogPosts: 0,
+    totalFormSubmissions: 0,
   });
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,19 +42,15 @@ export default function AdminDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const [statsRes, activityRes] = await Promise.all([
-        fetch('/api/admin/stats'),
-        fetch('/api/admin/activity'),
-      ]);
+      const token = getAdminToken();
+      const res = await fetch('/api/admin/stats', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
 
-      if (statsRes.ok) {
-        const statsData = await statsRes.json();
-        setStats(statsData);
-      }
-
-      if (activityRes.ok) {
-        const activityData = await activityRes.json();
-        setRecentActivity(activityData.slice(0, 5));
+      if (res.ok) {
+        const data = await res.json();
+        setStats(data);
+        setRecentActivity(data.recentActivity?.slice(0, 5) || []);
       }
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
@@ -83,26 +87,26 @@ export default function AdminDashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          label="Total Events"
-          value={stats.totalEvents}
+          label="Published Events"
+          value={stats.publishedEvents}
           icon="📅"
           color="bg-gradient-to-br from-blue-50 to-blue-100/50"
         />
         <StatCard
-          label="Total Members"
-          value={stats.totalMembers}
+          label="Active Members"
+          value={stats.activeMembers}
           icon="👥"
           color="bg-gradient-to-br from-green-50 to-green-100/50"
         />
         <StatCard
-          label="Blog Posts"
-          value={stats.totalBlogPosts}
+          label="Published Blog Posts"
+          value={stats.publishedBlogPosts}
           icon="📝"
           color="bg-gradient-to-br from-purple-50 to-purple-100/50"
         />
         <StatCard
           label="Form Submissions"
-          value={stats.formSubmissions}
+          value={stats.totalFormSubmissions}
           icon="📬"
           color="bg-gradient-to-br from-orange-50 to-orange-100/50"
         />

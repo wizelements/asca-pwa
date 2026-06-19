@@ -1,55 +1,23 @@
-import { connectDB } from '@/lib/db';
-import { Member } from '@/lib/models/Member';
 import { NextRequest, NextResponse } from 'next/server';
+import { getMembers } from '@/lib/db/queries';
 
 export async function GET(request: NextRequest) {
   try {
-    await connectDB();
     const { searchParams } = new URL(request.url);
-    const role = searchParams.get('role');
+    const limit = searchParams.get('limit');
+    const members = await getMembers(true);
 
-    const query: Record<string, string | boolean> = { isActive: true };
-    if (role) {
-      query.roles = role;
-    }
+    const result = limit ? members.slice(0, Number(limit)) : members;
 
-    const members = await Member.find(query)
-      .sort({ lastName: 1 })
-      .lean();
-
-    return NextResponse.json(members);
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+      },
+    });
   } catch (error) {
+    console.error('[MEMBERS PUBLIC GET]', error);
     return NextResponse.json(
       { error: 'Failed to fetch members' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    await connectDB();
-    const data = await request.json();
-
-    if (!data.email || !data.firstName || !data.lastName) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
-    }
-
-    if (!data.duesNextDueAt) {
-      const nextDue = new Date();
-      nextDue.setMonth(nextDue.getMonth() + 3);
-      data.duesNextDueAt = nextDue;
-    }
-
-    const member = new Member(data);
-    await member.save();
-    return NextResponse.json(member, { status: 201 });
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to create member' },
       { status: 500 }
     );
   }

@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
-import { getSettings, updateSettings, logActivity } from '@/lib/db/queries';
+import { getTheme, updateTheme, logActivity } from '@/lib/db/queries';
 
 export async function GET() {
   try {
-    const settings = await getSettings();
-    return NextResponse.json(settings);
+    const theme = await getTheme();
+    return NextResponse.json(theme);
   } catch (error) {
-    console.error('[SETTINGS GET]', error);
+    console.error('[THEME GET]', error);
     return NextResponse.json(
-      { error: 'Failed to fetch settings' },
+      { error: 'Failed to fetch theme' },
       { status: 500 }
     );
   }
@@ -20,18 +20,18 @@ export async function POST(request: NextRequest) {
     const user = await requireAuth(request);
     const data = await request.json();
 
-    const updated = await updateSettings(data);
+    const updated = await updateTheme(data);
 
-    await logActivity('settings', 'Updated site settings', user.name || user.email);
+    await logActivity('theme', 'Updated site theme', user.name || user.email);
 
     return NextResponse.json(updated);
   } catch (error: any) {
-    console.error('[SETTINGS POST]', error);
+    console.error('[THEME POST]', error);
     if (error.message === 'Unauthorized') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     return NextResponse.json(
-      { error: 'Failed to update settings' },
+      { error: 'Failed to update theme' },
       { status: 500 }
     );
   }
