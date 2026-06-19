@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -92,6 +93,12 @@ export default function AdminLogin() {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+
+        <div className="mt-6 text-center">
+          <Link href="/admin/reset-password" className="text-sm font-medium text-brand-forest hover:underline">
+            Forgot your password?
+          </Link>
+        </div>
       </div>
     </div>
   );

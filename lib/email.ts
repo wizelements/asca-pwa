@@ -252,3 +252,27 @@ export function volunteerSignupTemplate(data: {
     </html>
   `;
 }
+
+export function adminPasswordResetTemplate(data: {
+  adminEmail: string;
+  resetUrl: string;
+  expiresInMinutes: number;
+}): string {
+  return `
+    <html>
+      <body style="font-family: system-ui, -apple-system, sans-serif; color: #333; background: #f7f3ea; padding: 24px;">
+        <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 12px; padding: 24px; border: 1px solid #e3dac9;">
+          <h2 style="color: #1f6b3a; margin-top: 0;">ASCA Admin Password Reset</h2>
+          <p>A password reset was requested for the ASCA admin account:</p>
+          <p style="background: #f9f9f9; padding: 12px; border-left: 4px solid #1f6b3a;"><strong>${data.adminEmail}</strong></p>
+          <p>Use the button below to set a new password. This link expires in <strong>${data.expiresInMinutes} minutes</strong> and stops working after the password changes.</p>
+          <p style="margin: 24px 0;">
+            <a href="${data.resetUrl}" style="display: inline-block; background: #1f6b3a; color: #ffffff; padding: 12px 18px; border-radius: 8px; text-decoration: none; font-weight: 700;">Reset Admin Password</a>
+          </p>
+          <p style="font-size: 12px; color: #666; word-break: break-all;">If the button does not work, copy this link:<br />${data.resetUrl}</p>
+          <p style="font-size: 12px; color: #666;">If you did not request this, ignore this email.</p>
+        </div>
+      </body>
+    </html>
+  `;
+}

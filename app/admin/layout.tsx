@@ -12,7 +12,7 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
 
-  if (pathname === '/admin/login') {
+  if (pathname === '/admin/login' || pathname === '/admin/reset-password') {
     return <>{children}</>;
   }
 

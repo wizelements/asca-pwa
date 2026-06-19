@@ -348,6 +348,14 @@ export async function updateUserLogin(userId: number): Promise<void> {
   });
 }
 
+export async function updateUserPassword(userId: number, passwordHash: string): Promise<void> {
+  const db = getDb();
+  await db.execute({
+    sql: 'UPDATE users SET password = ? WHERE id = ?',
+    args: [passwordHash, userId],
+  });
+}
+
 export async function getEvents(published?: boolean): Promise<Event[]> {
   const db = getDb();
   let sql = 'SELECT * FROM events';

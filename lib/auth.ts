@@ -1,5 +1,5 @@
 import { SignJWT, jwtVerify } from 'jose';
-import { pbkdf2Sync, randomBytes, timingSafeEqual } from 'crypto';
+import { createHash, pbkdf2Sync, randomBytes, timingSafeEqual } from 'crypto';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || 'fallback-secret-change-me');
 
@@ -8,6 +8,13 @@ export interface JWTPayload {
   email: string;
   name: string;
   role: 'admin' | 'editor' | 'viewer';
+}
+
+export interface PasswordResetPayload {
+  sub: string;
+  email: string;
+  purpose: 'admin-password-reset';
+  passwordVersion: string;
 }
 
 export async function signToken(payload: JWTPayload): Promise<string> {
@@ -23,6 +30,45 @@ export async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET, { algorithms: ['HS256'] });
     return payload as unknown as JWTPayload;
+  } catch {
+    return null;
+  }
+}
+
+export function getPasswordVersion(passwordHash: string): string {
+  return createHash('sha256').update(passwordHash).digest('hex');
+}
+
+export async function signPasswordResetToken(payload: Omit<PasswordResetPayload, 'purpose'>): Promise<string> {
+  return new SignJWT({
+    email: payload.email,
+    purpose: 'admin-password-reset',
+    passwordVersion: payload.passwordVersion,
+  })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('30m')
+    .setSubject(payload.sub)
+    .sign(JWT_SECRET);
+}
+
+export async function verifyPasswordResetToken(token: string): Promise<PasswordResetPayload | null> {
+  try {
+    const { payload } = await jwtVerify(token, JWT_SECRET, { algorithms: ['HS256'] });
+    if (
+      payload.purpose !== 'admin-password-reset' ||
+      typeof payload.sub !== 'string' ||
+      typeof payload.email !== 'string' ||
+      typeof payload.passwordVersion !== 'string'
+    ) {
+      return null;
+    }
+    return {
+      sub: payload.sub,
+      email: payload.email,
+      purpose: 'admin-password-reset',
+      passwordVersion: payload.passwordVersion,
+    };
   } catch {
     return null;
   }
