@@ -4,7 +4,7 @@ import Hero from '@/components/Hero';
 import GalleryCard from '@/components/Cards/GalleryCard';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { getSettings, getTheme, getGallery } from '@/lib/db/queries';
+import { getSettings, getTheme, getGalleryImages } from '@/lib/db/queries';
 
 export const metadata: Metadata = {
   title: 'Photo Gallery',
@@ -24,7 +24,7 @@ export default async function Gallery() {
   const [settings, theme, gallery] = await Promise.all([
     getSettings(),
     getTheme(),
-    getGallery(),
+    getGalleryImages(),
   ]);
 
   return (
