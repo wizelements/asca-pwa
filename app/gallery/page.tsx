@@ -7,7 +7,7 @@ import Footer from '@/components/Footer';
 import { getSettings, getTheme, getGalleryImages } from '@/lib/db/queries';
 
 export const metadata: Metadata = {
-  title: 'Photo Gallery',
+  title: { absolute: 'Photo Gallery | ASCA' },
   description: 'Photos from ASCA events, trail rides, and community activities. See our horses, riders, and members in action.',
 };
 

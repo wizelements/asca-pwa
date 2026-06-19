@@ -7,7 +7,7 @@ import EventLegend from '@/components/EventLegend';
 import EventList from '@/components/EventList';
 
 export const metadata: Metadata = {
-  title: 'Where to Find Us',
+  title: { absolute: 'Where to Find Us | ASCA Events' },
   description:
     'Find upcoming ASCA meetings, hosted events, events where ASCA will be present, and community outreach activities sponsored by ASCA.',
 };

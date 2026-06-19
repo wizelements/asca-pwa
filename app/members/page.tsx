@@ -8,7 +8,7 @@ import { MEMBERSHIP_APPLICATION_URL } from '@/lib/content/site';
 import { WHY_MEMBERS_JOIN, FUN_FACTS } from '@/lib/content/club';
 
 export const metadata: Metadata = {
-  title: 'Meet Our Members',
+  title: { absolute: 'Meet Our Members | ASCA' },
   description:
     'Meet the members of the Atlanta Saddle Club Association — trail riders, horse owners, families, and horse lovers united by a passion for horses and community.',
 };

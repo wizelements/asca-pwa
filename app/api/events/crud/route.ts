@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       capacity: body.capacity,
       registrationDeadline: body.registrationDeadline ? new Date(body.registrationDeadline) : undefined,
       rsvpList: body.rsvpList || [],
-      category: body.category || 'general',
+      category: body.category || 'hosted',
       published: Boolean(body.published),
     };
 

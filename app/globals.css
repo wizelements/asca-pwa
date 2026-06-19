@@ -43,7 +43,7 @@
   }
 
   .btn-secondary:hover {
-    background-color: #f0e9dd;
+    background-color: rgba(31, 107, 58, 0.08);
   }
 
   .btn-accent {

@@ -60,7 +60,7 @@ export const events = sqliteTable('events', {
   capacity: integer('capacity'),
   registrationDeadline: integer('registration_deadline', { mode: 'timestamp' }),
   rsvpList: text('rsvp_list', { mode: 'json' }).notNull().default(sql`'[]'`),
-  category: text('category').default('general'),
+  category: text('category').default('hosted'),
   published: integer('published', { mode: 'boolean' }).notNull().default(false),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),

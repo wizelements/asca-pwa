@@ -20,20 +20,23 @@ export interface AscaEvent {
 
 export const EVENT_CATEGORIES: Record<
   EventCategory,
-  { label: string; dotClass: string; badgeClass: string }
+  { label: string; icon: string; dotClass: string; badgeClass: string }
 > = {
   hosted: {
     label: 'Hosted by ASCA',
+    icon: '★',
     dotClass: 'bg-brand-forest',
     badgeClass: 'bg-brand-forest text-white',
   },
   attending: {
     label: 'ASCA Will Be There',
+    icon: '↗',
     dotClass: 'bg-amber-500',
     badgeClass: 'bg-amber-100 text-amber-900 border border-amber-300',
   },
   sponsored: {
     label: 'Sponsored by ASCA',
+    icon: '◆',
     dotClass: 'bg-purple-600',
     badgeClass: 'bg-purple-100 text-purple-900 border border-purple-300',
   },
@@ -69,7 +72,7 @@ export const EVENTS: AscaEvent[] = [
     month: 'July',
     category: 'sponsored',
     title: 'Cowboys vs Cowgirls CYA Challenge',
-    dateLabel: '7/1 – 8/31',
+    dateLabel: '7/1–8/31',
     description:
       'Collect adult underwear and donations to purchase them in support of Mobile Showers Atlanta.',
   },
@@ -79,7 +82,7 @@ export const EVENTS: AscaEvent[] = [
   {
     month: 'August',
     category: 'hosted',
-    title: 'Horsemanship Class at JD’s Horse Ranch',
+    title: "Horsemanship Class at JD's Horse Ranch",
     dateLabel: '8/8',
   },
 
@@ -104,12 +107,12 @@ export const EVENTS: AscaEvent[] = [
     month: 'October',
     category: 'attending',
     title: 'Tri-County Saddle Club Trail Ride',
-    dateLabel: '10/9 – 11',
+    dateLabel: '10/9–10/11',
   },
   {
     month: 'October',
     category: 'hosted',
-    title: 'Rodeo Expo at JD’s Horse Ranch',
+    title: "Rodeo Expo at JD's Horse Ranch",
     dateLabel: '10/24',
   },
 

@@ -6,7 +6,6 @@ export interface Social {
   facebook?: string;
   instagram?: string;
   twitter?: string;
-  youtube?: string;
 }
 
 export interface Venmo {

@@ -24,20 +24,20 @@ export const metadata: Metadata = {
     default: 'Atlanta Saddle Club Association | We Ride To Inspire',
     template: '%s | ASCA',
   },
-  description: 'Atlanta Saddle Club Association (ASCA) — Atlanta\'s premiere saddle club promoting positive horsemanship, trail rides, riding lessons, and community.',
+  description: 'Atlanta Saddle Club Association promotes horsemanship, fellowship, education, community service, and equestrian experiences across metro Atlanta.',
   manifest: '/manifest.json',
   metadataBase: new URL('https://asca-pwa.vercel.app'),
   openGraph: {
     type: 'website',
     siteName: 'Atlanta Saddle Club Association',
     title: 'Atlanta Saddle Club Association | We Ride To Inspire',
-    description: 'Atlanta\'s premiere saddle club promoting positive horsemanship, trail rides, riding lessons, and community.',
+    description: 'Atlanta Saddle Club Association promotes horsemanship, fellowship, education, community service, and equestrian experiences across metro Atlanta.',
     images: [{ url: '/images/asca/logo.png', width: 494, height: 406, alt: 'ASCA Logo' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Atlanta Saddle Club Association',
-    description: 'We Ride To Inspire — Atlanta\'s premiere saddle club.',
+    title: 'Atlanta Saddle Club Association | We Ride To Inspire',
+    description: 'Atlanta Saddle Club Association promotes horsemanship, fellowship, education, community service, and equestrian experiences across metro Atlanta.',
     images: ['/images/asca/logo.png'],
   },
   appleWebApp: {
@@ -76,15 +76,15 @@ export default function RootLayout({
           :root {
             --brand-bg-body: #ffffff;
             --brand-bg-elevated: #ffffff;
-            --brand-bg-subtle: #f6f3ec;
-            --brand-bg-soft: #ece3d3;
-            --brand-bg-soft-alt: #e3dac9;
+            --brand-bg-subtle: #ffffff;
+            --brand-bg-soft: #ffffff;
+            --brand-bg-soft-alt: #ffffff;
             --brand-fg-primary: #1f1f1f;
             --brand-fg-secondary: #4f4f4f;
-            --brand-fg-muted: #8a8174;
-            --brand-fg-on-soft: #2b2521;
-            --brand-border-subtle: rgba(111, 97, 84, 0.18);
-            --brand-border-strong: #d2c4ad;
+            --brand-fg-muted: #637064;
+            --brand-fg-on-soft: #1f1f1f;
+            --brand-border-subtle: rgba(31, 107, 58, 0.16);
+            --brand-border-strong: rgba(31, 107, 58, 0.28);
             --brand-accent: #e6d543;
             --brand-accent-muted: #f0d95d;
             --brand-forest: #1f6b3a;

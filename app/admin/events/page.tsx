@@ -13,7 +13,7 @@ const emptyEvent = {
   imageAlt: '',
   capacity: '',
   registrationDeadline: '',
-  category: 'general',
+  category: 'hosted',
   published: false,
 };
 
@@ -65,7 +65,7 @@ export default function AdminEvents() {
       imageAlt: event.imageAlt || '',
       capacity: event.capacity || '',
       registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline).toISOString().slice(0, 16) : '',
-      category: event.category || 'general',
+      category: event.category || 'hosted',
       published: event.published,
     });
     setModalOpen(true);
@@ -155,7 +155,7 @@ export default function AdminEvents() {
             {events.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-6 py-8 text-center text-brand-fg-muted">
-                  No events yet. Click "+ New Event" to create one.
+                  No events yet. Click &quot;+ New Event&quot; to create one.
                 </td>
               </tr>
             ) : (
@@ -300,11 +300,9 @@ export default function AdminEvents() {
                     onChange={(e) => setForm({ ...form, category: e.target.value })}
                     className="w-full px-4 py-2 border border-brand-border-subtle rounded-lg bg-brand-bg-body text-brand-fg-primary"
                   >
-                    <option value="general">General</option>
-                    <option value="meeting">Meeting</option>
-                    <option value="ride">Trail Ride</option>
-                    <option value="community">Community</option>
-                    <option value="fundraiser">Fundraiser</option>
+                    <option value="hosted">Hosted by ASCA</option>
+                    <option value="attending">ASCA Will Be There</option>
+                    <option value="sponsored">Sponsored by ASCA</option>
                   </select>
                 </div>
                 <div className="flex items-center">

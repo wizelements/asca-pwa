@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import { MEMBERSHIP_APPLICATION_URL } from '@/lib/content/site';
 
 export const metadata: Metadata = {
-  title: 'Get Involved',
+  title: { absolute: 'Get Involved | ASCA' },
   description:
     "There's a place for everyone at the Atlanta Saddle Club Association — become a member, attend an event, volunteer, or partner with us.",
 };

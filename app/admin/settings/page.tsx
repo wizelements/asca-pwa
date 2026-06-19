@@ -138,7 +138,6 @@ export default function AdminSettings() {
               { label: 'Facebook', key: 'social.facebook' },
               { label: 'Instagram', key: 'social.instagram' },
               { label: 'Twitter / X', key: 'social.twitter' },
-              { label: 'YouTube', key: 'social.youtube' },
             ].map((field) => (
               <div key={field.key}>
                 <label className="block text-sm font-semibold text-brand-fg-primary mb-1">{field.label}</label>
