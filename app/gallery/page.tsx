@@ -55,10 +55,12 @@ export default async function Gallery() {
               <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {gallery.map((item: any) => (
                   <GalleryCard
-                    key={item._id?.toString() || Math.random()}
+                    key={item.id}
                     title={item.title}
                     image={item.image}
+                    alt={item.alt}
                     description={item.description}
+                    category={item.category}
                   />
                 ))}
               </div>

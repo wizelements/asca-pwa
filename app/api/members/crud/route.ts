@@ -92,6 +92,7 @@ export async function PUT(request: NextRequest) {
     if (updates.roles !== undefined) data.roles = updates.roles;
     if (updates.isActive !== undefined) data.isActive = Boolean(updates.isActive);
     if (updates.isVerified !== undefined) data.isVerified = Boolean(updates.isVerified);
+    if (updates.joinDate !== undefined) data.joinDate = updates.joinDate ? new Date(updates.joinDate) : undefined;
 
     const member = await updateMember(Number(id), data);
     if (!member) {

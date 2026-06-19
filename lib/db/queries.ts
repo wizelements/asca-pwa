@@ -5,7 +5,6 @@ export type Role = 'admin' | 'editor' | 'viewer';
 export interface Social {
   facebook?: string;
   instagram?: string;
-  twitter?: string;
 }
 
 export interface Venmo {
@@ -78,6 +77,10 @@ export interface Event {
   registrationDeadline?: Date;
   rsvpList: string[];
   category: string;
+  month?: string;
+  dateLabel?: string;
+  sortOrder?: number;
+  registrationRequired: boolean;
   published: boolean;
   createdAt?: Date;
   updatedAt?: Date;
@@ -132,6 +135,17 @@ export interface FormSubmission {
   submittedAt?: Date;
 }
 
+export interface Stats {
+  totalEvents: number;
+  publishedEvents: number;
+  totalMembers: number;
+  activeMembers: number;
+  totalBlogPosts: number;
+  publishedBlogPosts: number;
+  totalGalleryImages: number;
+  totalFormSubmissions: number;
+}
+
 function parseJson<T>(value: string | null | undefined, fallback: T): T {
   if (!value) return fallback;
   try {
@@ -141,7 +155,16 @@ function parseJson<T>(value: string | null | undefined, fallback: T): T {
   }
 }
 
+function sanitizeSocial(value: Social | Record<string, unknown> | null | undefined): Social {
+  return {
+    facebook: typeof value?.facebook === 'string' ? value.facebook : undefined,
+    instagram: typeof value?.instagram === 'string' ? value.instagram : undefined,
+  };
+}
+
 function rowToSettings(row: any): Settings {
+  const social = parseJson<Social>(row.social, {});
+
   return {
     id: row.id,
     siteName: row.site_name,
@@ -150,7 +173,7 @@ function rowToSettings(row: any): Settings {
     contactEmail: row.contact_email,
     phone: row.phone,
     address: row.address,
-    social: parseJson<Social>(row.social, {}),
+    social: sanitizeSocial(social),
     venmo: parseJson<Venmo>(row.venmo, {}),
     cashApp: row.cash_app,
     heroes: parseJson<Record<string, Hero>>(row.heroes, {}),
@@ -198,6 +221,10 @@ function rowToEvent(row: any): Event {
     registrationDeadline: row.registration_deadline ? new Date(row.registration_deadline * 1000) : undefined,
     rsvpList: parseJson<string[]>(row.rsvp_list, []),
     category: row.category,
+    month: row.month || undefined,
+    dateLabel: row.date_label || undefined,
+    sortOrder: row.sort_order ?? undefined,
+    registrationRequired: Boolean(row.registration_required),
     published: Boolean(row.published),
     createdAt: row.created_at ? new Date(row.created_at * 1000) : undefined,
     updatedAt: row.updated_at ? new Date(row.updated_at * 1000) : undefined,
@@ -273,7 +300,7 @@ export async function getSettings(): Promise<Settings> {
 export async function updateSettings(data: Partial<Settings>): Promise<Settings> {
   const db = getDb();
   const current = await getSettings();
-  const merged = { ...current, ...data };
+  const merged = { ...current, ...data, social: sanitizeSocial(data.social ?? current.social) };
 
   await db.execute({
     sql: `UPDATE settings SET
@@ -332,7 +359,7 @@ export async function updateTheme(data: Partial<Theme>): Promise<Theme> {
 export async function getUserByEmail(email: string): Promise<User | null> {
   const db = getDb();
   const result = await db.execute({
-    sql: 'SELECT * FROM users WHERE email = ?',
+    sql: 'SELECT * FROM users WHERE lower(email) = ?',
     args: [email.toLowerCase()],
   });
   if (result.rows.length === 0) return null;
@@ -363,7 +390,7 @@ export async function getEvents(published?: boolean): Promise<Event[]> {
     sql += ' WHERE published = ?';
     args.push(Number(published));
   }
-  sql += ' ORDER BY date DESC';
+  sql += ' ORDER BY COALESCE(sort_order, 9999), date ASC, id ASC';
   const result = await db.execute({ sql, args });
   return result.rows.map(rowToEvent);
 }
@@ -381,8 +408,8 @@ export async function getEventById(id: number): Promise<Event | null> {
 export async function createEvent(data: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>): Promise<Event> {
   const db = getDb();
   const result = await db.execute({
-    sql: `INSERT INTO events (title, description, date, end_date, location, image_url, image_alt, capacity, registration_deadline, rsvp_list, category, published, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, unixepoch(), unixepoch())`,
+    sql: `INSERT INTO events (title, description, date, end_date, location, image_url, image_alt, capacity, registration_deadline, rsvp_list, category, month, date_label, sort_order, registration_required, published, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, unixepoch(), unixepoch())`,
     args: [
       data.title,
       data.description,
@@ -395,6 +422,10 @@ export async function createEvent(data: Omit<Event, 'id' | 'createdAt' | 'update
       data.registrationDeadline ? Math.floor(data.registrationDeadline.getTime() / 1000) : null,
       JSON.stringify(data.rsvpList),
       data.category,
+      data.month ?? null,
+      data.dateLabel ?? null,
+      data.sortOrder ?? 0,
+      Number(data.registrationRequired),
       Number(data.published),
     ],
   });
@@ -411,7 +442,8 @@ export async function updateEvent(id: number, data: Partial<Event>): Promise<Eve
   await db.execute({
     sql: `UPDATE events SET
       title = ?, description = ?, date = ?, end_date = ?, location = ?, image_url = ?, image_alt = ?,
-      capacity = ?, registration_deadline = ?, rsvp_list = ?, category = ?, published = ?, updated_at = unixepoch()
+      capacity = ?, registration_deadline = ?, rsvp_list = ?, category = ?, month = ?, date_label = ?, sort_order = ?,
+      registration_required = ?, published = ?, updated_at = unixepoch()
     WHERE id = ?`,
     args: [
       merged.title,
@@ -425,6 +457,10 @@ export async function updateEvent(id: number, data: Partial<Event>): Promise<Eve
       merged.registrationDeadline ? Math.floor(merged.registrationDeadline.getTime() / 1000) : null,
       JSON.stringify(merged.rsvpList),
       merged.category,
+      merged.month ?? null,
+      merged.dateLabel ?? null,
+      merged.sortOrder ?? 0,
+      Number(merged.registrationRequired),
       Number(merged.published),
       id,
     ],
@@ -494,7 +530,7 @@ export async function updateMember(id: number, data: Partial<Member>): Promise<M
 
   await db.execute({
     sql: `UPDATE members SET
-      first_name = ?, last_name = ?, email = ?, bio = ?, photo = ?, roles = ?, is_active = ?, is_verified = ?, updated_at = unixepoch()
+      first_name = ?, last_name = ?, email = ?, bio = ?, photo = ?, roles = ?, is_active = ?, is_verified = ?, join_date = ?, updated_at = unixepoch()
     WHERE id = ?`,
     args: [
       merged.firstName,
@@ -505,6 +541,7 @@ export async function updateMember(id: number, data: Partial<Member>): Promise<M
       JSON.stringify(merged.roles),
       Number(merged.isActive),
       Number(merged.isVerified),
+      merged.joinDate ? Math.floor(merged.joinDate.getTime() / 1000) : Math.floor(Date.now() / 1000),
       id,
     ],
   });
@@ -691,14 +728,20 @@ export async function deleteGalleryImage(id: number): Promise<boolean> {
   return Number(result.rowsAffected) > 0;
 }
 
-export async function getFormSubmissions(type?: string): Promise<FormSubmission[]> {
+export async function getFormSubmissions(filters: { type?: string; status?: FormSubmission['status'] } = {}): Promise<FormSubmission[]> {
   const db = getDb();
   let sql = 'SELECT * FROM form_submissions';
   const args: any[] = [];
-  if (type) {
-    sql += ' WHERE type = ?';
-    args.push(type);
+  const where: string[] = [];
+  if (filters.type) {
+    where.push('type = ?');
+    args.push(filters.type);
   }
+  if (filters.status) {
+    where.push('status = ?');
+    args.push(filters.status);
+  }
+  if (where.length > 0) sql += ` WHERE ${where.join(' AND ')}`;
   sql += ' ORDER BY submitted_at DESC';
   const result = await db.execute({ sql, args });
   return result.rows.map(rowToFormSubmission);
@@ -727,6 +770,9 @@ export async function createFormSubmission(type: string, data: Record<string, st
 
 export async function updateFormSubmissionStatus(id: number, status: FormSubmission['status']): Promise<FormSubmission | null> {
   const db = getDb();
+  if (!['new', 'replied', 'resolved'].includes(status)) {
+    throw new Error('Invalid form status');
+  }
   await db.execute({
     sql: 'UPDATE form_submissions SET status = ? WHERE id = ?',
     args: [status, id],
@@ -734,26 +780,20 @@ export async function updateFormSubmissionStatus(id: number, status: FormSubmiss
   return getFormSubmissionById(id);
 }
 
-export async function getStats(): Promise<{
-  totalEvents: number;
-  publishedEvents: number;
-  totalMembers: number;
-  activeMembers: number;
-  totalBlogPosts: number;
-  publishedBlogPosts: number;
-  totalFormSubmissions: number;
-}> {
+export async function getStats(): Promise<Stats> {
   const db = getDb();
-  const [events, members, blog, forms] = await Promise.all([
+  const [events, members, blog, gallery, forms] = await Promise.all([
     db.execute('SELECT COUNT(*) as c FROM events'),
     db.execute('SELECT COUNT(*) as c FROM members'),
     db.execute('SELECT COUNT(*) as c FROM blog_posts'),
+    db.execute('SELECT COUNT(*) as c FROM gallery_images'),
     db.execute('SELECT COUNT(*) as c FROM form_submissions'),
   ]);
 
   const totalEvents = Number(events.rows[0]?.c ?? 0);
   const totalMembers = Number(members.rows[0]?.c ?? 0);
   const totalBlogPosts = Number(blog.rows[0]?.c ?? 0);
+  const totalGalleryImages = Number(gallery.rows[0]?.c ?? 0);
   const totalFormSubmissions = Number(forms.rows[0]?.c ?? 0);
 
   const [publishedEvents, activeMembers, publishedBlogPosts] = await Promise.all([
@@ -769,6 +809,7 @@ export async function getStats(): Promise<{
     activeMembers: Number(activeMembers.rows[0]?.c ?? 0),
     totalBlogPosts,
     publishedBlogPosts: Number(publishedBlogPosts.rows[0]?.c ?? 0),
+    totalGalleryImages,
     totalFormSubmissions,
   };
 }

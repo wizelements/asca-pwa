@@ -5,9 +5,79 @@ import {
   membershipApplicationTemplate,
   volunteerSignupTemplate,
 } from '@/lib/email';
-import { createFormSubmission } from '@/lib/db/queries';
+import { requireAuth } from '@/lib/auth';
+import {
+  createFormSubmission,
+  getFormSubmissionById,
+  getFormSubmissions,
+  logActivity,
+  updateFormSubmissionStatus,
+  type FormSubmission,
+} from '@/lib/db/queries';
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'info@atlantasaddleclub.com';
+
+function isFormStatus(value: string): value is FormSubmission['status'] {
+  return ['new', 'replied', 'resolved'].includes(value);
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    await requireAuth(req);
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+    const type = searchParams.get('type') || undefined;
+    const statusParam = searchParams.get('status') || undefined;
+    const status = statusParam && isFormStatus(statusParam) ? statusParam : undefined;
+
+    if (id) {
+      const submission = await getFormSubmissionById(Number(id));
+      if (!submission) {
+        return NextResponse.json({ error: 'Form submission not found' }, { status: 404 });
+      }
+      return NextResponse.json(submission);
+    }
+
+    const submissions = await getFormSubmissions({ type, status });
+    return NextResponse.json(submissions);
+  } catch (error: any) {
+    console.error('[FORMS GET]', error);
+    if (error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    return NextResponse.json({ error: 'Failed to fetch form submissions' }, { status: 500 });
+  }
+}
+
+export async function PUT(req: NextRequest) {
+  try {
+    const user = await requireAuth(req);
+    const body = await req.json();
+    const id = Number(body.id);
+    const status = String(body.status || '');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Form submission ID required' }, { status: 400 });
+    }
+    if (!isFormStatus(status)) {
+      return NextResponse.json({ error: 'Status must be new, replied, or resolved' }, { status: 400 });
+    }
+
+    const submission = await updateFormSubmissionStatus(id, status);
+    if (!submission) {
+      return NextResponse.json({ error: 'Form submission not found' }, { status: 404 });
+    }
+
+    await logActivity('form', `Marked ${submission.type} submission ${status}`, user.name || user.email);
+    return NextResponse.json(submission);
+  } catch (error: any) {
+    console.error('[FORMS PUT]', error);
+    if (error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    return NextResponse.json({ error: 'Failed to update form submission' }, { status: 500 });
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {

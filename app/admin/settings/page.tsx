@@ -3,6 +3,13 @@
 import { useEffect, useState } from 'react';
 import { getAdminToken } from '@/components/AdminGuard';
 
+function sanitizeSocial(social: any) {
+  return {
+    facebook: typeof social?.facebook === 'string' ? social.facebook : '',
+    instagram: typeof social?.instagram === 'string' ? social.instagram : '',
+  };
+}
+
 export default function AdminSettings() {
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -18,7 +25,7 @@ export default function AdminSettings() {
       const res = await fetch('/api/settings');
       if (res.ok) {
         const data = await res.json();
-        setSettings(data);
+        setSettings({ ...data, social: sanitizeSocial(data.social) });
       }
     } catch (error) {
       console.error('Failed to fetch settings:', error);
@@ -56,7 +63,7 @@ export default function AdminSettings() {
         payload.phone = settings.phone;
         payload.address = settings.address;
       } else if (section === 'social') {
-        payload.social = settings.social;
+        payload.social = sanitizeSocial(settings.social);
       } else if (section === 'donations') {
         payload.venmo = settings.venmo;
         payload.cashApp = settings.cashApp;
@@ -137,7 +144,6 @@ export default function AdminSettings() {
             {[
               { label: 'Facebook', key: 'social.facebook' },
               { label: 'Instagram', key: 'social.instagram' },
-              { label: 'Twitter / X', key: 'social.twitter' },
             ].map((field) => (
               <div key={field.key}>
                 <label className="block text-sm font-semibold text-brand-fg-primary mb-1">{field.label}</label>
@@ -149,6 +155,10 @@ export default function AdminSettings() {
                 />
               </div>
             ))}
+            <div className="rounded-lg border border-brand-border-subtle bg-brand-bg-subtle p-4">
+              <p className="text-sm font-semibold text-brand-fg-primary">TikTok</p>
+              <p className="mt-1 text-sm text-brand-fg-secondary">Coming soon — shown as text on the public footer, not a link.</p>
+            </div>
             <button
               onClick={() => handleSave('social')}
               disabled={saving}

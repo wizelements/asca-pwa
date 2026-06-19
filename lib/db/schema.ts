@@ -10,7 +10,7 @@ export const settings = sqliteTable('settings', {
   phone: text('phone').default('(404) 555-0123'),
   address: text('address').default('Atlanta, Georgia'),
   social: text('social', { mode: 'json' }).notNull().default(
-    sql`'{"facebook":"https://www.facebook.com/TheRealASCA","instagram":"https://www.instagram.com/therealasca/","twitter":"https://twitter.com/TheRealASCA"}'`
+    sql`'{"facebook":"https://www.facebook.com/TheRealASCA","instagram":"https://www.instagram.com/therealasca/"}'`
   ),
   venmo: text('venmo', { mode: 'json' }).notNull().default(
     sql`'{"username":"@therealasca1","presets":[10,25,50,100]}'`
@@ -61,6 +61,10 @@ export const events = sqliteTable('events', {
   registrationDeadline: integer('registration_deadline', { mode: 'timestamp' }),
   rsvpList: text('rsvp_list', { mode: 'json' }).notNull().default(sql`'[]'`),
   category: text('category').default('hosted'),
+  month: text('month').default(''),
+  dateLabel: text('date_label').default(''),
+  sortOrder: integer('sort_order').default(0),
+  registrationRequired: integer('registration_required', { mode: 'boolean' }).notNull().default(false),
   published: integer('published', { mode: 'boolean' }).notNull().default(false),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),

@@ -9,6 +9,26 @@ import {
   logActivity,
   type Event,
 } from '@/lib/db/queries';
+import { EVENT_CATEGORY_VALUES, isEventCategory } from '@/lib/content/events';
+
+function invalidCategoryResponse() {
+  return NextResponse.json(
+    { error: `Category must be one of: ${EVENT_CATEGORY_VALUES.join(', ')}` },
+    { status: 400 }
+  );
+}
+
+function parseDate(value: unknown, field: string) {
+  const date = new Date(String(value || ''));
+  if (Number.isNaN(date.getTime())) {
+    throw new Error(`${field} is invalid`);
+  }
+  return date;
+}
+
+function isValidationError(error: unknown) {
+  return error instanceof Error && error.message.includes('invalid');
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -45,19 +65,29 @@ export async function POST(request: NextRequest) {
   try {
     const user = await requireAuth(request);
     const body = await request.json();
+    const category = String(body.category || 'hosted');
+
+    if (!isEventCategory(category)) return invalidCategoryResponse();
+    if (!body.title || !body.date) {
+      return NextResponse.json({ error: 'Title and date are required' }, { status: 400 });
+    }
 
     const data = {
       title: body.title,
-      description: body.description,
-      date: new Date(body.date),
-      endDate: new Date(body.endDate),
-      location: body.location,
+      description: body.description || '',
+      date: parseDate(body.date, 'Date'),
+      endDate: parseDate(body.endDate || body.date, 'End date'),
+      location: body.location || '',
       imageUrl: body.imageUrl,
       imageAlt: body.imageAlt || '',
       capacity: body.capacity,
       registrationDeadline: body.registrationDeadline ? new Date(body.registrationDeadline) : undefined,
-      rsvpList: body.rsvpList || [],
-      category: body.category || 'hosted',
+      rsvpList: Array.isArray(body.rsvpList) ? body.rsvpList : [],
+      category,
+      month: body.month || undefined,
+      dateLabel: body.dateLabel || undefined,
+      sortOrder: body.sortOrder !== undefined && body.sortOrder !== '' ? Number(body.sortOrder) : 0,
+      registrationRequired: Boolean(body.registrationRequired),
       published: Boolean(body.published),
     };
 
@@ -69,6 +99,9 @@ export async function POST(request: NextRequest) {
     console.error('[EVENTS POST]', error);
     if (error.message === 'Unauthorized') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (isValidationError(error)) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
     }
     return NextResponse.json(
       { error: 'Failed to create event' },
@@ -90,8 +123,8 @@ export async function PUT(request: NextRequest) {
     const data: Partial<Event> = {};
     if (updates.title !== undefined) data.title = updates.title;
     if (updates.description !== undefined) data.description = updates.description;
-    if (updates.date !== undefined) data.date = new Date(updates.date);
-    if (updates.endDate !== undefined) data.endDate = new Date(updates.endDate);
+    if (updates.date !== undefined) data.date = parseDate(updates.date, 'Date');
+    if (updates.endDate !== undefined) data.endDate = parseDate(updates.endDate || updates.date, 'End date');
     if (updates.location !== undefined) data.location = updates.location;
     if (updates.imageUrl !== undefined) data.imageUrl = updates.imageUrl;
     if (updates.imageAlt !== undefined) data.imageAlt = updates.imageAlt;
@@ -100,7 +133,14 @@ export async function PUT(request: NextRequest) {
       data.registrationDeadline = updates.registrationDeadline ? new Date(updates.registrationDeadline) : undefined;
     }
     if (updates.rsvpList !== undefined) data.rsvpList = updates.rsvpList;
-    if (updates.category !== undefined) data.category = updates.category;
+    if (updates.category !== undefined) {
+      if (!isEventCategory(String(updates.category))) return invalidCategoryResponse();
+      data.category = updates.category;
+    }
+    if (updates.month !== undefined) data.month = updates.month;
+    if (updates.dateLabel !== undefined) data.dateLabel = updates.dateLabel;
+    if (updates.sortOrder !== undefined) data.sortOrder = Number(updates.sortOrder) || 0;
+    if (updates.registrationRequired !== undefined) data.registrationRequired = Boolean(updates.registrationRequired);
     if (updates.published !== undefined) data.published = Boolean(updates.published);
 
     const event = await updateEvent(Number(id), data);
@@ -115,6 +155,9 @@ export async function PUT(request: NextRequest) {
     console.error('[EVENTS PUT]', error);
     if (error.message === 'Unauthorized') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (isValidationError(error)) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
     }
     return NextResponse.json(
       { error: 'Failed to update event' },

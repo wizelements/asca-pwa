@@ -1,30 +1,78 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { getAdminToken } from '@/components/AdminGuard';
+import { useEffect, useMemo, useState } from 'react';
 
-const emptyEvent = {
+import { getAdminToken, logout } from '@/components/AdminGuard';
+import { EVENT_CATEGORIES, EVENT_MONTH_ORDER, type EventCategory } from '@/lib/content/events';
+
+interface AdminEvent {
+  id: number;
+  title: string;
+  description: string;
+  date: string;
+  endDate: string;
+  location: string;
+  category: EventCategory;
+  month?: string;
+  dateLabel?: string;
+  sortOrder?: number;
+  registrationRequired: boolean;
+  published: boolean;
+}
+
+interface EventFormState {
+  title: string;
+  description: string;
+  date: string;
+  endDate: string;
+  location: string;
+  category: EventCategory;
+  month: string;
+  dateLabel: string;
+  sortOrder: string;
+  registrationRequired: boolean;
+  published: boolean;
+}
+
+const CATEGORY_OPTIONS = Object.entries(EVENT_CATEGORIES) as Array<[
+  EventCategory,
+  (typeof EVENT_CATEGORIES)[EventCategory],
+]>;
+
+const emptyEvent: EventFormState = {
   title: '',
   description: '',
   date: '',
   endDate: '',
   location: '',
-  imageUrl: '',
-  imageAlt: '',
-  capacity: '',
-  registrationDeadline: '',
   category: 'hosted',
-  published: false,
+  month: 'June',
+  dateLabel: '',
+  sortOrder: '',
+  registrationRequired: false,
+  published: true,
 };
 
+function toDateInput(value?: string) {
+  if (!value) return '';
+  return new Date(value).toISOString().slice(0, 10);
+}
+
+function formatApiError(data: any, fallback: string) {
+  return typeof data?.error === 'string' ? data.error : fallback;
+}
+
 export default function AdminEvents() {
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<AdminEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<any | null>(null);
-  const [form, setForm] = useState(emptyEvent);
+  const [editing, setEditing] = useState<AdminEvent | null>(null);
+  const [form, setForm] = useState<EventFormState>(emptyEvent);
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+
+  const publishedCount = useMemo(() => events.filter((event) => event.published).length, [events]);
 
   useEffect(() => {
     fetchEvents();
@@ -36,12 +84,18 @@ export default function AdminEvents() {
       const res = await fetch('/api/events/crud', {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      if (res.ok) {
-        const data = await res.json();
-        setEvents(data);
+      if (res.status === 401) {
+        logout();
+        return;
       }
-    } catch (error) {
-      console.error('Failed to fetch events:', error);
+      if (!res.ok) {
+        setError('Unable to load events.');
+        return;
+      }
+      const data = await res.json();
+      setEvents(Array.isArray(data) ? data : []);
+    } catch {
+      setError('Unable to load events.');
     } finally {
       setLoading(false);
     }
@@ -50,24 +104,28 @@ export default function AdminEvents() {
   const openCreate = () => {
     setEditing(null);
     setForm(emptyEvent);
+    setError('');
+    setMessage('');
     setModalOpen(true);
   };
 
-  const openEdit = (event: any) => {
+  const openEdit = (event: AdminEvent) => {
     setEditing(event);
     setForm({
-      title: event.title,
-      description: event.description,
-      date: event.date ? new Date(event.date).toISOString().slice(0, 16) : '',
-      endDate: event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : '',
-      location: event.location,
-      imageUrl: event.imageUrl || '',
-      imageAlt: event.imageAlt || '',
-      capacity: event.capacity || '',
-      registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline).toISOString().slice(0, 16) : '',
+      title: event.title || '',
+      description: event.description || '',
+      date: toDateInput(event.date),
+      endDate: toDateInput(event.endDate || event.date),
+      location: event.location || '',
       category: event.category || 'hosted',
-      published: event.published,
+      month: event.month || new Date(event.date).toLocaleDateString('en-US', { month: 'long', timeZone: 'UTC' }),
+      dateLabel: event.dateLabel || '',
+      sortOrder: event.sortOrder !== undefined ? String(event.sortOrder) : '',
+      registrationRequired: Boolean(event.registrationRequired),
+      published: Boolean(event.published),
     });
+    setError('');
+    setMessage('');
     setModalOpen(true);
   };
 
@@ -75,11 +133,21 @@ export default function AdminEvents() {
     e.preventDefault();
     setSaving(true);
     setMessage('');
+    setError('');
     const token = getAdminToken();
 
     const payload = {
-      ...form,
-      capacity: form.capacity ? Number(form.capacity) : undefined,
+      title: form.title.trim(),
+      description: form.description.trim(),
+      date: form.date,
+      endDate: form.endDate || form.date,
+      location: form.location.trim(),
+      category: form.category,
+      month: form.month,
+      dateLabel: form.dateLabel.trim(),
+      sortOrder: form.sortOrder ? Number(form.sortOrder) : 0,
+      registrationRequired: form.registrationRequired,
+      published: form.published,
     };
 
     try {
@@ -91,244 +159,271 @@ export default function AdminEvents() {
         },
         body: JSON.stringify(editing ? { id: editing.id, ...payload } : payload),
       });
-
-      if (res.ok) {
-        await fetchEvents();
-        setModalOpen(false);
-        setMessage(editing ? 'Event updated' : 'Event created');
-      } else {
-        setMessage('Save failed');
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) {
+        logout();
+        return;
       }
-    } catch (error) {
-      setMessage('Save failed');
+      if (!res.ok) {
+        setError(formatApiError(data, 'Unable to save event.'));
+        return;
+      }
+      await fetchEvents();
+      setModalOpen(false);
+      setMessage(editing ? 'Event updated.' : 'Event created.');
+    } catch {
+      setError('Unable to save event.');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Delete this event?')) return;
+  const handleDelete = async (event: AdminEvent) => {
+    if (!confirm(`Delete ${event.title}?`)) return;
     const token = getAdminToken();
+    setMessage('');
+    setError('');
     try {
-      const res = await fetch(`/api/events/crud?id=${id}`, {
+      const res = await fetch(`/api/events/crud?id=${event.id}`, {
         method: 'DELETE',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      if (res.ok) {
-        await fetchEvents();
-        setMessage('Event deleted');
+      if (res.status === 401) {
+        logout();
+        return;
       }
-    } catch (error) {
-      console.error('Failed to delete event:', error);
+      if (!res.ok) {
+        setError('Unable to delete event.');
+        return;
+      }
+      await fetchEvents();
+      setMessage('Event deleted.');
+    } catch {
+      setError('Unable to delete event.');
     }
   };
 
-  if (loading) return <div className="p-8">Loading...</div>;
+  if (loading) return <div className="p-8">Loading events...</div>;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-4xl font-bold text-brand-fg-primary">Events</h1>
-        <div className="flex items-center gap-4">
-          {message && <span className="text-sm font-medium text-green-600">{message}</span>}
-          <button
-            onClick={openCreate}
-            className="px-6 py-2 rounded-lg bg-brand-forest text-white font-semibold hover:bg-brand-forest-muted"
-          >
-            + New Event
-          </button>
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-4xl font-bold text-brand-fg-primary">Events</h1>
+          <p className="mt-1 text-sm text-brand-fg-secondary">
+            Manage the public Where to Find Us schedule. {publishedCount} of {events.length} events are published.
+          </p>
+        </div>
+        <button
+          onClick={openCreate}
+          className="rounded-lg bg-brand-forest px-6 py-2 font-semibold text-white hover:bg-brand-forest-muted"
+        >
+          + New Event
+        </button>
+      </div>
+
+      {message && <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">{message}</div>}
+      {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>}
+
+      <div className="overflow-hidden rounded-xl border border-brand-border-subtle bg-brand-bg-elevated shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[880px]">
+            <thead className="border-b border-brand-border-subtle bg-brand-bg-subtle">
+              <tr>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-brand-fg-primary">Event</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-brand-fg-primary">Category</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-brand-fg-primary">Month</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-brand-fg-primary">Date Label</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-brand-fg-primary">Status</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-brand-fg-primary">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {events.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-10 text-center text-brand-fg-muted">
+                    No events yet. Add events from the approved ASCA schedule.
+                  </td>
+                </tr>
+              ) : (
+                events.map((event) => {
+                  const category = EVENT_CATEGORIES[event.category] || EVENT_CATEGORIES.hosted;
+                  return (
+                    <tr key={event.id} className="border-b border-brand-border-subtle last:border-0 hover:bg-brand-bg-soft">
+                      <td className="px-6 py-4">
+                        <p className="font-semibold text-brand-fg-primary">{event.title}</p>
+                        {event.registrationRequired && (
+                          <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-brand-forest">Registration required</p>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-brand-fg-secondary">{category.label}</td>
+                      <td className="px-6 py-4 text-sm text-brand-fg-secondary">{event.month || '-'}</td>
+                      <td className="px-6 py-4 text-sm font-semibold text-brand-forest">{event.dateLabel || '-'}</td>
+                      <td className="px-6 py-4">
+                        <span className={`rounded-full px-2 py-1 text-xs font-semibold ${event.published ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                          {event.published ? 'Published' : 'Draft'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => openEdit(event)}
+                            className="rounded-lg bg-brand-forest px-3 py-1 text-sm text-white hover:bg-brand-forest-muted"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(event)}
+                            className="rounded-lg bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <div className="bg-brand-bg-elevated rounded-xl shadow-sm border border-brand-border-subtle overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-brand-bg-subtle border-b border-brand-border-subtle">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-brand-fg-primary">Title</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-brand-fg-primary">Date</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-brand-fg-primary">Location</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-brand-fg-primary">Status</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-brand-fg-primary">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {events.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-brand-fg-muted">
-                  No events yet. Click &quot;+ New Event&quot; to create one.
-                </td>
-              </tr>
-            ) : (
-              events.map((event) => (
-                <tr key={event.id} className="border-b border-brand-border-subtle hover:bg-brand-bg-soft">
-                  <td className="px-6 py-4 text-brand-fg-primary font-medium">{event.title}</td>
-                  <td className="px-6 py-4 text-brand-fg-secondary">
-                    {event.date ? new Date(event.date).toLocaleString() : '-'}
-                  </td>
-                  <td className="px-6 py-4 text-brand-fg-secondary">{event.location}</td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex px-2 py-1 rounded-full text-xs font-semibold ${event.published ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                      {event.published ? 'Published' : 'Draft'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => openEdit(event)}
-                        className="px-3 py-1 rounded-lg bg-brand-forest text-white text-sm hover:bg-brand-forest-muted"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(event.id)}
-                        className="px-3 py-1 rounded-lg bg-red-600 text-white text-sm hover:bg-red-700"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-brand-bg-elevated rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <h2 className="text-2xl font-bold text-brand-fg-primary mb-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl bg-brand-bg-elevated p-6 shadow-xl">
+            <h2 className="mb-6 text-2xl font-bold text-brand-fg-primary">
               {editing ? 'Edit Event' : 'Create Event'}
             </h2>
             <form onSubmit={handleSave} className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-brand-fg-primary mb-1">Title *</label>
-                <input
-                  type="text"
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full px-4 py-2 border border-brand-border-subtle rounded-lg bg-brand-bg-body text-brand-fg-primary"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-brand-fg-primary mb-1">Description *</label>
-                <textarea
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  rows={4}
-                  className="w-full px-4 py-2 border border-brand-border-subtle rounded-lg bg-brand-bg-body text-brand-fg-primary"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-brand-fg-primary mb-1">Start Date *</label>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Title *</label>
                   <input
-                    type="datetime-local"
-                    value={form.date}
-                    onChange={(e) => setForm({ ...form, date: e.target.value })}
-                    className="w-full px-4 py-2 border border-brand-border-subtle rounded-lg bg-brand-bg-body text-brand-fg-primary"
+                    type="text"
+                    value={form.title}
+                    onChange={(e) => setForm({ ...form, title: e.target.value })}
+                    className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-brand-fg-primary mb-1">End Date *</label>
-                  <input
-                    type="datetime-local"
-                    value={form.endDate}
-                    onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-                    className="w-full px-4 py-2 border border-brand-border-subtle rounded-lg bg-brand-bg-body text-brand-fg-primary"
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-brand-fg-primary mb-1">Location *</label>
-                <input
-                  type="text"
-                  value={form.location}
-                  onChange={(e) => setForm({ ...form, location: e.target.value })}
-                  className="w-full px-4 py-2 border border-brand-border-subtle rounded-lg bg-brand-bg-body text-brand-fg-primary"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-brand-fg-primary mb-1">Image URL</label>
-                <input
-                  type="url"
-                  value={form.imageUrl}
-                  onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-                  className="w-full px-4 py-2 border border-brand-border-subtle rounded-lg bg-brand-bg-body text-brand-fg-primary"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-brand-fg-primary mb-1">Image Alt Text *</label>
-                <input
-                  type="text"
-                  value={form.imageAlt}
-                  onChange={(e) => setForm({ ...form, imageAlt: e.target.value })}
-                  className="w-full px-4 py-2 border border-brand-border-subtle rounded-lg bg-brand-bg-body text-brand-fg-primary"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-brand-fg-primary mb-1">Capacity</label>
-                  <input
-                    type="number"
-                    value={form.capacity}
-                    onChange={(e) => setForm({ ...form, capacity: e.target.value })}
-                    className="w-full px-4 py-2 border border-brand-border-subtle rounded-lg bg-brand-bg-body text-brand-fg-primary"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-brand-fg-primary mb-1">Registration Deadline</label>
-                  <input
-                    type="datetime-local"
-                    value={form.registrationDeadline}
-                    onChange={(e) => setForm({ ...form, registrationDeadline: e.target.value })}
-                    className="w-full px-4 py-2 border border-brand-border-subtle rounded-lg bg-brand-bg-body text-brand-fg-primary"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-brand-fg-primary mb-1">Category</label>
+                  <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Category *</label>
                   <select
                     value={form.category}
-                    onChange={(e) => setForm({ ...form, category: e.target.value })}
-                    className="w-full px-4 py-2 border border-brand-border-subtle rounded-lg bg-brand-bg-body text-brand-fg-primary"
+                    onChange={(e) => setForm({ ...form, category: e.target.value as EventCategory })}
+                    className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary"
                   >
-                    <option value="hosted">Hosted by ASCA</option>
-                    <option value="attending">ASCA Will Be There</option>
-                    <option value="sponsored">Sponsored by ASCA</option>
+                    {CATEGORY_OPTIONS.map(([value, category]) => (
+                      <option key={value} value={value}>{category.label}</option>
+                    ))}
                   </select>
                 </div>
-                <div className="flex items-center">
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={form.published}
-                      onChange={(e) => setForm({ ...form, published: e.target.checked })}
-                      className="w-5 h-5"
-                    />
-                    <span className="text-brand-fg-primary font-medium">Published</span>
-                  </label>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Month *</label>
+                  <select
+                    value={form.month}
+                    onChange={(e) => setForm({ ...form, month: e.target.value })}
+                    className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary"
+                  >
+                    {EVENT_MONTH_ORDER.map((month) => (
+                      <option key={month} value={month}>{month}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Sort Date *</label>
+                  <input
+                    type="date"
+                    value={form.date}
+                    onChange={(e) => setForm({ ...form, date: e.target.value, endDate: form.endDate || e.target.value })}
+                    className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary"
+                    required
+                  />
+                  <p className="mt-1 text-xs text-brand-fg-muted">Used for ordering, including Date TBA events.</p>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">End Date</label>
+                  <input
+                    type="date"
+                    value={form.endDate}
+                    onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+                    className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Public Date Label *</label>
+                  <input
+                    type="text"
+                    value={form.dateLabel}
+                    onChange={(e) => setForm({ ...form, dateLabel: e.target.value })}
+                    placeholder="7/8 or Date TBA"
+                    className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Sort Order</label>
+                  <input
+                    type="number"
+                    value={form.sortOrder}
+                    onChange={(e) => setForm({ ...form, sortOrder: e.target.value })}
+                    className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Location</label>
+                  <input
+                    type="text"
+                    value={form.location}
+                    onChange={(e) => setForm({ ...form, location: e.target.value })}
+                    className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Description</label>
+                  <textarea
+                    value={form.description}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    rows={4}
+                    className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary"
+                  />
                 </div>
               </div>
+
+              <div className="flex flex-col gap-3 rounded-lg border border-brand-border-subtle p-4 sm:flex-row sm:items-center sm:justify-between">
+                <label className="flex items-center gap-3 text-sm font-medium text-brand-fg-primary">
+                  <input
+                    type="checkbox"
+                    checked={form.registrationRequired}
+                    onChange={(e) => setForm({ ...form, registrationRequired: e.target.checked })}
+                    className="h-4 w-4"
+                  />
+                  Registration Required
+                </label>
+                <label className="flex items-center gap-3 text-sm font-medium text-brand-fg-primary">
+                  <input
+                    type="checkbox"
+                    checked={form.published}
+                    onChange={(e) => setForm({ ...form, published: e.target.checked })}
+                    className="h-4 w-4"
+                  />
+                  Published
+                </label>
+              </div>
+
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-6 py-2 rounded-lg border border-brand-border-subtle text-brand-fg-primary hover:bg-brand-bg-subtle"
+                  className="rounded-lg border border-brand-border-subtle px-6 py-2 text-brand-fg-primary hover:bg-brand-bg-subtle"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-6 py-2 rounded-lg bg-brand-forest text-white font-semibold hover:bg-brand-forest-muted disabled:opacity-50"
+                  className="rounded-lg bg-brand-forest px-6 py-2 font-semibold text-white hover:bg-brand-forest-muted disabled:opacity-50"
                 >
                   {saving ? 'Saving...' : editing ? 'Update Event' : 'Create Event'}
                 </button>

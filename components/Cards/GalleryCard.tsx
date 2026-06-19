@@ -3,6 +3,7 @@ import Image from 'next/image';
 interface GalleryCardProps {
   title: string;
   image: string;
+  alt?: string;
   description?: string;
   category?: string;
 }
@@ -10,6 +11,7 @@ interface GalleryCardProps {
 export default function GalleryCard({
   title,
   image,
+  alt,
   description,
   category,
 }: GalleryCardProps) {
@@ -19,7 +21,7 @@ export default function GalleryCard({
         <div className="relative h-56 w-full">
           <Image
             src={image}
-            alt={title}
+            alt={alt || title}
             fill
             className="rounded-lg object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

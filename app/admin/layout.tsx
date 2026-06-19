@@ -31,7 +31,6 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
     { label: 'Dashboard', href: '/admin', icon: '📊' },
     { label: 'Events', href: '/admin/events', icon: '📅' },
     { label: 'Members', href: '/admin/members', icon: '👥' },
-    { label: 'Blog', href: '/admin/blog', icon: '📝' },
     { label: 'Gallery', href: '/admin/gallery', icon: '🖼️' },
     { label: 'Forms', href: '/admin/forms', icon: '📋' },
     { label: 'Settings', href: '/admin/settings', icon: '⚙️' },

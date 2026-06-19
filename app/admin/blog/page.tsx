@@ -1,30 +1,26 @@
+import Link from 'next/link';
+
 export default function AdminBlog() {
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-4xl font-bold text-primary">Blog Posts</h1>
-        <button className="btn-accent px-6 py-2">+ Write Post</button>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-4xl font-bold text-brand-fg-primary">Blog Disabled</h1>
+        <p className="mt-2 max-w-2xl text-brand-fg-secondary">
+          Blog publishing is not part of the approved ASCA website scope. Use Events for the public schedule and Gallery for
+          activity updates and photos.
+        </p>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Title</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Author</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Published</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Views</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="border-b hover:bg-gray-50">
-              <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                No blog posts yet. Click &quot;+ Write Post&quot; to create one.
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div className="rounded-xl border border-brand-border-subtle bg-brand-bg-elevated p-6 shadow-sm">
+        <h2 className="text-xl font-bold text-brand-fg-primary">Available content workflows</h2>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Link href="/admin/events" className="rounded-lg bg-brand-forest px-4 py-2 text-sm font-semibold text-white hover:bg-brand-forest-muted">
+            Manage Events
+          </Link>
+          <Link href="/admin/gallery" className="rounded-lg bg-brand-accent px-4 py-2 text-sm font-semibold text-brand-fg-primary hover:bg-brand-accent-muted">
+            Manage Gallery
+          </Link>
+        </div>
       </div>
     </div>
   );

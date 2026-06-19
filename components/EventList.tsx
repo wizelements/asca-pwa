@@ -9,6 +9,14 @@ function eventsByMonth(month: string) {
   return EVENTS.filter((event) => event.month === month);
 }
 
+function eventMonths(events: AscaEvent[]) {
+  const months = new Set(events.map((event) => event.month));
+  return [
+    ...EVENT_MONTH_ORDER.filter((month) => months.has(month)),
+    ...Array.from(months).filter((month) => !EVENT_MONTH_ORDER.includes(month)),
+  ];
+}
+
 export function EventCard({ event }: { event: AscaEvent }) {
   const category = EVENT_CATEGORIES[event.category];
 
@@ -63,11 +71,11 @@ export function MonthSection({ month, events }: { month: string; events: AscaEve
   );
 }
 
-export function EventTimeline() {
+export function EventTimeline({ events = EVENTS }: { events?: AscaEvent[] }) {
   return (
     <div className="space-y-10" aria-label="ASCA event schedule">
-      {EVENT_MONTH_ORDER.map((month) => (
-        <MonthSection key={month} month={month} events={eventsByMonth(month)} />
+      {eventMonths(events).map((month) => (
+        <MonthSection key={month} month={month} events={events.filter((event) => event.month === month)} />
       ))}
     </div>
   );

@@ -5,6 +5,10 @@ import Footer from '@/components/Footer';
 import MeetingCallout from '@/components/MeetingCallout';
 import EventLegend from '@/components/EventLegend';
 import EventList from '@/components/EventList';
+import { EVENTS, isEventCategory, type AscaEvent } from '@/lib/content/events';
+import { getEvents, type Event as DbEvent } from '@/lib/db/queries';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: { absolute: 'Where to Find Us | ASCA Events' },
@@ -12,7 +16,40 @@ export const metadata: Metadata = {
     'Find upcoming ASCA meetings, hosted events, events where ASCA will be present, and community outreach activities sponsored by ASCA.',
 };
 
-export default function WhereToFindUs() {
+function formatEventDateLabel(event: DbEvent) {
+  if (event.dateLabel) return event.dateLabel;
+
+  const start = event.date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', timeZone: 'UTC' });
+  const end = event.endDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', timeZone: 'UTC' });
+  return start === end ? start : `${start}–${end}`;
+}
+
+function dbEventToCalendarEvent(event: DbEvent): AscaEvent {
+  const month = event.month || event.date.toLocaleDateString('en-US', { month: 'long', timeZone: 'UTC' });
+  return {
+    month,
+    title: event.title,
+    category: isEventCategory(event.category) ? event.category : 'hosted',
+    dateLabel: formatEventDateLabel(event),
+    description: event.description || undefined,
+    location: event.location || undefined,
+    registrationRequired: event.registrationRequired,
+  };
+}
+
+async function getCalendarEvents() {
+  try {
+    const events = await getEvents(true);
+    return events.length > 0 ? events.map(dbEventToCalendarEvent) : EVENTS;
+  } catch (error) {
+    console.error('[WHERE TO FIND US EVENTS]', error);
+    return EVENTS;
+  }
+}
+
+export default async function WhereToFindUs() {
+  const events = await getCalendarEvents();
+
   return (
     <>
       <Header />
@@ -37,7 +74,7 @@ export default function WhereToFindUs() {
               <EventLegend />
             </div>
 
-            <EventList />
+            <EventList events={events} />
           </div>
         </section>
       </main>

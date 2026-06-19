@@ -10,8 +10,7 @@ interface DashboardStats {
   publishedEvents: number;
   totalMembers: number;
   activeMembers: number;
-  totalBlogPosts: number;
-  publishedBlogPosts: number;
+  totalGalleryImages: number;
   totalFormSubmissions: number;
 }
 
@@ -29,8 +28,7 @@ export default function AdminDashboard() {
     publishedEvents: 0,
     totalMembers: 0,
     activeMembers: 0,
-    totalBlogPosts: 0,
-    publishedBlogPosts: 0,
+    totalGalleryImages: 0,
     totalFormSubmissions: 0,
   });
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
@@ -99,9 +97,9 @@ export default function AdminDashboard() {
           color="bg-gradient-to-br from-green-50 to-green-100/50"
         />
         <StatCard
-          label="Published Blog Posts"
-          value={stats.publishedBlogPosts}
-          icon="📝"
+          label="Gallery Images"
+          value={stats.totalGalleryImages}
+          icon="🖼️"
           color="bg-gradient-to-br from-purple-50 to-purple-100/50"
         />
         <StatCard
@@ -134,13 +132,13 @@ export default function AdminDashboard() {
             </Link>
 
             <Link
-              href="/admin/blog"
+              href="/admin/gallery"
               className="group relative overflow-hidden rounded-lg bg-gradient-to-br from-purple-50 to-purple-100/50 p-6 transition-all hover:shadow-md border border-purple-200/50 hover:border-purple-300"
             >
               <div className="relative z-10">
-                <div className="text-2xl mb-2">📝</div>
-                <p className="text-sm font-medium text-brand-fg-muted">Write Blog Post</p>
-                <p className="text-xs text-brand-fg-muted/60 mt-1">Share updates with members</p>
+                <div className="text-2xl mb-2">🖼️</div>
+                <p className="text-sm font-medium text-brand-fg-muted">Manage Gallery</p>
+                <p className="text-xs text-brand-fg-muted/60 mt-1">Add photos with accessible alt text</p>
               </div>
             </Link>
 
