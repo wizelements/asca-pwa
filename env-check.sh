@@ -66,6 +66,8 @@ check_optional_var() {
 }
 
 check_optional_var "RESEND_API_KEY"
+check_optional_var "RESEND_FROM_EMAIL"
+check_optional_var "RESEND_FROM_NAME"
 check_optional_var "NEXT_PUBLIC_SITE_URL"
 check_optional_var "NEXT_PUBLIC_SITE_NAME"
 

@@ -9,6 +9,7 @@ import {
 import { adminPasswordResetTemplate, sendEmail } from '@/lib/email';
 import { getUserByEmail, logActivity, updateUserPassword } from '@/lib/db/queries';
 
+// Only these approved recovery recipients receive admin reset links.
 const PASSWORD_RESET_RECIPIENTS = ['silverwatkins@gmail.com'];
 const RESET_TOKEN_EXPIRES_MINUTES = 30;
 const MIN_PASSWORD_LENGTH = 12;
