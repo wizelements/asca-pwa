@@ -15,17 +15,24 @@ export default function GalleryCard({
   description,
   category,
 }: GalleryCardProps) {
+  const isInlineImage = image.startsWith('data:');
+
   return (
     <div className="card overflow-hidden">
       {image && (
         <div className="relative h-56 w-full">
-          <Image
-            src={image}
-            alt={alt || title}
-            fill
-            className="rounded-lg object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
+          {isInlineImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={image} alt={alt || title} className="h-full w-full rounded-lg object-cover" />
+          ) : (
+            <Image
+              src={image}
+              alt={alt || title}
+              fill
+              className="rounded-lg object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          )}
         </div>
       )}
       <div className="mt-5">

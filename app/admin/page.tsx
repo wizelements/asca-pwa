@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { getAdminToken } from '@/components/AdminGuard';
+import { getAdminToken, logout } from '@/components/AdminGuard';
 
 interface DashboardStats {
   totalEvents: number;
@@ -33,6 +33,8 @@ export default function AdminDashboard() {
   });
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState('');
 
   useEffect(() => {
     fetchDashboardData();
@@ -45,6 +47,11 @@ export default function AdminDashboard() {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 
+      if (res.status === 401) {
+        logout();
+        return;
+      }
+
       if (res.ok) {
         const data = await res.json();
         setStats(data);
@@ -54,6 +61,38 @@ export default function AdminDashboard() {
       console.error('Failed to fetch dashboard data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const downloadBackup = async () => {
+    setExporting(true);
+    setExportError('');
+    const token = getAdminToken();
+    try {
+      const res = await fetch('/api/admin/export', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.status === 401) {
+        logout();
+        return;
+      }
+      if (!res.ok) {
+        setExportError('Unable to download backup.');
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `asca-content-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      setExportError('Unable to download backup.');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -77,10 +116,16 @@ export default function AdminDashboard() {
           <h1 className="text-4xl font-bold text-brand-fg-primary">Dashboard</h1>
           <p className="mt-1 text-brand-fg-secondary">Welcome back. Here&apos;s what&apos;s happening with your site.</p>
         </div>
-        <button className="px-6 py-3 rounded-full bg-brand-forest text-white font-semibold hover:bg-brand-forest/90 transition-colors">
-          Last 30 Days
+        <button
+          onClick={downloadBackup}
+          disabled={exporting}
+          className="px-6 py-3 rounded-full bg-brand-forest text-white font-semibold hover:bg-brand-forest/90 transition-colors disabled:opacity-50"
+        >
+          {exporting ? 'Preparing Backup...' : 'Download Backup'}
         </button>
       </div>
+
+      {exportError && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{exportError}</div>}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -161,6 +206,28 @@ export default function AdminDashboard() {
                 <div className="text-2xl mb-2">🎨</div>
                 <p className="text-sm font-medium text-brand-fg-muted">Edit Theme</p>
                 <p className="text-xs text-brand-fg-muted/60 mt-1">Customize colors & branding</p>
+              </div>
+            </Link>
+
+            <Link
+              href="/admin/help"
+              className="group relative overflow-hidden rounded-lg bg-gradient-to-br from-yellow-50 to-yellow-100/50 p-6 transition-all hover:shadow-md border border-yellow-200/50 hover:border-yellow-300"
+            >
+              <div className="relative z-10">
+                <div className="text-2xl mb-2">❔</div>
+                <p className="text-sm font-medium text-brand-fg-muted">Admin Help</p>
+                <p className="text-xs text-brand-fg-muted/60 mt-1">Review client workflow guidance</p>
+              </div>
+            </Link>
+
+            <Link
+              href="/admin/account"
+              className="group relative overflow-hidden rounded-lg bg-gradient-to-br from-red-50 to-red-100/50 p-6 transition-all hover:shadow-md border border-red-200/50 hover:border-red-300"
+            >
+              <div className="relative z-10">
+                <div className="text-2xl mb-2">🔐</div>
+                <p className="text-sm font-medium text-brand-fg-muted">Account Security</p>
+                <p className="text-xs text-brand-fg-muted/60 mt-1">Change the admin password</p>
               </div>
             </Link>
           </div>

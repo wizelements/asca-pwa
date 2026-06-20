@@ -1,6 +1,8 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { createHash, pbkdf2Sync, randomBytes, timingSafeEqual } from 'crypto';
 
+import { getUserByEmail } from '@/lib/db/queries';
+
 const JWT_SECRET = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || 'fallback-secret-change-me');
 
 export interface JWTPayload {
@@ -8,6 +10,7 @@ export interface JWTPayload {
   email: string;
   name: string;
   role: 'admin' | 'editor' | 'viewer';
+  passwordVersion: string;
 }
 
 export interface PasswordResetPayload {
@@ -29,6 +32,15 @@ export async function signToken(payload: JWTPayload): Promise<string> {
 export async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET, { algorithms: ['HS256'] });
+    if (
+      typeof payload.sub !== 'string' ||
+      typeof payload.email !== 'string' ||
+      typeof payload.name !== 'string' ||
+      typeof payload.role !== 'string' ||
+      typeof payload.passwordVersion !== 'string'
+    ) {
+      return null;
+    }
     return payload as unknown as JWTPayload;
   } catch {
     return null;
@@ -111,5 +123,19 @@ export async function requireAuth(request: Request): Promise<JWTPayload> {
   if (!payload) {
     throw new Error('Unauthorized');
   }
-  return payload;
+  const user = await getUserByEmail(payload.email);
+  if (
+    !user?.isActive ||
+    String(user.id) !== payload.sub ||
+    user.role !== payload.role ||
+    getPasswordVersion(user.password) !== payload.passwordVersion
+  ) {
+    throw new Error('Unauthorized');
+  }
+  return {
+    ...payload,
+    email: user.email,
+    name: user.name || user.email,
+    role: user.role,
+  };
 }

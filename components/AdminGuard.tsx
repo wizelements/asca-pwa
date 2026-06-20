@@ -32,7 +32,7 @@ export function useAuth(): { user: AuthUser | null; isLoading: boolean; logout: 
 
   const logout = () => {
     localStorage.removeItem('asca_admin_user');
-    window.location.href = '/';
+    window.location.href = '/admin/login';
   };
 
   return { user, isLoading, logout };
@@ -52,7 +52,7 @@ export function getAdminToken(): string | null {
 
 export function logout(): void {
   localStorage.removeItem('asca_admin_user');
-  window.location.href = '/';
+  window.location.href = '/admin/login';
 }
 
 interface AdminGuardProps {

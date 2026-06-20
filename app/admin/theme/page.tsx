@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getAdminToken } from '@/components/AdminGuard';
+import { getAdminToken, logout } from '@/components/AdminGuard';
 
 const DEFAULT_COLORS = {
   primary: '#1a1a1a',
@@ -65,6 +65,11 @@ export default function AdminTheme() {
           fonts: theme.fonts,
         }),
       });
+
+      if (res.status === 401) {
+        logout();
+        return;
+      }
 
       if (res.ok) {
         const updated = await res.json();

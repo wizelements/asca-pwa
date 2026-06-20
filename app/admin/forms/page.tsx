@@ -21,6 +21,22 @@ const STATUS_OPTIONS: Array<{ value: '' | FormStatus; label: string }> = [
   { value: 'resolved', label: 'Resolved' },
 ];
 
+const KNOWN_FORM_TYPES = ['contact', 'event-updates', 'membership', 'volunteer'];
+
+function displayFormType(type: string) {
+  return type
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+function mailtoForSubmission(submission: FormSubmission) {
+  const email = submission.data.email;
+  if (!email) return '';
+  const subject = encodeURIComponent(`ASCA ${displayFormType(submission.type)} follow-up`);
+  return `mailto:${email}?subject=${subject}`;
+}
+
 export default function AdminForms() {
   const [submissions, setSubmissions] = useState<FormSubmission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,10 +46,10 @@ export default function AdminForms() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  const formTypes = useMemo(
-    () => Array.from(new Set(submissions.map((submission) => submission.type))).sort(),
-    [submissions]
-  );
+  const formTypes = useMemo(() => {
+    const types = new Set([...KNOWN_FORM_TYPES, ...submissions.map((submission) => submission.type)]);
+    return Array.from(types).sort();
+  }, [submissions]);
 
   useEffect(() => {
     fetchSubmissions();
@@ -113,7 +129,7 @@ export default function AdminForms() {
           >
             <option value="">All forms</option>
             {formTypes.map((type) => (
-              <option key={type} value={type}>{type}</option>
+              <option key={type} value={type}>{displayFormType(type)}</option>
             ))}
           </select>
           <select
@@ -157,7 +173,7 @@ export default function AdminForms() {
                       <p className="font-semibold text-brand-fg-primary">{submission.data.name || 'Website visitor'}</p>
                       <p className="text-sm text-brand-fg-secondary">{submission.data.email || '-'}</p>
                     </td>
-                    <td className="px-6 py-4 text-sm text-brand-fg-secondary">{submission.type}</td>
+                    <td className="px-6 py-4 text-sm text-brand-fg-secondary">{displayFormType(submission.type)}</td>
                     <td className="px-6 py-4 text-sm text-brand-fg-secondary">
                       {submission.submittedAt ? new Date(submission.submittedAt).toLocaleString() : '-'}
                     </td>
@@ -176,6 +192,11 @@ export default function AdminForms() {
                       <button onClick={() => setSelected(submission)} className="rounded-lg bg-brand-forest px-3 py-1 text-sm text-white hover:bg-brand-forest-muted">
                         View
                       </button>
+                      {submission.data.email && (
+                        <a href={mailtoForSubmission(submission)} className="ml-2 rounded-lg border border-brand-border-subtle px-3 py-1 text-sm text-brand-fg-primary hover:bg-brand-bg-subtle">
+                          Email
+                        </a>
+                      )}
                     </td>
                   </tr>
                 ))
@@ -191,7 +212,7 @@ export default function AdminForms() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-2xl font-bold text-brand-fg-primary">Submission Details</h2>
-                <p className="mt-1 text-sm text-brand-fg-secondary">{selected.type} · {selected.status}</p>
+                <p className="mt-1 text-sm text-brand-fg-secondary">{displayFormType(selected.type)} · {selected.status}</p>
               </div>
               <button onClick={() => setSelected(null)} className="rounded-lg border border-brand-border-subtle px-3 py-1 text-sm text-brand-fg-primary hover:bg-brand-bg-subtle">
                 Close
@@ -208,6 +229,11 @@ export default function AdminForms() {
             </dl>
 
             <div className="mt-6 flex flex-wrap gap-3">
+              {selected.data.email && (
+                <a href={mailtoForSubmission(selected)} className="rounded-lg border border-brand-border-subtle px-4 py-2 text-sm font-semibold text-brand-fg-primary hover:bg-brand-bg-subtle">
+                  Email Submitter
+                </a>
+              )}
               <button onClick={() => updateStatus(selected, 'replied')} className="rounded-lg bg-brand-forest px-4 py-2 text-sm font-semibold text-white hover:bg-brand-forest-muted">Mark Replied</button>
               <button onClick={() => updateStatus(selected, 'resolved')} className="rounded-lg bg-brand-accent px-4 py-2 text-sm font-semibold text-brand-fg-primary hover:bg-brand-accent-muted">Mark Resolved</button>
             </div>

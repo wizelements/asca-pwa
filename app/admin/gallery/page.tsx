@@ -1,8 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
+import AdminImageField from '@/components/AdminImageField';
 import { getAdminToken, logout } from '@/components/AdminGuard';
 
 interface GalleryItem {
@@ -183,7 +183,8 @@ export default function AdminGallery() {
           {items.map((item) => (
             <article key={item.id} className="card overflow-hidden p-0">
               <div className="relative aspect-[4/3] bg-brand-bg-subtle">
-                <Image src={item.image} alt={item.alt} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={item.image} alt={item.alt} className="h-full w-full object-cover" />
               </div>
               <div className="p-5">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-forest">{item.category}</p>
@@ -210,8 +211,13 @@ export default function AdminGallery() {
                 <input type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary" required />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Image path or URL *</label>
-                <input type="text" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} placeholder="/images/gallery/event.jpg or https://..." className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary" required />
+                <AdminImageField
+                  label="Image path, URL, or upload"
+                  value={form.image}
+                  onChange={(image) => setForm({ ...form, image })}
+                  required
+                  previewAlt={form.alt || 'Gallery image preview'}
+                />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Alt Text *</label>
@@ -225,15 +231,6 @@ export default function AdminGallery() {
                 <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Description</label>
                 <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary" />
               </div>
-
-              {form.image && (
-                <div className="rounded-lg border border-brand-border-subtle p-3">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-brand-fg-muted">Preview</p>
-                  <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-brand-bg-subtle">
-                    <Image src={form.image} alt={form.alt || 'Gallery preview'} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
-                  </div>
-                </div>
-              )}
 
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={() => setModalOpen(false)} className="rounded-lg border border-brand-border-subtle px-6 py-2 text-brand-fg-primary hover:bg-brand-bg-subtle">Cancel</button>

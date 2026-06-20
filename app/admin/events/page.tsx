@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { getAdminToken, logout } from '@/components/AdminGuard';
 import { EVENT_CATEGORIES, EVENT_MONTH_ORDER, type EventCategory } from '@/lib/content/events';
 
+type EventFilter = 'all' | 'published' | 'draft' | 'upcoming' | 'past';
+
 interface AdminEvent {
   id: number;
   title: string;
@@ -71,8 +73,20 @@ export default function AdminEvents() {
   const [form, setForm] = useState<EventFormState>(emptyEvent);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [eventFilter, setEventFilter] = useState<EventFilter>('all');
 
   const publishedCount = useMemo(() => events.filter((event) => event.published).length, [events]);
+  const filteredEvents = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return events.filter((event) => {
+      if (eventFilter === 'published') return event.published;
+      if (eventFilter === 'draft') return !event.published;
+      if (eventFilter === 'upcoming') return new Date(event.endDate || event.date) >= today;
+      if (eventFilter === 'past') return new Date(event.endDate || event.date) < today;
+      return true;
+    });
+  }, [events, eventFilter]);
 
   useEffect(() => {
     fetchEvents();
@@ -222,6 +236,35 @@ export default function AdminEvents() {
         </button>
       </div>
 
+      <div className="flex flex-col gap-4 rounded-xl border border-brand-border-subtle bg-brand-bg-elevated p-4 shadow-sm md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-brand-fg-primary">Schedule tools</p>
+          <p className="text-xs text-brand-fg-secondary">Use Draft for cancelled or archived events. The public page only shows Published events.</p>
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <select
+            value={eventFilter}
+            onChange={(e) => setEventFilter(e.target.value as EventFilter)}
+            className="rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary"
+            aria-label="Filter events"
+          >
+            <option value="all">All events</option>
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="past">Past</option>
+          </select>
+          <a
+            href="/where-to-find-us"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-lg border border-brand-border-subtle px-4 py-2 text-center text-sm font-semibold text-brand-fg-primary hover:bg-brand-bg-subtle"
+          >
+            View public schedule
+          </a>
+        </div>
+      </div>
+
       {message && <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">{message}</div>}
       {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>}
 
@@ -239,14 +282,14 @@ export default function AdminEvents() {
               </tr>
             </thead>
             <tbody>
-              {events.length === 0 ? (
+              {filteredEvents.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-10 text-center text-brand-fg-muted">
-                    No events yet. Add events from the approved ASCA schedule.
+                    No events match this view.
                   </td>
                 </tr>
               ) : (
-                events.map((event) => {
+                filteredEvents.map((event) => {
                   const category = EVENT_CATEGORIES[event.category] || EVENT_CATEGORIES.hosted;
                   return (
                     <tr key={event.id} className="border-b border-brand-border-subtle last:border-0 hover:bg-brand-bg-soft">

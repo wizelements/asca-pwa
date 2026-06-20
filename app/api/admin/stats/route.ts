@@ -15,7 +15,7 @@ export async function GET(request: Request) {
       user,
     }, {
       headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+        'Cache-Control': 'private, no-store, must-revalidate',
       },
     });
   } catch (error: any) {

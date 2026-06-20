@@ -1,11 +1,27 @@
 import { NextResponse } from 'next/server';
-import { createBlogPost, createGalleryImage, getBlogPosts, getGalleryImages } from '@/lib/db/queries';
+import { EVENTS } from '@/lib/content/events';
+import { createEvent, createGalleryImage, getEvents, getGalleryImages } from '@/lib/db/queries';
+
+const gallerySeed = [
+  { title: 'Our Horses', image: '/images/gallery/horse-closeup.jpg', description: 'ASCA horses up close', category: 'Horses', alt: 'Horse close-up at ASCA' },
+  { title: 'Trail Rides', image: '/images/gallery/rider.jpg', description: 'Members on horseback', category: 'Trail Rides', alt: 'ASCA rider on horseback' },
+  { title: 'Community', image: '/images/gallery/blog-member.jpg', description: 'ASCA member activity', category: 'Community', alt: 'ASCA member activity' },
+  { title: 'Activities', image: '/images/gallery/activity.jpg', description: 'ASCA trail ride activity', category: 'Activities', alt: 'ASCA trail ride activity' },
+  { title: 'Events', image: '/images/gallery/event.jpg', description: 'Community event photos', category: 'Events', alt: 'ASCA community event' },
+  { title: 'Members', image: '/images/members/member-1.jpg', description: 'ASCA members', category: 'Members', alt: 'ASCA member' },
+];
+
+function parseSeedDate(value: string | undefined, fallback: string | undefined) {
+  const date = new Date(`${value || fallback || '2026-12-31'}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) return new Date('2026-12-31T00:00:00Z');
+  return date;
+}
 
 export async function POST(request: Request) {
   const { searchParams } = new URL(request.url);
   const key = searchParams.get('key');
 
-  const validKey = process.env.SEED_KEY || process.env.NEXTAUTH_SECRET;
+  const validKey = process.env.SEED_KEY;
   if (!validKey || key !== validKey) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -13,49 +29,39 @@ export async function POST(request: Request) {
   const results: Record<string, string> = {};
 
   try {
-    const existingPosts = await getBlogPosts();
-    if (existingPosts.length === 0) {
-      await createBlogPost({
-        title: 'Feeling good with Horses: Benefits of Equine Assisted Therapy',
-        slug: 'benefits-of-equine-assisted-therapy',
-        excerpt: 'Equine-Assisted Therapy (EAT) can be beneficial for people of all ages in numerous ways.',
-        content: `Equine-assisted therapy encompasses a range of treatments that involve activities with horses and other equines to promote human physical and mental health.
-
-Here are some of the benefits:
-
-**Physical Benefits:**
-- Improved balance, coordination, and motor skills
-- Strengthened core muscles
-- Better posture and flexibility
-
-**Emotional Benefits:**
-- Reduced anxiety and stress
-- Increased self-confidence and self-esteem
-- Enhanced emotional awareness
-
-**Social Benefits:**
-- Improved communication skills
-- Better teamwork and cooperation
-- Increased empathy and trust`,
-        author: 'Clariece Pinkney',
-        category: 'Wellness',
-        image: '/images/gallery/blog-member.jpg',
-        published: true,
-      } as any);
-      results.blog = 'Blog post seeded';
+    const existingEvents = await getEvents();
+    if (existingEvents.length === 0) {
+      for (const event of EVENTS) {
+        await createEvent({
+          title: event.title,
+          description: event.description || '',
+          date: parseSeedDate(event.sortDate, event.endSortDate),
+          endDate: parseSeedDate(event.endSortDate, event.sortDate),
+          location: event.location || '',
+          imageUrl: undefined,
+          imageAlt: '',
+          capacity: undefined,
+          registrationDeadline: undefined,
+          rsvpList: [],
+          category: event.category,
+          month: event.month,
+          dateLabel: event.dateLabel,
+          sortOrder: event.sortOrder || 0,
+          registrationRequired: Boolean(event.registrationRequired),
+          published: true,
+        } as any);
+      }
+      results.events = `${EVENTS.length} approved events seeded`;
     } else {
-      results.blog = 'Blog posts already exist';
+      results.events = `Events already has ${existingEvents.length} records`;
     }
 
     const existingGallery = await getGalleryImages();
     if (existingGallery.length === 0) {
-      await createGalleryImage({ title: 'Our Horses', image: '/images/gallery/horse-closeup.jpg', description: 'ASCA horses up close', category: 'Horses', alt: 'ASCA horse close-up' } as any);
-      await createGalleryImage({ title: 'Trail Rides', image: '/images/gallery/rider.jpg', description: 'Members on horseback', category: 'Trail Rides', alt: 'ASCA rider on horseback' } as any);
-      await createGalleryImage({ title: 'Community', image: '/images/gallery/blog-member.jpg', description: 'ASCA community gathering', category: 'Community', alt: 'ASCA community gathering' } as any);
-      await createGalleryImage({ title: 'Activities', image: '/images/gallery/activity.jpg', description: 'ASCA activities and events', category: 'Activities', alt: 'ASCA activities' } as any);
-      await createGalleryImage({ title: 'Events', image: '/images/gallery/event.jpg', description: 'Community event photos', category: 'Events', alt: 'ASCA event' } as any);
-      await createGalleryImage({ title: 'Members', image: '/images/members/member-1.jpg', description: 'ASCA members', category: 'Members', alt: 'ASCA members' } as any);
-      results.gallery = '6 gallery images seeded';
+      for (const image of gallerySeed) {
+        await createGalleryImage(image as any);
+      }
+      results.gallery = `${gallerySeed.length} gallery images seeded`;
     } else {
       results.gallery = `Gallery already has ${existingGallery.length} images`;
     }

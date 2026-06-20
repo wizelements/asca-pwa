@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getAdminToken } from '@/components/AdminGuard';
+import { getAdminToken, logout } from '@/components/AdminGuard';
 
 function sanitizeSocial(social: any) {
   return {
@@ -80,6 +80,11 @@ export default function AdminSettings() {
         },
         body: JSON.stringify(payload),
       });
+
+      if (res.status === 401) {
+        logout();
+        return;
+      }
 
       if (res.ok) {
         const updated = await res.json();

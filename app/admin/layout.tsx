@@ -35,6 +35,8 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
     { label: 'Forms', href: '/admin/forms', icon: '📋' },
     { label: 'Settings', href: '/admin/settings', icon: '⚙️' },
     { label: 'Theme', href: '/admin/theme', icon: '🎨' },
+    { label: 'Account', href: '/admin/account', icon: '🔐' },
+    { label: 'Help', href: '/admin/help', icon: '❔' },
   ];
 
   const isActive = (href: string) => pathname === href;

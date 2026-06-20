@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserByEmail, updateUserLogin } from '@/lib/db/queries';
-import { verifyPassword, signToken } from '@/lib/auth';
+import { getPasswordVersion, verifyPassword, signToken } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
       email: user.email,
       name: user.name || user.email,
       role: user.role,
+      passwordVersion: getPasswordVersion(user.password),
     });
 
     return NextResponse.json({
