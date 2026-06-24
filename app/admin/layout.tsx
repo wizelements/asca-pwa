@@ -30,6 +30,7 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
   const adminNav = [
     { label: 'Dashboard', href: '/admin', icon: '📊' },
     { label: 'Events', href: '/admin/events', icon: '📅' },
+    { label: 'Media Library', href: '/admin/media', icon: '🖼️' },
     { label: 'Members', href: '/admin/members', icon: '👥' },
     { label: 'Gallery', href: '/admin/gallery', icon: '🖼️' },
     { label: 'Forms', href: '/admin/forms', icon: '📋' },

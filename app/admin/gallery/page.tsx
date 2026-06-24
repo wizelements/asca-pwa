@@ -12,6 +12,8 @@ interface GalleryItem {
   category: string;
   image: string;
   alt: string;
+  sortOrder?: number;
+  published: boolean;
   uploadedAt?: string;
 }
 
@@ -21,6 +23,8 @@ interface GalleryFormState {
   category: string;
   image: string;
   alt: string;
+  sortOrder: string;
+  published: boolean;
 }
 
 const emptyGalleryItem: GalleryFormState = {
@@ -29,6 +33,8 @@ const emptyGalleryItem: GalleryFormState = {
   category: 'Gallery',
   image: '',
   alt: '',
+  sortOrder: '',
+  published: true,
 };
 
 export default function AdminGallery() {
@@ -84,6 +90,8 @@ export default function AdminGallery() {
       category: item.category || 'Gallery',
       image: item.image || '',
       alt: item.alt || '',
+      sortOrder: item.sortOrder !== undefined ? String(item.sortOrder) : '',
+      published: item.published !== false,
     });
     setMessage('');
     setError('');
@@ -102,6 +110,8 @@ export default function AdminGallery() {
       category: form.category.trim() || 'Gallery',
       image: form.image.trim(),
       alt: form.alt.trim(),
+      sortOrder: form.sortOrder ? Number(form.sortOrder) : 0,
+      published: form.published,
     };
 
     try {
@@ -164,7 +174,7 @@ export default function AdminGallery() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-4xl font-bold text-brand-fg-primary">Gallery</h1>
-          <p className="mt-1 text-sm text-brand-fg-secondary">Manage public gallery images by path or URL. Alt text is required.</p>
+          <p className="mt-1 text-sm text-brand-fg-secondary">Manage public gallery images by path, URL, or upload. Alt text is required. Draft images stay out of the public gallery.</p>
         </div>
         <button onClick={openCreate} className="rounded-lg bg-brand-forest px-6 py-2 font-semibold text-white hover:bg-brand-forest-muted">
           + Add Image
@@ -191,6 +201,12 @@ export default function AdminGallery() {
                 <h2 className="mt-2 text-lg font-bold text-brand-fg-primary">{item.title}</h2>
                 {item.description && <p className="mt-2 line-clamp-2 text-sm text-brand-fg-secondary">{item.description}</p>}
                 <p className="mt-3 text-xs text-brand-fg-muted">Alt: {item.alt}</p>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                  <span className={`rounded-full px-2 py-1 font-semibold ${item.published !== false ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                    {item.published !== false ? 'Published' : 'Draft'}
+                  </span>
+                  <span className="rounded-full bg-brand-bg-subtle px-2 py-1 text-brand-fg-muted">Order {item.sortOrder ?? 0}</span>
+                </div>
                 <div className="mt-5 flex gap-2">
                   <button onClick={() => openEdit(item)} className="rounded-lg bg-brand-forest px-3 py-1 text-sm text-white hover:bg-brand-forest-muted">Edit</button>
                   <button onClick={() => handleDelete(item)} className="rounded-lg bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700">Delete</button>
@@ -228,9 +244,18 @@ export default function AdminGallery() {
                 <input type="text" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary" />
               </div>
               <div>
+                <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Sort Order</label>
+                <input type="number" value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: e.target.value })} className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary" />
+              </div>
+              <div>
                 <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Description</label>
                 <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary" />
               </div>
+
+              <label className="flex items-center gap-3 rounded-lg border border-brand-border-subtle p-4 text-sm font-medium text-brand-fg-primary">
+                <input type="checkbox" checked={form.published} onChange={(e) => setForm({ ...form, published: e.target.checked })} className="h-4 w-4" />
+                Published in public gallery
+              </label>
 
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={() => setModalOpen(false)} className="rounded-lg border border-brand-border-subtle px-6 py-2 text-brand-fg-primary hover:bg-brand-bg-subtle">Cancel</button>

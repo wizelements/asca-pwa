@@ -3,25 +3,28 @@
 ## Development
 
 ```bash
-npm run dev              # Start local server (http://localhost:3000)
-npm run build           # Production build
-npm run start           # Run production build locally
-npm run lint            # Check code quality
-npm run type-check      # TypeScript validation
+pnpm dev              # Start local server (http://localhost:3000)
+pnpm build            # Production build
+pnpm start            # Run production build locally
+pnpm lint             # Check code quality
+pnpm type-check       # TypeScript validation
 ```
 
 ## Database
 
 ```bash
-npm run db:seed         # Populate MongoDB with initial data
-npm run db:migrate      # Run migrations (when added)
+pnpm db:check          # Validate Drizzle schema
+pnpm db:generate       # Generate Drizzle migration SQL if using checked-in migrations
+pnpm db:migrate        # Push current Drizzle schema to Turso/libSQL
 ```
+
+Run `pnpm db:migrate` against the target Turso database after pulling changes that add or alter database fields. The admin-managed events/gallery implementation requires the latest `events` and `gallery_images` columns before public pages can read the new fields.
 
 ## Testing
 
 ```bash
 # Manual testing
-npm run dev
+pnpm dev
 # Visit: http://localhost:3000/get-involved
 # Fill and submit form
 # Check console for logs
@@ -30,7 +33,7 @@ npm run dev
 node scripts/test-email.js
 
 # Lighthouse audit
-npm run build && npm start
+pnpm build && pnpm start
 # F12 → Lighthouse → Generate report
 ```
 
@@ -60,16 +63,17 @@ git push origin main
 RESEND_API_KEY=re_your_key_here
 ADMIN_EMAIL=admin@atlantasaddleclub.org
 NEXTAUTH_SECRET=generate-random-string
-MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/db
+TURSO_DATABASE_URL=libsql://your-database.turso.io
+TURSO_AUTH_TOKEN=your-turso-auth-token
 
 # 2. Install packages
-npm install
+pnpm install
 
-# 3. Seed database
-npm run db:seed
+# 3. Apply schema changes
+pnpm db:migrate
 
 # 4. Start development
-npm run dev
+pnpm dev
 ```
 
 ## Admin Dashboard Access

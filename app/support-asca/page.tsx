@@ -5,6 +5,8 @@ import Footer from '@/components/Footer';
 import SupportMethods from '@/components/SupportMethods';
 import { CONTACT_EMAILS } from '@/lib/content/site';
 import { SUPPORT_REASONS, OTHER_WAYS_TO_SUPPORT, SUPPORT_NEEDS } from '@/lib/content/club';
+import { getManagedImage } from '@/lib/media';
+import { getPublicManagedImages } from '@/lib/public-content';
 
 export const metadata: Metadata = {
   title: { absolute: 'Support ASCA | Atlanta Saddle Club Association' },
@@ -25,13 +27,17 @@ function BulletList({ items }: { items: string[] }) {
   );
 }
 
-export default function SupportAsca() {
+export default async function SupportAsca() {
+  const images = await getPublicManagedImages();
+  const hero = getManagedImage(images, 'support.hero');
+
   return (
     <>
       <Header />
       <main>
         <Hero
-          image="/images/hero/donate.jpg"
+          image={hero.src}
+          imageAlt={hero.alt}
           title="Support ASCA"
           subtitle="Help us make a difference both in and out of the saddle."
         />

@@ -1,12 +1,25 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import ManagedImage from '@/components/media/ManagedImage';
 import SocialLinks from '@/components/SocialLinks';
 import ContactForm from '@/components/ContactForm';
 import { FOOTER_LINKS, CONTACT_EMAILS } from '@/lib/content/site';
+import { getTheme } from '@/lib/db/queries';
+import { DEFAULT_LOGO } from '@/lib/media';
 
-export default function Footer() {
+async function getFooterLogo() {
+  try {
+    const theme = await getTheme();
+    return theme.logo || DEFAULT_LOGO;
+  } catch {
+    return DEFAULT_LOGO;
+  }
+}
+
+export default async function Footer() {
+  const logoSrc = await getFooterLogo();
+
   return (
-    <footer className="border-t border-brand-border-subtle bg-white">
+    <footer className="border-t border-brand-border-subtle bg-brand-bg-elevated">
       <div className="container py-14">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
           {/* Contact Form */}
@@ -45,8 +58,8 @@ export default function Footer() {
 
             <div className="mt-8">
               <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-brand-forest p-2 shadow-sm">
-                <Image
-                  src="/images/asca/logo.png"
+                <ManagedImage
+                  src={logoSrc}
                   alt="Atlanta Saddle Club Association logo"
                   width={80}
                   height={66}

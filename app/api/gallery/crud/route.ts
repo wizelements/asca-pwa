@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     const category = searchParams.get('category') || undefined;
+    const publishedParam = searchParams.get('published');
 
     if (id) {
       const image = await getGalleryImageById(Number(id));
@@ -26,7 +27,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(image);
     }
 
-    const images = await getGalleryImages(category);
+    const published = publishedParam !== null ? publishedParam === 'true' : undefined;
+    const images = await getGalleryImages(category, published);
     return NextResponse.json(images);
   } catch (error: any) {
     console.error('[GALLERY GET]', error);
@@ -52,6 +54,8 @@ export async function POST(request: NextRequest) {
       category: body.category || 'Gallery',
       image: body.image,
       alt: body.alt,
+      sortOrder: body.sortOrder !== undefined && body.sortOrder !== '' ? Number(body.sortOrder) : 0,
+      published: body.published !== false,
     } as Omit<GalleryImage, 'id' | 'uploadedAt'>);
 
     await logActivity('gallery', `Created gallery image "${image.title}"`, user.name || user.email);
@@ -81,6 +85,8 @@ export async function PUT(request: NextRequest) {
     if (updates.category !== undefined) data.category = updates.category;
     if (updates.image !== undefined) data.image = updates.image;
     if (updates.alt !== undefined) data.alt = updates.alt;
+    if (updates.sortOrder !== undefined) data.sortOrder = Number(updates.sortOrder) || 0;
+    if (updates.published !== undefined) data.published = Boolean(updates.published);
 
     if (!data.title && !data.image && !data.alt && Object.keys(data).length === 0) {
       return NextResponse.json({ error: 'No updates provided' }, { status: 400 });

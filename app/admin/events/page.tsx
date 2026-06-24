@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
+import AdminImageField from '@/components/AdminImageField';
 import { getAdminToken, logout } from '@/components/AdminGuard';
 import { EVENT_CATEGORIES, EVENT_MONTH_ORDER, type EventCategory } from '@/lib/content/events';
 
@@ -13,7 +14,13 @@ interface AdminEvent {
   description: string;
   date: string;
   endDate: string;
+  time?: string;
   location: string;
+  imageUrl?: string;
+  imageAlt?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  isTba: boolean;
   category: EventCategory;
   month?: string;
   dateLabel?: string;
@@ -27,7 +34,13 @@ interface EventFormState {
   description: string;
   date: string;
   endDate: string;
+  time: string;
   location: string;
+  imageUrl: string;
+  imageAlt: string;
+  ctaLabel: string;
+  ctaHref: string;
+  isTba: boolean;
   category: EventCategory;
   month: string;
   dateLabel: string;
@@ -46,7 +59,13 @@ const emptyEvent: EventFormState = {
   description: '',
   date: '',
   endDate: '',
+  time: '',
   location: '',
+  imageUrl: '',
+  imageAlt: '',
+  ctaLabel: '',
+  ctaHref: '',
+  isTba: false,
   category: 'hosted',
   month: 'June',
   dateLabel: '',
@@ -130,7 +149,13 @@ export default function AdminEvents() {
       description: event.description || '',
       date: toDateInput(event.date),
       endDate: toDateInput(event.endDate || event.date),
+      time: event.time || '',
       location: event.location || '',
+      imageUrl: event.imageUrl || '',
+      imageAlt: event.imageAlt || '',
+      ctaLabel: event.ctaLabel || '',
+      ctaHref: event.ctaHref || '',
+      isTba: Boolean(event.isTba || event.dateLabel?.toLowerCase().includes('tba')),
       category: event.category || 'hosted',
       month: event.month || new Date(event.date).toLocaleDateString('en-US', { month: 'long', timeZone: 'UTC' }),
       dateLabel: event.dateLabel || '',
@@ -155,10 +180,16 @@ export default function AdminEvents() {
       description: form.description.trim(),
       date: form.date,
       endDate: form.endDate || form.date,
+      time: form.time.trim(),
       location: form.location.trim(),
+      imageUrl: form.imageUrl.trim(),
+      imageAlt: form.imageAlt.trim(),
+      ctaLabel: form.ctaLabel.trim(),
+      ctaHref: form.ctaHref.trim(),
+      isTba: form.isTba,
       category: form.category,
       month: form.month,
-      dateLabel: form.dateLabel.trim(),
+      dateLabel: form.isTba ? 'Date TBA' : form.dateLabel.trim(),
       sortOrder: form.sortOrder ? Number(form.sortOrder) : 0,
       registrationRequired: form.registrationRequired,
       published: form.published,
@@ -295,6 +326,9 @@ export default function AdminEvents() {
                     <tr key={event.id} className="border-b border-brand-border-subtle last:border-0 hover:bg-brand-bg-soft">
                       <td className="px-6 py-4">
                         <p className="font-semibold text-brand-fg-primary">{event.title}</p>
+                        {event.isTba && (
+                          <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-brand-forest">Date TBA</p>
+                        )}
                         {event.registrationRequired && (
                           <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-brand-forest">Registration required</p>
                         )}
@@ -395,6 +429,16 @@ export default function AdminEvents() {
                   />
                 </div>
                 <div>
+                  <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Time</label>
+                  <input
+                    type="text"
+                    value={form.time}
+                    onChange={(e) => setForm({ ...form, time: e.target.value })}
+                    placeholder="7:00pm"
+                    className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary"
+                  />
+                </div>
+                <div>
                   <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Public Date Label *</label>
                   <input
                     type="text"
@@ -402,8 +446,10 @@ export default function AdminEvents() {
                     onChange={(e) => setForm({ ...form, dateLabel: e.target.value })}
                     placeholder="7/8 or Date TBA"
                     className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary"
-                    required
+                    disabled={form.isTba}
+                    required={!form.isTba}
                   />
+                  <p className="mt-1 text-xs text-brand-fg-muted">TBA events are shown in the Date TBA section, not on fake calendar dates.</p>
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Sort Order</label>
@@ -415,11 +461,49 @@ export default function AdminEvents() {
                   />
                 </div>
                 <div className="sm:col-span-2">
+                  <AdminImageField
+                    label="Event image path, URL, or upload"
+                    value={form.imageUrl}
+                    onChange={(imageUrl) => setForm({ ...form, imageUrl })}
+                    previewAlt={form.imageAlt || form.title || 'Event image preview'}
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Event Image Alt Text</label>
+                  <input
+                    type="text"
+                    value={form.imageAlt}
+                    onChange={(e) => setForm({ ...form, imageAlt: e.target.value })}
+                    className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary"
+                    required={Boolean(form.imageUrl)}
+                  />
+                </div>
+                <div className="sm:col-span-2">
                   <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Location</label>
                   <input
                     type="text"
                     value={form.location}
                     onChange={(e) => setForm({ ...form, location: e.target.value })}
+                    className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">CTA Label</label>
+                  <input
+                    type="text"
+                    value={form.ctaLabel}
+                    onChange={(e) => setForm({ ...form, ctaLabel: e.target.value })}
+                    placeholder="Register or Learn More"
+                    className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">CTA Link</label>
+                  <input
+                    type="url"
+                    value={form.ctaHref}
+                    onChange={(e) => setForm({ ...form, ctaHref: e.target.value })}
+                    placeholder="https://..."
                     className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary"
                   />
                 </div>
@@ -435,6 +519,15 @@ export default function AdminEvents() {
               </div>
 
               <div className="flex flex-col gap-3 rounded-lg border border-brand-border-subtle p-4 sm:flex-row sm:items-center sm:justify-between">
+                <label className="flex items-center gap-3 text-sm font-medium text-brand-fg-primary">
+                  <input
+                    type="checkbox"
+                    checked={form.isTba}
+                    onChange={(e) => setForm({ ...form, isTba: e.target.checked, dateLabel: e.target.checked ? 'Date TBA' : form.dateLabel })}
+                    className="h-4 w-4"
+                  />
+                  Date TBA
+                </label>
                 <label className="flex items-center gap-3 text-sm font-medium text-brand-fg-primary">
                   <input
                     type="checkbox"

@@ -7,8 +7,7 @@ export default function MeetingCallout() {
         Join Us in Person
       </p>
       <p className="mt-3 text-lg font-semibold leading-relaxed md:text-xl">
-        We meet on the {MEETING.cadence} at {MEETING.time} at {MEETING.venue},
-        <br className="hidden sm:block" /> {MEETING.address}.
+        We meet on the {MEETING.cadence} at {MEETING.time} at {MEETING.venue}, {MEETING.address}.
       </p>
     </div>
   );

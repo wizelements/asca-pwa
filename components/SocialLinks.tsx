@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { SOCIAL_LINKS } from '@/lib/content/site';
 
 const iconClass = 'h-5 w-5';
@@ -25,10 +28,32 @@ export default function SocialLinks({
   className = 'text-brand-fg-secondary',
   showTikTokNote = true,
 }: SocialLinksProps) {
+  const [links, setLinks] = useState({
+    facebook: SOCIAL_LINKS.facebook,
+    instagram: SOCIAL_LINKS.instagram,
+  });
+
+  useEffect(() => {
+    let mounted = true;
+    fetch('/api/settings')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((settings) => {
+        if (!mounted) return;
+        setLinks({
+          facebook: settings?.social?.facebook || SOCIAL_LINKS.facebook,
+          instagram: settings?.social?.instagram || SOCIAL_LINKS.instagram,
+        });
+      })
+      .catch(() => undefined);
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
     <div className={`flex items-center gap-4 ${className}`}>
       <a
-        href={SOCIAL_LINKS.facebook}
+        href={links.facebook}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="ASCA on Facebook (opens in a new tab)"
@@ -37,7 +62,7 @@ export default function SocialLinks({
         {facebookIcon}
       </a>
       <a
-        href={SOCIAL_LINKS.instagram}
+        href={links.instagram}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="ASCA on Instagram (opens in a new tab)"

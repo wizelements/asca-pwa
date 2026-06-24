@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
 import Hero from '@/components/Hero';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import ManagedImage from '@/components/media/ManagedImage';
 import { MEMBERSHIP_APPLICATION_URL } from '@/lib/content/site';
 import { WHY_MEMBERS_JOIN, FUN_FACTS } from '@/lib/content/club';
+import { getManagedImage } from '@/lib/media';
+import { getPublicManagedImages } from '@/lib/public-content';
 
 export const metadata: Metadata = {
   title: { absolute: 'Meet Our Members | ASCA' },
@@ -13,13 +15,19 @@ export const metadata: Metadata = {
     'Meet the members of the Atlanta Saddle Club Association — trail riders, horse owners, families, and horse lovers united by a passion for horses and community.',
 };
 
-export default function Members() {
+export default async function Members() {
+  const images = await getPublicManagedImages();
+  const hero = getManagedImage(images, 'members.hero');
+  const communityOne = getManagedImage(images, 'members.community.1');
+  const communityTwo = getManagedImage(images, 'members.community.2');
+
   return (
     <>
       <Header />
       <main>
         <Hero
-          image="/images/gallery/activity.jpg"
+          image={hero.src}
+          imageAlt={hero.alt}
           title="Meet Our Members"
           subtitle="United by a shared passion for horses, adventure, and community."
         />
@@ -42,18 +50,18 @@ export default function Members() {
             </p>
             <div className="mt-10 grid grid-cols-2 gap-4">
               <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
-                <Image
-                  src="/images/gallery/activity.jpg"
-                  alt="ASCA members riding together"
+                <ManagedImage
+                  src={communityOne.src}
+                  alt={communityOne.alt}
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 50vw, 33vw"
                 />
               </div>
               <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
-                <Image
-                  src="/images/gallery/event.jpg"
-                  alt="ASCA members at a community event"
+                <ManagedImage
+                  src={communityTwo.src}
+                  alt={communityTwo.alt}
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 50vw, 33vw"

@@ -1,48 +1,44 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Hero from '@/components/Hero';
 import GalleryCard from '@/components/Cards/GalleryCard';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { getSettings, getTheme, getGalleryImages } from '@/lib/db/queries';
+import ManagedImage from '@/components/media/ManagedImage';
+import { getGalleryImages } from '@/lib/db/queries';
+import { getManagedImage, type SiteImageSlot } from '@/lib/media';
+import { getPublicManagedImages } from '@/lib/public-content';
 
 export const metadata: Metadata = {
   title: { absolute: 'Photo Gallery | ASCA' },
   description: 'Photos from ASCA events, trail rides, and community activities. See our horses, riders, and members in action.',
 };
 
-const staticGallery = [
-  { src: '/images/gallery/horse-closeup.jpg', alt: 'Horse close-up at ASCA', title: 'Our Horses' },
-  { src: '/images/gallery/rider.jpg', alt: 'ASCA rider on horseback', title: 'Trail Rides' },
-  { src: '/images/gallery/blog-member.jpg', alt: 'ASCA member activity', title: 'Community' },
-  { src: '/images/gallery/activity.jpg', alt: 'ASCA trail ride activity', title: 'Activities' },
-  { src: '/images/gallery/event.jpg', alt: 'ASCA community event', title: 'Events' },
-  { src: '/images/members/member-1.jpg', alt: 'ASCA member', title: 'Members' },
+const FALLBACK_GALLERY_SLOTS: SiteImageSlot[] = [
+  'gallery.fallback.1',
+  'gallery.fallback.2',
+  'gallery.fallback.3',
+  'gallery.fallback.4',
+  'gallery.fallback.5',
+  'gallery.fallback.6',
 ];
 
 export default async function Gallery() {
-  const [settings, theme, gallery] = await Promise.all([
-    getSettings(),
-    getTheme(),
-    getGalleryImages(),
+  const [images, gallery] = await Promise.all([
+    getPublicManagedImages(),
+    getGalleryImages(undefined, true),
   ]);
+  const hero = getManagedImage(images, 'gallery.hero');
+  const staticGallery = FALLBACK_GALLERY_SLOTS.map((slot) => getManagedImage(images, slot));
 
   return (
     <>
-      <style>{`
-        :root {
-          --color-primary: ${theme.colors.primary};
-          --color-secondary: ${theme.colors.secondary};
-          --color-accent: ${theme.colors.accent};
-          --color-neutral: ${theme.colors.neutral};
-        }
-      `}</style>
       <Header />
       <main>
         <Hero
-          image={settings.heroes?.gallery?.image || '/images/gallery/horse-closeup.jpg'}
-          title={settings.heroes?.gallery?.title || 'Photo Gallery'}
-          subtitle={settings.heroes?.gallery?.subtitle || 'Moments from ASCA events and activities'}
+          image={hero.src}
+          imageAlt={hero.alt}
+          title="Photo Gallery"
+          subtitle="Moments from ASCA events and activities"
         />
 
         <section className="bg-brand-bg-subtle py-20">
@@ -67,8 +63,8 @@ export default async function Gallery() {
             ) : (
               <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {staticGallery.map((photo) => (
-                  <div key={photo.src} className="group relative aspect-[4/3] overflow-hidden rounded-xl">
-                    <Image
+                  <div key={photo.slot} className="group relative aspect-[4/3] overflow-hidden rounded-xl">
+                    <ManagedImage
                       src={photo.src}
                       alt={photo.alt}
                       fill

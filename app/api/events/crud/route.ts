@@ -77,9 +77,13 @@ export async function POST(request: NextRequest) {
       description: body.description || '',
       date: parseDate(body.date, 'Date'),
       endDate: parseDate(body.endDate || body.date, 'End date'),
+      time: body.time || '',
       location: body.location || '',
       imageUrl: body.imageUrl,
       imageAlt: body.imageAlt || '',
+      ctaLabel: body.ctaLabel || '',
+      ctaHref: body.ctaHref || '',
+      isTba: Boolean(body.isTba),
       capacity: body.capacity,
       registrationDeadline: body.registrationDeadline ? new Date(body.registrationDeadline) : undefined,
       rsvpList: Array.isArray(body.rsvpList) ? body.rsvpList : [],
@@ -125,9 +129,13 @@ export async function PUT(request: NextRequest) {
     if (updates.description !== undefined) data.description = updates.description;
     if (updates.date !== undefined) data.date = parseDate(updates.date, 'Date');
     if (updates.endDate !== undefined) data.endDate = parseDate(updates.endDate || updates.date, 'End date');
+    if (updates.time !== undefined) data.time = updates.time;
     if (updates.location !== undefined) data.location = updates.location;
     if (updates.imageUrl !== undefined) data.imageUrl = updates.imageUrl;
     if (updates.imageAlt !== undefined) data.imageAlt = updates.imageAlt;
+    if (updates.ctaLabel !== undefined) data.ctaLabel = updates.ctaLabel;
+    if (updates.ctaHref !== undefined) data.ctaHref = updates.ctaHref;
+    if (updates.isTba !== undefined) data.isTba = Boolean(updates.isTba);
     if (updates.capacity !== undefined) data.capacity = updates.capacity;
     if (updates.registrationDeadline !== undefined) {
       data.registrationDeadline = updates.registrationDeadline ? new Date(updates.registrationDeadline) : undefined;

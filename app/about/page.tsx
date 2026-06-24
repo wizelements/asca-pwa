@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Hero from '@/components/Hero';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import OfficerList from '@/components/OfficerList';
+import ManagedImage from '@/components/media/ManagedImage';
 import { MEMBERSHIP_APPLICATION_URL } from '@/lib/content/site';
+import { getManagedImage } from '@/lib/media';
+import { getPublicManagedImages } from '@/lib/public-content';
 
 export const metadata: Metadata = {
   title: { absolute: 'About ASCA | Atlanta Saddle Club Association' },
@@ -12,13 +14,18 @@ export const metadata: Metadata = {
     "Atlanta Saddle Club Association (ASCA) is Atlanta's premiere saddle club, sponsoring trail rides, riding lessons, camp outs, and community activities since 2020.",
 };
 
-export default function About() {
+export default async function About() {
+  const images = await getPublicManagedImages();
+  const hero = getManagedImage(images, 'about.hero');
+  const historyImage = getManagedImage(images, 'about.history');
+
   return (
     <>
       <Header />
       <main>
         <Hero
-          image="/images/hero/about.jpg"
+          image={hero.src}
+          imageAlt={hero.alt}
           title="About ASCA"
           subtitle="Atlanta's premiere saddle club, promoting positive horsemanship within the community."
         />
@@ -51,9 +58,9 @@ export default function About() {
                 </p>
               </div>
               <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
-                <Image
-                  src="/images/gallery/rider.jpg"
-                  alt="An ASCA rider on horseback"
+                <ManagedImage
+                  src={historyImage.src}
+                  alt={historyImage.alt}
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 50vw"

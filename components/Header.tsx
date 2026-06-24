@@ -1,21 +1,38 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import ManagedImage from '@/components/media/ManagedImage';
 import SocialLinks from '@/components/SocialLinks';
 import { NAV_LINKS } from '@/lib/content/site';
+import { DEFAULT_LOGO } from '@/lib/media';
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [logoSrc, setLogoSrc] = useState(DEFAULT_LOGO);
+
+  useEffect(() => {
+    let mounted = true;
+    fetch('/api/theme')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((theme) => {
+        if (mounted && typeof theme?.logo === 'string' && theme.logo) {
+          setLogoSrc(theme.logo);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-brand-border-subtle bg-white/90 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-brand-border-subtle bg-brand-bg-elevated/90 backdrop-blur">
       <nav className="container flex items-center justify-between py-4" aria-label="Primary">
         <Link href="/" className="flex items-center gap-3">
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-forest p-1.5 shadow-sm">
-            <Image
-              src="/images/asca/logo.png"
+            <ManagedImage
+              src={logoSrc}
               alt="Atlanta Saddle Club Association logo"
               height={48}
               width={48}
@@ -63,7 +80,7 @@ export default function Header() {
       </nav>
 
       {mobileOpen && (
-        <div id="mobile-menu" className="border-t border-brand-border-subtle bg-white lg:hidden">
+        <div id="mobile-menu" className="border-t border-brand-border-subtle bg-brand-bg-elevated lg:hidden">
           <ul className="container flex flex-col gap-4 py-6 text-sm uppercase tracking-[0.15em] text-brand-fg-secondary">
             {NAV_LINKS.map((link) => (
               <li key={link.href}>

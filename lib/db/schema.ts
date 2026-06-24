@@ -54,9 +54,13 @@ export const events = sqliteTable('events', {
   description: text('description').notNull(),
   date: integer('date', { mode: 'timestamp' }).notNull(),
   endDate: integer('end_date', { mode: 'timestamp' }).notNull(),
+  time: text('time').default(''),
   location: text('location').notNull(),
   imageUrl: text('image_url'),
   imageAlt: text('image_alt').notNull().default(''),
+  ctaLabel: text('cta_label').default(''),
+  ctaHref: text('cta_href').default(''),
+  isTba: integer('is_tba', { mode: 'boolean' }).notNull().default(false),
   capacity: integer('capacity'),
   registrationDeadline: integer('registration_deadline', { mode: 'timestamp' }),
   rsvpList: text('rsvp_list', { mode: 'json' }).notNull().default(sql`'[]'`),
@@ -108,6 +112,8 @@ export const galleryImages = sqliteTable('gallery_images', {
   category: text('category').default('general'),
   image: text('image').notNull(),
   alt: text('alt').notNull().default(''),
+  sortOrder: integer('sort_order').default(0),
+  published: integer('published', { mode: 'boolean' }).notNull().default(true),
   uploadedAt: integer('uploaded_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
 });
 

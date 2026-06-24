@@ -2,6 +2,10 @@ import type { Metadata, Viewport } from 'next'
 import { Poppins, Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
+import { getSettings, getTheme } from '@/lib/db/queries'
+import { ASCA_DEFAULT_THEME, resolveThemeSettings, themeSettingsToCss } from '@/lib/theme'
+
+export const dynamic = 'force-dynamic'
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -64,38 +68,35 @@ export const viewport: Viewport = {
   themeColor: '#e6d543',
 }
 
-export default function RootLayout({
+async function getRootThemeCss() {
+  try {
+    const [theme, settings] = await Promise.all([getTheme(), getSettings()])
+    const resolved = resolveThemeSettings(theme, settings.tagline)
+    return { css: themeSettingsToCss(resolved), themeColor: resolved.accentColor }
+  } catch (error) {
+    console.error('[ROOT THEME]', error)
+    return { css: themeSettingsToCss(ASCA_DEFAULT_THEME), themeColor: ASCA_DEFAULT_THEME.accentColor }
+  }
+}
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const rootTheme = await getRootThemeCss()
+
   return (
     <html lang="en" className={`${poppins.variable} ${inter.variable} ${jetbrains.variable}`}>
       <head>
         <style>{`
           :root {
-            --brand-bg-body: #ffffff;
-            --brand-bg-elevated: #ffffff;
-            --brand-bg-subtle: #ffffff;
-            --brand-bg-soft: #ffffff;
-            --brand-bg-soft-alt: #ffffff;
-            --brand-fg-primary: #1f1f1f;
-            --brand-fg-secondary: #4f4f4f;
-            --brand-fg-muted: #637064;
-            --brand-fg-on-soft: #1f1f1f;
-            --brand-border-subtle: rgba(31, 107, 58, 0.16);
-            --brand-border-strong: rgba(31, 107, 58, 0.28);
-            --brand-accent: #e6d543;
-            --brand-accent-muted: #f0d95d;
-            --brand-forest: #1f6b3a;
-            --brand-forest-muted: #2f7c4c;
-            --brand-danger: #d8514a;
-            --font-sans: ${inter.style.fontFamily};
-            --font-display: ${poppins.style.fontFamily};
-            --font-serif: Georgia, serif;
+            --font-poppins-family: ${poppins.style.fontFamily};
+            --font-inter-family: ${inter.style.fontFamily};
+            ${rootTheme.css}
           }
         `}</style>
-        <meta name="theme-color" content="#e6d543" />
+        <meta name="theme-color" content={rootTheme.themeColor} />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

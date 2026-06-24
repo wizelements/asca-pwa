@@ -1,31 +1,46 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Hero from '@/components/Hero';
 import MeetingCallout from '@/components/MeetingCallout';
 import ConnectLearnGiveCards from '@/components/ConnectLearnGiveCards';
 import EventUpdatesForm from '@/components/EventUpdatesForm';
+import ManagedImage from '@/components/media/ManagedImage';
 import { MEMBERSHIP_APPLICATION_URL } from '@/lib/content/site';
-import { ACTIVITY_HIGHLIGHTS } from '@/lib/content/club';
+import { getManagedImage, type SiteImageSlot } from '@/lib/media';
+import { getPublicManagedImages } from '@/lib/public-content';
 
-const galleryPhotos = [
-  { src: '/images/gallery/horse-closeup.jpg', alt: 'Close-up of an ASCA horse' },
-  { src: '/images/gallery/rider.jpg', alt: 'ASCA rider on horseback' },
-  { src: '/images/gallery/blog-member.jpg', alt: 'ASCA members together at an event' },
-  { src: '/images/gallery/activity.jpg', alt: 'ASCA members on a trail ride' },
-  { src: '/images/gallery/event.jpg', alt: 'ASCA community event' },
-  { src: '/images/members/member-1.jpg', alt: 'An ASCA member with their horse' },
+const ACTIVITY_SLOTS: SiteImageSlot[] = [
+  'home.activity.trailRides',
+  'home.activity.communityOutreach',
+  'home.activity.parades',
+  'home.activity.horsemanship',
+  'home.activity.festivalRodeo',
+  'home.activity.fellowship',
 ];
 
-export default function Home() {
+const GALLERY_PREVIEW_SLOTS: SiteImageSlot[] = [
+  'home.galleryPreview.1',
+  'home.galleryPreview.2',
+  'home.galleryPreview.3',
+  'home.galleryPreview.4',
+  'home.galleryPreview.5',
+  'home.galleryPreview.6',
+];
+
+export default async function Home() {
+  const images = await getPublicManagedImages();
+  const hero = getManagedImage(images, 'home.hero');
+  const activityHighlights = ACTIVITY_SLOTS.map((slot) => getManagedImage(images, slot));
+  const galleryPhotos = GALLERY_PREVIEW_SLOTS.map((slot) => getManagedImage(images, slot));
+
   return (
     <>
       <Header />
       <main>
-        {/* TODO: replace /images/hero/home.jpg with the latest ASCA group/community photo when provided. */}
         <Hero
-          image="/images/hero/home.jpg"
+          image={hero.src}
+          imageAlt={hero.alt}
           title="We Ride To Inspire"
           subtitle="Atlanta's premiere saddle club — promoting horsemanship, fellowship, education, and community across metro Atlanta."
         />
@@ -71,14 +86,14 @@ export default function Home() {
               From trail rides to community outreach, here&apos;s a glimpse of how ASCA stays active across metro Atlanta and beyond.
             </p>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {ACTIVITY_HIGHLIGHTS.map((activity) => (
+              {activityHighlights.map((activity) => (
                 <Link
-                  key={activity.title}
+                  key={activity.slot}
                   href="/gallery"
                   className="group relative block aspect-[4/3] overflow-hidden rounded-xl"
                 >
-                  <Image
-                    src={activity.image}
+                  <ManagedImage
+                    src={activity.src}
                     alt={activity.alt}
                     fill
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -106,8 +121,8 @@ export default function Home() {
             <h2 className="section-title text-center">Life at ASCA</h2>
             <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {galleryPhotos.map((photo) => (
-                <div key={photo.src} className="relative aspect-[4/3] overflow-hidden rounded-xl">
-                  <Image
+                <div key={photo.slot} className="relative aspect-[4/3] overflow-hidden rounded-xl">
+                  <ManagedImage
                     src={photo.src}
                     alt={photo.alt}
                     fill

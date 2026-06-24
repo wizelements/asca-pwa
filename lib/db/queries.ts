@@ -39,14 +39,23 @@ export interface Settings {
 export interface Theme {
   id: number;
   colors: {
-    primary: string;
-    secondary: string;
-    accent: string;
-    neutral: string;
+    primary?: string;
+    secondary?: string;
+    accent?: string;
+    neutral?: string;
+    primaryColor?: string;
+    secondaryColor?: string;
+    accentColor?: string;
+    backgroundColor?: string;
+    textColor?: string;
+    buttonColor?: string;
+    buttonTextColor?: string;
   };
   fonts: {
-    sans: string;
-    serif: string;
+    sans?: string;
+    serif?: string;
+    heading?: string;
+    body?: string;
   };
   logo: string;
   favicon: string;
@@ -70,9 +79,13 @@ export interface Event {
   description: string;
   date: Date;
   endDate: Date;
+  time?: string;
   location: string;
   imageUrl?: string;
   imageAlt: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  isTba: boolean;
   capacity?: number;
   registrationDeadline?: Date;
   rsvpList: string[];
@@ -124,6 +137,8 @@ export interface GalleryImage {
   category: string;
   image: string;
   alt: string;
+  sortOrder?: number;
+  published: boolean;
   uploadedAt?: Date;
 }
 
@@ -214,9 +229,13 @@ function rowToEvent(row: any): Event {
     description: row.description,
     date: new Date(row.date * 1000),
     endDate: new Date(row.end_date * 1000),
+    time: row.time || undefined,
     location: row.location,
     imageUrl: row.image_url,
     imageAlt: row.image_alt,
+    ctaLabel: row.cta_label || undefined,
+    ctaHref: row.cta_href || undefined,
+    isTba: Boolean(row.is_tba),
     capacity: row.capacity ?? undefined,
     registrationDeadline: row.registration_deadline ? new Date(row.registration_deadline * 1000) : undefined,
     rsvpList: parseJson<string[]>(row.rsvp_list, []),
@@ -274,6 +293,8 @@ function rowToGalleryImage(row: any): GalleryImage {
     category: row.category,
     image: row.image,
     alt: row.alt,
+    sortOrder: row.sort_order ?? undefined,
+    published: row.published === undefined ? true : Boolean(row.published),
     uploadedAt: row.uploaded_at ? new Date(row.uploaded_at * 1000) : undefined,
   };
 }
@@ -408,16 +429,20 @@ export async function getEventById(id: number): Promise<Event | null> {
 export async function createEvent(data: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>): Promise<Event> {
   const db = getDb();
   const result = await db.execute({
-    sql: `INSERT INTO events (title, description, date, end_date, location, image_url, image_alt, capacity, registration_deadline, rsvp_list, category, month, date_label, sort_order, registration_required, published, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, unixepoch(), unixepoch())`,
+    sql: `INSERT INTO events (title, description, date, end_date, time, location, image_url, image_alt, cta_label, cta_href, is_tba, capacity, registration_deadline, rsvp_list, category, month, date_label, sort_order, registration_required, published, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, unixepoch(), unixepoch())`,
     args: [
       data.title,
       data.description,
       Math.floor(data.date.getTime() / 1000),
       Math.floor(data.endDate.getTime() / 1000),
+      data.time ?? '',
       data.location,
       data.imageUrl ?? null,
       data.imageAlt,
+      data.ctaLabel ?? '',
+      data.ctaHref ?? '',
+      Number(data.isTba),
       data.capacity ?? null,
       data.registrationDeadline ? Math.floor(data.registrationDeadline.getTime() / 1000) : null,
       JSON.stringify(data.rsvpList),
@@ -441,8 +466,8 @@ export async function updateEvent(id: number, data: Partial<Event>): Promise<Eve
 
   await db.execute({
     sql: `UPDATE events SET
-      title = ?, description = ?, date = ?, end_date = ?, location = ?, image_url = ?, image_alt = ?,
-      capacity = ?, registration_deadline = ?, rsvp_list = ?, category = ?, month = ?, date_label = ?, sort_order = ?,
+      title = ?, description = ?, date = ?, end_date = ?, time = ?, location = ?, image_url = ?, image_alt = ?,
+      cta_label = ?, cta_href = ?, is_tba = ?, capacity = ?, registration_deadline = ?, rsvp_list = ?, category = ?, month = ?, date_label = ?, sort_order = ?,
       registration_required = ?, published = ?, updated_at = unixepoch()
     WHERE id = ?`,
     args: [
@@ -450,9 +475,13 @@ export async function updateEvent(id: number, data: Partial<Event>): Promise<Eve
       merged.description,
       Math.floor(merged.date.getTime() / 1000),
       Math.floor(merged.endDate.getTime() / 1000),
+      merged.time ?? '',
       merged.location,
       merged.imageUrl ?? null,
       merged.imageAlt,
+      merged.ctaLabel ?? '',
+      merged.ctaHref ?? '',
+      Number(merged.isTba),
       merged.capacity ?? null,
       merged.registrationDeadline ? Math.floor(merged.registrationDeadline.getTime() / 1000) : null,
       JSON.stringify(merged.rsvpList),
@@ -656,15 +685,21 @@ export async function deleteBlogPost(id: number): Promise<boolean> {
   return Number(result.rowsAffected) > 0;
 }
 
-export async function getGalleryImages(category?: string): Promise<GalleryImage[]> {
+export async function getGalleryImages(category?: string, published?: boolean): Promise<GalleryImage[]> {
   const db = getDb();
   let sql = 'SELECT * FROM gallery_images';
   const args: any[] = [];
+  const where: string[] = [];
   if (category) {
-    sql += ' WHERE category = ?';
+    where.push('category = ?');
     args.push(category);
   }
-  sql += ' ORDER BY uploaded_at DESC';
+  if (published !== undefined) {
+    where.push('published = ?');
+    args.push(Number(published));
+  }
+  if (where.length > 0) sql += ` WHERE ${where.join(' AND ')}`;
+  sql += ' ORDER BY COALESCE(sort_order, 9999), uploaded_at DESC, id DESC';
   const result = await db.execute({ sql, args });
   return result.rows.map(rowToGalleryImage);
 }
@@ -682,14 +717,16 @@ export async function getGalleryImageById(id: number): Promise<GalleryImage | nu
 export async function createGalleryImage(data: Omit<GalleryImage, 'id' | 'uploadedAt'>): Promise<GalleryImage> {
   const db = getDb();
   const result = await db.execute({
-    sql: `INSERT INTO gallery_images (title, description, category, image, alt, uploaded_at)
-          VALUES (?, ?, ?, ?, ?, unixepoch())`,
+    sql: `INSERT INTO gallery_images (title, description, category, image, alt, sort_order, published, uploaded_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, unixepoch())`,
     args: [
       data.title,
       data.description ?? null,
       data.category,
       data.image,
       data.alt,
+      data.sortOrder ?? 0,
+      Number(data.published !== false),
     ],
   });
   const id = Number(result.lastInsertRowid);
@@ -704,7 +741,7 @@ export async function updateGalleryImage(id: number, data: Partial<GalleryImage>
 
   await db.execute({
     sql: `UPDATE gallery_images SET
-      title = ?, description = ?, category = ?, image = ?, alt = ?
+      title = ?, description = ?, category = ?, image = ?, alt = ?, sort_order = ?, published = ?
     WHERE id = ?`,
     args: [
       merged.title,
@@ -712,6 +749,8 @@ export async function updateGalleryImage(id: number, data: Partial<GalleryImage>
       merged.category,
       merged.image,
       merged.alt,
+      merged.sortOrder ?? 0,
+      Number(merged.published),
       id,
     ],
   });

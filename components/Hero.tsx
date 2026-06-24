@@ -1,7 +1,8 @@
-import Image from 'next/image';
+import ManagedImage from '@/components/media/ManagedImage';
 
 interface HeroProps {
   image?: string;
+  imageAlt?: string;
   title: string;
   subtitle?: string;
   cta?: {
@@ -13,6 +14,7 @@ interface HeroProps {
 
 export default function Hero({
   image,
+  imageAlt,
   title,
   subtitle,
   cta,
@@ -23,12 +25,11 @@ export default function Hero({
       {/* Background Image */}
       {image && (
         <>
-          <Image
+          <ManagedImage
             src={image}
-            alt={title}
+            alt={imageAlt || title}
             fill
             className="absolute inset-0 w-full h-full object-cover"
-            style={{ zIndex: 0 }}
             priority
           />
           {/* Darken Overlay */}

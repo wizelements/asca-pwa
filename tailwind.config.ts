@@ -38,8 +38,8 @@ const config: Config = {
         neutral: 'var(--color-neutral, #ffffff)',
       },
       fontFamily: {
-        sans: ['var(--font-inter)', 'var(--font-sans)', 'system-ui', 'sans-serif'],
-        display: ['var(--font-poppins)', 'var(--font-display)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-sans)', 'var(--font-inter)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'var(--font-poppins)', 'system-ui', 'sans-serif'],
         serif: ['var(--font-serif)', 'Georgia', 'serif'],
         mono: ['var(--font-jetbrains)', 'monospace'],
       },

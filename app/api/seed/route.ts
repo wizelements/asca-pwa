@@ -35,11 +35,15 @@ export async function POST(request: Request) {
         await createEvent({
           title: event.title,
           description: event.description || '',
-          date: parseSeedDate(event.sortDate, event.endSortDate),
-          endDate: parseSeedDate(event.endSortDate, event.sortDate),
+          date: parseSeedDate(event.startDate || event.sortDate, event.endDate || event.endSortDate),
+          endDate: parseSeedDate(event.endDate || event.endSortDate || event.startDate, event.sortDate),
+          time: event.time || '',
           location: event.location || '',
           imageUrl: undefined,
           imageAlt: '',
+          ctaLabel: event.ctaLabel || '',
+          ctaHref: event.ctaHref || '',
+          isTba: Boolean(event.isTba),
           capacity: undefined,
           registrationDeadline: undefined,
           rsvpList: [],
@@ -58,8 +62,8 @@ export async function POST(request: Request) {
 
     const existingGallery = await getGalleryImages();
     if (existingGallery.length === 0) {
-      for (const image of gallerySeed) {
-        await createGalleryImage(image as any);
+      for (const [index, image] of gallerySeed.entries()) {
+        await createGalleryImage({ ...image, sortOrder: (index + 1) * 10, published: true } as any);
       }
       results.gallery = `${gallerySeed.length} gallery images seeded`;
     } else {

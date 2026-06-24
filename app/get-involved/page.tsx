@@ -4,6 +4,8 @@ import Hero from '@/components/Hero';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { MEMBERSHIP_APPLICATION_URL } from '@/lib/content/site';
+import { getManagedImage } from '@/lib/media';
+import { getPublicManagedImages } from '@/lib/public-content';
 
 export const metadata: Metadata = {
   title: { absolute: 'Get Involved | ASCA' },
@@ -47,13 +49,17 @@ const CARDS: InvolveCard[] = [
   },
 ];
 
-export default function GetInvolved() {
+export default async function GetInvolved() {
+  const images = await getPublicManagedImages();
+  const hero = getManagedImage(images, 'getInvolved.hero');
+
   return (
     <>
       <Header />
       <main>
         <Hero
-          image="/images/hero/involved.jpg"
+          image={hero.src}
+          imageAlt={hero.alt}
           title="Get Involved"
           subtitle="Join our equestrian community — there's a place for everyone."
         />

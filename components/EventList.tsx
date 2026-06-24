@@ -10,7 +10,7 @@ function eventsByMonth(month: string) {
 }
 
 function eventMonths(events: AscaEvent[]) {
-  const months = new Set(events.map((event) => event.month));
+  const months = new Set(events.map((event) => event.month).filter(Boolean) as string[]);
   return [
     ...EVENT_MONTH_ORDER.filter((month) => months.has(month)),
     ...Array.from(months).filter((month) => !EVENT_MONTH_ORDER.includes(month)),
