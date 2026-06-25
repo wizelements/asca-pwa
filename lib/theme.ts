@@ -158,5 +158,13 @@ export function themeSettingsToCss(settings: ThemeSettings): string {
     --font-sans: ${settings.bodyFont || ASCA_DEFAULT_THEME.bodyFont};
     --font-display: ${settings.headingFont || ASCA_DEFAULT_THEME.headingFont};
     --font-serif: ${settings.headingFont || 'Georgia, serif'};
+    --color-primary: ${settings.primaryColor};
+    --color-secondary: ${settings.secondaryColor};
+    --color-accent: ${settings.accentColor};
+    --color-neutral: ${settings.backgroundColor};
+    --color-background: ${settings.backgroundColor};
+    --color-text: ${settings.textColor};
+    --color-button: ${settings.buttonColor};
+    --color-button-text: ${settings.buttonTextColor};
   `;
 }
