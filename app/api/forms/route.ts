@@ -7,6 +7,9 @@ import {
 } from '@/lib/email';
 import { requireAuth } from '@/lib/auth';
 import {
+  upsertContactFromSubmission,
+} from '@/lib/db/crm-queries';
+import {
   createFormSubmission,
   getFormSubmissionById,
   getFormSubmissions,
@@ -98,7 +101,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await createFormSubmission(type, { ...data, name, email });
+    const submission = await createFormSubmission(type, { ...data, name, email });
+
+    try {
+      await upsertContactFromSubmission({
+        type,
+        name,
+        email,
+        formSubmissionId: submission.id,
+        subject: data.subject || (type === 'event-updates' ? 'Event updates interest' : undefined),
+        message: data.message || undefined,
+        sourcePage: type,
+      });
+    } catch (crmError) {
+      console.error('[FORM CRM]', crmError);
+    }
 
     const emailConfigured = Boolean(process.env.RESEND_API_KEY);
     let emailSent = false;

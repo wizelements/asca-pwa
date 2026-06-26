@@ -38,6 +38,12 @@ export default function AdminDashboard() {
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [crmStats, setCrmStats] = useState({
+    totalContacts: 0,
+    activeMembers: 0,
+    newMessages: 0,
+    openTasks: 0,
+  });
   const [exportError, setExportError] = useState("");
 
   useEffect(() => {
@@ -60,6 +66,11 @@ export default function AdminDashboard() {
         const data = await res.json();
         setStats(data);
         setRecentActivity(data.recentActivity?.slice(0, 5) || []);
+        const crmRes = await fetch('/api/admin/crm-stats', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+        if (crmRes.ok) {
+          const crmData = await crmRes.json();
+          setCrmStats(crmData);
+        }
       }
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error);
@@ -155,31 +166,31 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <AdminStatCard
             label="Total Contacts"
-            value="6"
+            value={loading ? "—" : crmStats.totalContacts}
             icon="🤝"
             href="/admin/contacts"
           />
           <AdminStatCard
+            label="Active Members"
+            value={loading ? "—" : crmStats.activeMembers}
+            icon="👥"
+            href="/admin/contacts?lifecycleStage=member"
+          />
+          <AdminStatCard
+            label="New Messages"
+            value={loading ? "—" : crmStats.newMessages}
+            icon="📬"
+            href="/admin/forms?status=new"
+          />
+          <AdminStatCard
             label="Open Tasks"
-            value="2"
+            value={loading ? "—" : crmStats.openTasks}
             icon="☑️"
             href="/admin/tasks"
           />
-          <AdminStatCard
-            label="New Leads This Week"
-            value="1"
-            icon="✨"
-            href="/admin/contacts?status=lead"
-          />
-          <AdminStatCard
-            label="Volunteers"
-            value="1"
-            icon="🙌"
-            href="/admin/volunteers"
-          />
         </div>
         <p className="mt-4 text-xs text-admin-fg-muted">
-          CRM cards show demo values while the contact database is being set up.
+          CRM stats update as contacts, messages, and tasks are created.
         </p>
       </AdminSection>
 

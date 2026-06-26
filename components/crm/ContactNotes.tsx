@@ -6,15 +6,11 @@ export interface ContactNotesProps {
   userRole?: string;
 }
 
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+function formatDate(value: string | Date | undefined): string {
+  if (!value) return "—";
+  const iso = typeof value === "string" ? value : value.toISOString();
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+});
 }
 
 export default function ContactNotes({ notes, userRole = "viewer" }: ContactNotesProps) {

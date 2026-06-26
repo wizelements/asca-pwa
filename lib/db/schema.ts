@@ -1,5 +1,6 @@
-import { sql } from 'drizzle-orm';
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { sql } from "drizzle-orm";
+import { integer, sqliteTable, text, primaryKey } from "drizzle-orm/sqlite-core";
+
 
 export const settings = sqliteTable('settings', {
   id: integer('id').primaryKey(),
@@ -125,10 +126,95 @@ export const formSubmissions = sqliteTable('form_submissions', {
   submittedAt: integer('submitted_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
 });
 
-export const activities = sqliteTable('activities', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  type: text('type').notNull(),
-  title: text('title').notNull(),
-  user: text('user').notNull(),
-  timestamp: integer('timestamp', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+
+export const activities = sqliteTable("activities", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  type: text("type").notNull(),
+  title: text("title").notNull(),
+  user: text("user").notNull(),
+  timestamp: integer("timestamp", { mode: "timestamp" }).default(sql`(unixepoch())`),
+});
+
+// --- CRM tables ---
+
+export const contacts = sqliteTable("contacts", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  type: text("type", { enum: ["person", "organization"] }).notNull().default("person"),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  organizationName: text("organization_name"),
+  email: text("email"),
+  phone: text("phone"),
+  source: text("source").notNull().default("manual"),
+  status: text("status").notNull().default("lead"),
+  lifecycleStage: text("lifecycle_stage").notNull().default("awareness"),
+  interests: text("interests", { mode: "json" }).notNull().default(sql`'[]'`),
+  consentEmail: integer("consent_email", { mode: "boolean" }).notNull().default(false),
+  consentSms: integer("consent_sms", { mode: "boolean" }).notNull().default(false),
+  notesSummary: text("notes_summary").default(""),
+  isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).default(sql`(unixepoch())`),
+});
+
+export const contactMessages = sqliteTable("contact_messages", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  contactId: integer("contact_id").notNull(),
+  formSubmissionId: integer("form_submission_id"),
+  subject: text("subject"),
+  message: text("message"),
+  sourcePage: text("source_page"),
+  status: text("status").notNull().default("new"),
+  assignedTo: integer("assigned_to"),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).default(sql`(unixepoch())`),
+});
+
+export const contactNotes = sqliteTable("contact_notes", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  contactId: integer("contact_id").notNull(),
+  authorAdminId: integer("author_admin_id").notNull(),
+  note: text("note").notNull(),
+  visibility: text("visibility").notNull().default("admin"),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`),
+});
+
+export const contactTasks = sqliteTable("contact_tasks", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  contactId: integer("contact_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  dueDate: integer("due_date", { mode: "timestamp" }),
+  status: text("status").notNull().default("open"),
+  priority: text("priority").notNull().default("medium"),
+  assignedTo: integer("assigned_to"),
+  createdBy: integer("created_by").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).default(sql`(unixepoch())`),
+});
+
+export const contactTags = sqliteTable("contact_tags", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull().unique(),
+  color: text("color").notNull().default("#737373"),
+  category: text("category").notNull().default("custom"),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`),
+});
+
+export const contactTagAssignments = sqliteTable("contact_tag_assignments", {
+  contactId: integer("contact_id").notNull(),
+  tagId: integer("tag_id").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.contactId, table.tagId] }),
+}));
+
+export const contactActivities = sqliteTable("contact_activities", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  contactId: integer("contact_id").notNull(),
+  activityType: text("activity_type").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  metadata: text("metadata", { mode: "json" }).notNull().default(sql`'{}'`),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`),
 });
