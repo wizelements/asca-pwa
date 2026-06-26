@@ -1,55 +1,29 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { cn } from '@/lib/utils';
+import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
+import { NAV_GROUPS } from "./AdminSidebar";
 
-const NAV_GROUPS = [
-  {
-    label: 'Overview',
-    items: [
-      { label: 'Dashboard', href: '/admin', icon: '📊' },
-    ],
-  },
-  {
-    label: 'Content',
-    items: [
-      { label: 'Events', href: '/admin/events', icon: '📅' },
-      { label: 'Gallery', href: '/admin/gallery', icon: '🖼️' },
-      { label: 'Media', href: '/admin/media', icon: '📁' },
-    ],
-  },
-  {
-    label: 'People',
-    items: [
-      { label: 'Members', href: '/admin/members', icon: '👥' },
-      { label: 'Forms', href: '/admin/forms', icon: '📝' },
-    ],
-  },
-  {
-    label: 'Site',
-    items: [
-      { label: 'Theme', href: '/admin/theme', icon: '🎨' },
-      { label: 'Settings', href: '/admin/settings', icon: '⚙️' },
-    ],
-  },
-];
+export interface MobileAdminNavProps {
+  activeHref?: string;
+}
 
-export default function MobileAdminNav() {
+export default function MobileAdminNav({ activeHref }: MobileAdminNavProps) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const toggle = () => setOpen((prev) => !prev);
-    const button = document.querySelector('[data-mobile-menu-toggle]');
-    button?.addEventListener('click', toggle);
-    return () => button?.removeEventListener('click', toggle);
+    const button = document.querySelector("[data-mobile-menu-toggle]");
+    button?.addEventListener("click", toggle);
+    return () => button?.removeEventListener("click", toggle);
   }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
+      if (e.key === "Escape") setOpen(false);
     };
-    if (open) window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    if (open) window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
   return (
@@ -63,8 +37,8 @@ export default function MobileAdminNav() {
       )}
       <div
         className={cn(
-          'fixed left-0 top-0 z-50 h-full w-64 transform bg-admin-surface shadow-xl transition-transform duration-200 ease-in-out lg:hidden',
-          open ? 'translate-x-0' : '-translate-x-full',
+          "fixed left-0 top-0 z-50 h-full w-64 transform bg-admin-surface shadow-xl transition-transform duration-200 ease-in-out lg:hidden",
+          open ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="flex h-16 items-center justify-between border-b border-admin-border-subtle px-4">
@@ -81,20 +55,30 @@ export default function MobileAdminNav() {
         <nav className="h-[calc(100%-4rem)] overflow-y-auto p-4">
           {NAV_GROUPS.map((group) => (
             <div key={group.label} className="mb-6">
-              <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-admin-fg-muted">{group.label}</p>
+              <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-admin-fg-muted">
+                {group.label}
+              </p>
               <ul className="space-y-1">
-                {group.items.map((item) => (
-                  <li key={item.href}>
-                    <a
-                      href={item.href}
-                      onClick={() => setOpen(false)}
-                      className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-admin-fg-secondary hover:bg-admin-bg-subtle hover:text-admin-fg-primary"
-                    >
-                      <span className="text-base">{item.icon}</span>
-                      {item.label}
-                    </a>
-                  </li>
-                ))}
+                {group.items.map((item) => {
+                  const isActive = activeHref === item.href;
+                  return (
+                    <li key={item.href}>
+                      <a
+                        href={item.href}
+                        onClick={() => setOpen(false)}
+                        className={cn(
+                          "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors",
+                          isActive
+                            ? "bg-admin-bg-subtle text-admin-fg-primary"
+                            : "text-admin-fg-secondary hover:bg-admin-bg-subtle hover:text-admin-fg-primary"
+                        )}
+                      >
+                        <span className="text-base">{item.icon}</span>
+                        {item.label}
+                      </a>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}

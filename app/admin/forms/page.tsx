@@ -236,6 +236,14 @@ export default function AdminForms() {
               )}
               <button onClick={() => updateStatus(selected, 'replied')} className="rounded-lg bg-brand-forest px-4 py-2 text-sm font-semibold text-white hover:bg-brand-forest-muted">Mark Replied</button>
               <button onClick={() => updateStatus(selected, 'resolved')} className="rounded-lg bg-brand-accent px-4 py-2 text-sm font-semibold text-brand-fg-primary hover:bg-brand-accent-muted">Mark Resolved</button>
+              {selected.data.email && (
+                <a
+                  href={`/admin/contacts/new?email=${encodeURIComponent(selected.data.email)}`}
+                  className="rounded-lg border border-brand-forest px-4 py-2 text-sm font-semibold text-brand-forest hover:bg-brand-bg-soft"
+                >
+                  + Create contact
+                </a>
+              )}
             </div>
           </div>
         </div>

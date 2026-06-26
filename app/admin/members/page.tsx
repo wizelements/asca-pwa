@@ -16,6 +16,7 @@ interface AdminMember {
   isActive: boolean;
   isVerified: boolean;
   joinDate?: string;
+  linkedContactId?: number;
 }
 
 interface MemberFormState {
@@ -240,6 +241,12 @@ export default function AdminMembers() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2">
+                        <a
+                          href={member.linkedContactId ? `/admin/contacts/${member.linkedContactId}` : `/admin/contacts/new?memberId=${member.id}`}
+                          className="rounded-lg border border-brand-forest px-3 py-1 text-sm font-medium text-brand-forest hover:bg-brand-bg-soft"
+                        >
+                          CRM profile
+                        </a>
                         <button onClick={() => openEdit(member)} className="rounded-lg bg-brand-forest px-3 py-1 text-sm text-white hover:bg-brand-forest-muted">Edit</button>
                         <button onClick={() => handleDelete(member)} className="rounded-lg bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700">Delete</button>
                       </div>

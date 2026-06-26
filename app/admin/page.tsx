@@ -1,9 +1,13 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
-import { getAdminToken, logout } from '@/components/AdminGuard';
+import AdminCard from "@/components/admin/AdminCard";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminSection from "@/components/admin/AdminSection";
+import AdminStatCard from "@/components/admin/AdminStatCard";
+import { getAdminToken, logout } from "@/components/AdminGuard";
 
 interface DashboardStats {
   totalEvents: number;
@@ -34,7 +38,7 @@ export default function AdminDashboard() {
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
-  const [exportError, setExportError] = useState('');
+  const [exportError, setExportError] = useState("");
 
   useEffect(() => {
     fetchDashboardData();
@@ -43,7 +47,7 @@ export default function AdminDashboard() {
   const fetchDashboardData = async () => {
     try {
       const token = getAdminToken();
-      const res = await fetch('/api/admin/stats', {
+      const res = await fetch("/api/admin/stats", {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 
@@ -58,7 +62,7 @@ export default function AdminDashboard() {
         setRecentActivity(data.recentActivity?.slice(0, 5) || []);
       }
     } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
+      console.error("Failed to fetch dashboard data:", error);
     } finally {
       setLoading(false);
     }
@@ -66,10 +70,10 @@ export default function AdminDashboard() {
 
   const downloadBackup = async () => {
     setExporting(true);
-    setExportError('');
+    setExportError("");
     const token = getAdminToken();
     try {
-      const res = await fetch('/api/admin/export', {
+      const res = await fetch("/api/admin/export", {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.status === 401) {
@@ -77,12 +81,12 @@ export default function AdminDashboard() {
         return;
       }
       if (!res.ok) {
-        setExportError('Unable to download backup.');
+        setExportError("Unable to download backup.");
         return;
       }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
       link.download = `asca-content-backup-${new Date().toISOString().slice(0, 10)}.json`;
       document.body.appendChild(link);
@@ -90,210 +94,153 @@ export default function AdminDashboard() {
       link.remove();
       URL.revokeObjectURL(url);
     } catch {
-      setExportError('Unable to download backup.');
+      setExportError("Unable to download backup.");
     } finally {
       setExporting(false);
     }
   };
 
-  const StatCard = ({ label, value, icon, color }: any) => (
-    <div className={`rounded-xl p-6 shadow-sm border border-brand-border-subtle transition-all hover:shadow-md ${color}`}>
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm font-medium text-brand-fg-muted uppercase tracking-wider">{label}</p>
-          <p className="mt-3 text-3xl font-bold text-brand-fg-primary">{loading ? '—' : value}</p>
-        </div>
-        <div className="text-3xl opacity-20">{icon}</div>
-      </div>
-    </div>
-  );
-
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold text-brand-fg-primary">Dashboard</h1>
-          <p className="mt-1 text-brand-fg-secondary">Welcome back. Here&apos;s what&apos;s happening with your site.</p>
+    <>
+      <AdminPageHeader
+        title="Dashboard"
+        subtitle="Welcome back. Here’s what’s happening with ASCA."
+        primaryAction={
+          <button
+            onClick={downloadBackup}
+            disabled={exporting}
+            className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-admin-primary px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-admin-primary-dark disabled:bg-admin-primary/50"
+          >
+            {exporting ? "Preparing Backup..." : "Download Backup"}
+          </button>
+        }
+      />
+
+      {exportError && (
+        <div className="mb-6 rounded-lg border border-admin-danger/30 bg-red-50 p-3 text-sm text-admin-danger">
+          {exportError}
         </div>
-        <button
-          onClick={downloadBackup}
-          disabled={exporting}
-          className="px-6 py-3 rounded-full bg-brand-forest text-white font-semibold hover:bg-brand-forest/90 transition-colors disabled:opacity-50"
-        >
-          {exporting ? 'Preparing Backup...' : 'Download Backup'}
-        </button>
-      </div>
+      )}
 
-      {exportError && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{exportError}</div>}
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          label="Published Events"
-          value={stats.publishedEvents}
-          icon="📅"
-          color="bg-gradient-to-br from-blue-50 to-blue-100/50"
-        />
-        <StatCard
-          label="Active Members"
-          value={stats.activeMembers}
-          icon="👥"
-          color="bg-gradient-to-br from-green-50 to-green-100/50"
-        />
-        <StatCard
-          label="Gallery Images"
-          value={stats.totalGalleryImages}
-          icon="🖼️"
-          color="bg-gradient-to-br from-purple-50 to-purple-100/50"
-        />
-        <StatCard
-          label="Form Submissions"
-          value={stats.totalFormSubmissions}
-          icon="📬"
-          color="bg-gradient-to-br from-orange-50 to-orange-100/50"
-        />
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Quick Actions */}
-        <div className="lg:col-span-2 bg-brand-bg-elevated rounded-xl shadow-sm border border-brand-border-subtle p-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-brand-fg-primary">Quick Actions</h2>
-            <span className="text-xs uppercase tracking-wider text-brand-forest font-semibold">Create or Edit</span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Link
-              href="/admin/events"
-              className="group relative overflow-hidden rounded-lg bg-gradient-to-br from-blue-50 to-blue-100/50 p-6 transition-all hover:shadow-md border border-blue-200/50 hover:border-blue-300"
-            >
-              <div className="relative z-10">
-                <div className="text-2xl mb-2">📅</div>
-                <p className="text-sm font-medium text-brand-fg-muted">Create New Event</p>
-                <p className="text-xs text-brand-fg-muted/60 mt-1">Add events to your calendar</p>
-              </div>
-            </Link>
-
-            <Link
-              href="/admin/gallery"
-              className="group relative overflow-hidden rounded-lg bg-gradient-to-br from-purple-50 to-purple-100/50 p-6 transition-all hover:shadow-md border border-purple-200/50 hover:border-purple-300"
-            >
-              <div className="relative z-10">
-                <div className="text-2xl mb-2">🖼️</div>
-                <p className="text-sm font-medium text-brand-fg-muted">Manage Gallery</p>
-                <p className="text-xs text-brand-fg-muted/60 mt-1">Add photos with accessible alt text</p>
-              </div>
-            </Link>
-
-            <Link
-              href="/admin/members"
-              className="group relative overflow-hidden rounded-lg bg-gradient-to-br from-green-50 to-green-100/50 p-6 transition-all hover:shadow-md border border-green-200/50 hover:border-green-300"
-            >
-              <div className="relative z-10">
-                <div className="text-2xl mb-2">👥</div>
-                <p className="text-sm font-medium text-brand-fg-muted">Manage Members</p>
-                <p className="text-xs text-brand-fg-muted/60 mt-1">View and edit member info</p>
-              </div>
-            </Link>
-
-            <Link
-              href="/admin/theme"
-              className="group relative overflow-hidden rounded-lg bg-gradient-to-br from-orange-50 to-orange-100/50 p-6 transition-all hover:shadow-md border border-orange-200/50 hover:border-orange-300"
-            >
-              <div className="relative z-10">
-                <div className="text-2xl mb-2">🎨</div>
-                <p className="text-sm font-medium text-brand-fg-muted">Edit Theme</p>
-                <p className="text-xs text-brand-fg-muted/60 mt-1">Customize colors & branding</p>
-              </div>
-            </Link>
-
-            <Link
-              href="/admin/help"
-              className="group relative overflow-hidden rounded-lg bg-gradient-to-br from-yellow-50 to-yellow-100/50 p-6 transition-all hover:shadow-md border border-yellow-200/50 hover:border-yellow-300"
-            >
-              <div className="relative z-10">
-                <div className="text-2xl mb-2">❔</div>
-                <p className="text-sm font-medium text-brand-fg-muted">Admin Help</p>
-                <p className="text-xs text-brand-fg-muted/60 mt-1">Review client workflow guidance</p>
-              </div>
-            </Link>
-
-            <Link
-              href="/admin/account"
-              className="group relative overflow-hidden rounded-lg bg-gradient-to-br from-red-50 to-red-100/50 p-6 transition-all hover:shadow-md border border-red-200/50 hover:border-red-300"
-            >
-              <div className="relative z-10">
-                <div className="text-2xl mb-2">🔐</div>
-                <p className="text-sm font-medium text-brand-fg-muted">Account Security</p>
-                <p className="text-xs text-brand-fg-muted/60 mt-1">Change the admin password</p>
-              </div>
-            </Link>
-          </div>
+      <AdminSection title="Site overview">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <AdminStatCard
+            label="Published Events"
+            value={loading ? "—" : stats.publishedEvents}
+            icon="📅"
+            href="/admin/events"
+          />
+          <AdminStatCard
+            label="Active Members"
+            value={loading ? "—" : stats.activeMembers}
+            icon="👥"
+            href="/admin/members"
+          />
+          <AdminStatCard
+            label="Gallery Images"
+            value={loading ? "—" : stats.totalGalleryImages}
+            icon="🖼️"
+            href="/admin/gallery"
+          />
+          <AdminStatCard
+            label="Form Submissions"
+            value={loading ? "—" : stats.totalFormSubmissions}
+            icon="📬"
+            href="/admin/forms"
+          />
         </div>
+      </AdminSection>
 
-        {/* Site Status */}
-        <div className="bg-brand-bg-elevated rounded-xl shadow-sm border border-brand-border-subtle p-8">
-          <h3 className="text-lg font-bold text-brand-fg-primary mb-4">Site Status</h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-brand-bg-subtle rounded-lg">
-              <span className="text-sm font-medium text-brand-fg-primary">Service Worker</span>
-              <span className="text-xs font-bold px-2 py-1 rounded bg-green-100 text-green-800">Active</span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-brand-bg-subtle rounded-lg">
-              <span className="text-sm font-medium text-brand-fg-primary">Database</span>
-              <span className="text-xs font-bold px-2 py-1 rounded bg-green-100 text-green-800">Connected</span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-brand-bg-subtle rounded-lg">
-              <span className="text-sm font-medium text-brand-fg-primary">Cache</span>
-              <span className="text-xs font-bold px-2 py-1 rounded bg-green-100 text-green-800">Enabled</span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-brand-bg-subtle rounded-lg">
-              <span className="text-sm font-medium text-brand-fg-primary">Last Updated</span>
-              <span className="text-xs text-brand-fg-muted">Just now</span>
-            </div>
-          </div>
+      <AdminSection title="CRM preview" className="mt-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <AdminStatCard
+            label="Total Contacts"
+            value="6"
+            icon="🤝"
+            href="/admin/contacts"
+          />
+          <AdminStatCard
+            label="Open Tasks"
+            value="2"
+            icon="☑️"
+            href="/admin/tasks"
+          />
+          <AdminStatCard
+            label="New Leads This Week"
+            value="1"
+            icon="✨"
+            href="/admin/contacts?status=lead"
+          />
+          <AdminStatCard
+            label="Volunteers"
+            value="1"
+            icon="🙌"
+            href="/admin/volunteers"
+          />
         </div>
-      </div>
-
-      {/* Recent Activity */}
-      <div className="bg-brand-bg-elevated rounded-xl shadow-sm border border-brand-border-subtle p-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-brand-fg-primary">Recent Activity</h2>
-          <span className="text-sm font-medium text-brand-fg-muted">Latest 5</span>
-        </div>
-
-        {recentActivity.length > 0 ? (
-          <div className="space-y-3">
-            {recentActivity.map((activity) => (
-              <div key={activity.id} className="flex items-start gap-4 p-4 bg-brand-bg-subtle rounded-lg hover:bg-brand-bg-soft transition-colors">
-                <div className="mt-1">
-                  <div className="w-2 h-2 bg-brand-forest rounded-full" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-brand-fg-primary">{activity.title}</p>
-                  <p className="text-xs text-brand-fg-muted">{activity.type} • by {activity.user}</p>
-                </div>
-                <time className="text-xs text-brand-fg-muted whitespace-nowrap">{activity.timestamp}</time>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="py-12 text-center">
-            <p className="text-brand-fg-secondary">No recent activity yet.</p>
-            <p className="text-xs text-brand-fg-muted mt-1">Changes will appear here as you manage your site.</p>
-          </div>
-        )}
-      </div>
-
-      {/* Welcome Banner */}
-      <div className="rounded-xl bg-gradient-to-r from-brand-forest to-brand-forest-muted p-8 text-white border border-brand-forest/30">
-        <h3 className="text-lg font-bold mb-2">Welcome to ASCA Admin</h3>
-        <p className="text-sm opacity-90">
-          All changes are saved to Turso and reflected on the public site instantly. Your service worker ensures the app works offline too.
+        <p className="mt-4 text-xs text-admin-fg-muted">
+          CRM cards show demo values while the contact database is being set up.
         </p>
+      </AdminSection>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+        <AdminCard className="lg:col-span-2">
+          <h2 className="mb-4 text-lg font-bold text-admin-fg-primary">Quick Actions</h2>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <QuickAction href="/admin/events" icon="📅" label="Create New Event" />
+            <QuickAction href="/admin/contacts" icon="🤝" label="Add a Contact" />
+            <QuickAction href="/admin/tasks" icon="☑️" label="Create a Task" />
+            <QuickAction href="/admin/forms" icon="📬" label="Triage Messages" />
+            <QuickAction href="/admin/members" icon="👥" label="Manage Members" />
+            <QuickAction href="/admin/theme" icon="🎨" label="Edit Theme" />
+          </div>
+        </AdminCard>
+
+        <AdminCard>
+          <h2 className="mb-4 text-lg font-bold text-admin-fg-primary">Recent Activity</h2>
+          {recentActivity.length > 0 ? (
+            <div className="space-y-3">
+              {recentActivity.map((activity) => (
+                <div
+                  key={activity.id}
+                  className="flex items-start gap-3 rounded-lg border border-admin-border-subtle bg-admin-bg-body p-3"
+                >
+                  <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-admin-primary" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-admin-fg-primary">{activity.title}</p>
+                    <p className="text-xs text-admin-fg-muted">
+                      {activity.type} • {activity.user}
+                    </p>
+                  </div>
+                  <time className="text-xs text-admin-fg-muted">{activity.timestamp}</time>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-admin-fg-muted">No recent activity yet.</p>
+          )}
+        </AdminCard>
       </div>
-    </div>
+    </>
+  );
+}
+
+function QuickAction({
+  href,
+  icon,
+  label,
+}: {
+  href: string;
+  icon: string;
+  label: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-3 rounded-lg border border-admin-border-subtle bg-admin-bg-body p-4 transition-colors hover:bg-admin-bg-subtle"
+    >
+      <span className="text-xl">{icon}</span>
+      <span className="font-medium text-admin-fg-primary">{label}</span>
+    </Link>
   );
 }
