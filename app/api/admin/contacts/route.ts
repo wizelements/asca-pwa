@@ -25,9 +25,8 @@ function serverError(error: unknown) {
   return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
 }
 
+import { getContacts, createContact } from '@/lib/db/crm-queries';
 import {
-  getContacts,
-  createContact,
   type ContactSource,
   type ContactStatus,
   type LifecycleStage,

@@ -20,7 +20,7 @@ export default function ContactListCard({
   const displayName = contactDisplayName(contact);
   const status = statusLabel(contact.status);
   const source = sourceLabel(contact.source);
-  const contactTags = tags.filter((t) => contact.tagIds.includes(t.id));
+  const contactTags = tags.filter((t) => (contact.tagIds ?? []).includes(t.id));
 
   const initials = `${contact.firstName?.[0] ?? ""}${contact.lastName?.[0] ?? ""}`.trim() || "?";
 

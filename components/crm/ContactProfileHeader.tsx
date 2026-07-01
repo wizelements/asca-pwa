@@ -13,7 +13,7 @@ export default function ContactProfileHeader({
 }: ContactProfileHeaderProps) {
   const displayName = contactDisplayName(contact);
   const initials = `${contact.firstName?.[0] ?? ""}${contact.lastName?.[0] ?? ""}`.trim() || "?";
-  const contactTags = tags.filter((t) => contact.tagIds.includes(t.id));
+  const contactTags = tags.filter((t) => (contact.tagIds ?? []).includes(t.id));
 
   return (
     <div className="rounded-xl border border-admin-border-subtle bg-admin-surface p-5 shadow-sm md:p-6">
