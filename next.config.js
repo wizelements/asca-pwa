@@ -14,7 +14,8 @@ const nextConfig = {
       },
     ],
     formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 60 * 60 * 24 * 365, // 1 year
+    // ASCA swaps same-path website photos; keep optimizer cache short so updates are visible quickly.
+    minimumCacheTTL: 60,
   },
 
   // Redirects from old/renamed routes to canonical destinations
@@ -36,15 +37,15 @@ const nextConfig = {
       {
         source: '/sw.js',
         headers: [
-          { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
+          { key: 'Cache-Control', value: 'no-store, max-age=0, must-revalidate' },
           { key: 'Service-Worker-Allowed', value: '/' },
         ],
       },
-      // Manifest - revalidate frequently
+      // Manifest - no cache so install metadata and icons refresh with deploys
       {
         source: '/manifest.json',
         headers: [
-          { key: 'Cache-Control', value: 'public, max-age=3600' },
+          { key: 'Cache-Control', value: 'no-store, max-age=0, must-revalidate' },
           { key: 'Content-Type', value: 'application/manifest+json' },
         ],
       },
@@ -53,6 +54,19 @@ const nextConfig = {
         source: '/api/:path*',
         headers: [
           { key: 'Cache-Control', value: 'private, no-store, must-revalidate' },
+        ],
+      },
+      // Content images may be replaced at the same URL by admins; force revalidation.
+      {
+        source: '/images/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
+        ],
+      },
+      {
+        source: '/_next/image',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
         ],
       },
       // Static assets - long cache
