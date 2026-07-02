@@ -1,5 +1,5 @@
 /**
- * ASCA event calendar ("Where to Find Us").
+ * ASCA event calendar.
  * This is the approved fallback/seed schedule. The public page prefers
  * admin-managed database events and falls back to this list if the database
  * has not been populated yet.
@@ -119,34 +119,22 @@ export const EVENTS: AscaEvent[] = [
     dateLabel: '7/1–8/31',
     sortDate: '2026-07-01',
     endSortDate: '2026-08-31',
-    sortOrder: 40,
+    sortOrder: 50,
     description:
       'Collect adult underwear and donations to purchase them in support of Mobile Showers Atlanta.',
     published: true,
   },
   {
-    id: 'monthly-meeting-2026-07-08',
+    id: 'monthly-meeting-2026-07-01',
     month: 'July',
     category: 'hosted',
     title: 'Monthly Meeting',
-    startDate: '2026-07-08',
-    dateLabel: '7/8',
-    sortDate: '2026-07-08',
-    sortOrder: 50,
+    startDate: '2026-07-01',
+    dateLabel: '7/1',
+    sortDate: '2026-07-01',
+    sortOrder: 40,
     time: '7:00pm',
     location: MONTHLY_MEETING_LOCATION,
-    published: true,
-  },
-  {
-    id: 'mobile-showers-atlanta-2026-07-11',
-    month: 'July',
-    category: 'attending',
-    title: 'Mobile Showers Atlanta',
-    startDate: '2026-07-11',
-    dateLabel: '7/11',
-    sortDate: '2026-07-11',
-    sortOrder: 60,
-    registrationRequired: true,
     published: true,
   },
 
@@ -186,6 +174,18 @@ export const EVENTS: AscaEvent[] = [
     sortOrder: 90,
     time: '7:00pm',
     location: MONTHLY_MEETING_LOCATION,
+    published: true,
+  },
+  {
+    id: 'mobile-showers-atlanta-2026-09-12',
+    month: 'September',
+    category: 'attending',
+    title: 'Mobile Showers Atlanta',
+    startDate: '2026-09-12',
+    dateLabel: '9/12',
+    sortDate: '2026-09-12',
+    sortOrder: 95,
+    registrationRequired: true,
     published: true,
   },
   {
@@ -229,10 +229,12 @@ export const EVENTS: AscaEvent[] = [
     month: 'October',
     category: 'attending',
     title: 'Tri-County Saddle Club Trail Ride',
-    dateLabel: 'Date TBA',
+    startDate: '2026-10-09',
+    endDate: '2026-10-11',
+    dateLabel: '10/9–10/11',
     sortDate: '2026-10-09',
+    endSortDate: '2026-10-11',
     sortOrder: 130,
-    isTba: true,
     published: true,
   },
   {

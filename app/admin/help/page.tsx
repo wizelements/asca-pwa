@@ -7,7 +7,7 @@ const eventCategories = [
 ];
 
 const monthlyChecklist = [
-  'Review the public Where to Find Us page after editing events.',
+  'Review the public Event Calendar page after editing events.',
   'Mark old or cancelled events as Draft instead of deleting if you may need them later.',
   'Check new form submissions and mark each one Replied or Resolved.',
   'Add recent photos to Gallery with clear alt text.',
@@ -28,8 +28,8 @@ export default function AdminHelp() {
         <section className="rounded-xl border border-brand-border-subtle bg-brand-bg-elevated p-6 shadow-sm">
           <h2 className="text-2xl font-bold text-brand-fg-primary">Events</h2>
           <p className="mt-2 text-sm leading-relaxed text-brand-fg-secondary">
-            Events appear on the public Where to Find Us page when Published is checked. Use the public date label for
-            display text such as 7/8, 10/9–10/11, or Date TBA. Sort Date and Sort Order control the timeline order.
+            Events appear on the public Event Calendar page when Published is checked. Use the public date label for
+            display text such as 7/1, 10/9–10/11, or Date TBA. Sort Date and Sort Order control the timeline order.
           </p>
           <h3 className="mt-5 text-sm font-semibold uppercase tracking-[0.16em] text-brand-forest">Approved categories</h3>
           <ul className="mt-3 space-y-2 text-sm text-brand-fg-secondary">

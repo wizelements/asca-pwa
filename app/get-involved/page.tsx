@@ -32,7 +32,7 @@ const CARDS: InvolveCard[] = [
   {
     title: 'Attend an Event',
     body: 'From trail rides and educational programs to community outreach and special events, there are many opportunities to participate throughout the year.',
-    cta: 'Where to Find Us',
+    cta: 'Event Calendar',
     href: '/where-to-find-us',
   },
   {

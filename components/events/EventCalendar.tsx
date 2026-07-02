@@ -112,7 +112,6 @@ export default function EventCalendar({ events }: EventCalendarProps) {
     displayEvents,
     tbaEvents,
     nextEvent,
-    upcomingEvents,
     gridSpanSegments,
     goToPreviousMonth,
     goToNextMonth,
@@ -387,19 +386,21 @@ export default function EventCalendar({ events }: EventCalendarProps) {
         </section>
       )}
 
-      <section aria-labelledby="upcoming-events-heading">
+      <section aria-labelledby="events-by-month-heading">
         <div className="mb-5 flex items-end justify-between gap-3">
           <div>
-            <p className="section-label">Calendar</p>
-            <h2 id="upcoming-events-heading" className="section-title mb-0">Upcoming Events</h2>
+            <p className="section-label">Monthly List</p>
+            <h2 id="events-by-month-heading" className="section-title mb-0">Events by Month</h2>
           </div>
           <p className="text-sm text-brand-fg-muted">{displayEvents.length} known-date events</p>
         </div>
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          {upcomingEvents.map((event) => (
-            <CompactEventCard key={event.id} event={event} onSelect={handleSelectEvent} />
-          ))}
-        </div>
+        <CalendarListView
+          events={displayEvents}
+          onSelectEvent={handleSelectEvent}
+          selectedEventId={selectedEvent?.id}
+          emptyMessage="No events match the current filters."
+          groupByMonth
+        />
       </section>
 
       <section

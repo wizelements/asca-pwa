@@ -39,7 +39,7 @@ export const NAV_LINKS = [
   { href: '/about', label: 'About' },
   { href: '/members', label: 'Meet ASCA' },
   { href: '/get-involved', label: 'Get Involved' },
-  { href: '/where-to-find-us', label: 'Where to Find Us' },
+  { href: '/where-to-find-us', label: 'Event Calendar' },
   { href: '/gallery', label: 'Gallery' },
   { href: '/support-asca', label: 'Support ASCA' },
 ];
@@ -50,7 +50,7 @@ export const FOOTER_LINKS = [
   { href: '/about', label: 'About' },
   { href: '/members', label: 'Meet ASCA' },
   { href: '/get-involved', label: 'Get Involved' },
-  { href: '/where-to-find-us', label: 'Where to Find Us' },
+  { href: '/where-to-find-us', label: 'Event Calendar' },
   { href: '/gallery', label: 'Club Activity / Photo Gallery' },
   { href: '/support-asca', label: 'Support ASCA' },
   { href: '/#contact', label: 'Contact' },

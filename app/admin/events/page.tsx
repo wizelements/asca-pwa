@@ -256,7 +256,7 @@ export default function AdminEvents() {
         <div>
           <h1 className="text-4xl font-bold text-brand-fg-primary">Events</h1>
           <p className="mt-1 text-sm text-brand-fg-secondary">
-            Manage the public Where to Find Us schedule. {publishedCount} of {events.length} events are published.
+            Manage the public Event Calendar schedule. {publishedCount} of {events.length} events are published.
           </p>
         </div>
         <button
@@ -444,7 +444,7 @@ export default function AdminEvents() {
                     type="text"
                     value={form.dateLabel}
                     onChange={(e) => setForm({ ...form, dateLabel: e.target.value })}
-                    placeholder="7/8 or Date TBA"
+                    placeholder="7/1 or Date TBA"
                     className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary"
                     disabled={form.isTba}
                     required={!form.isTba}
