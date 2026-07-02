@@ -174,7 +174,7 @@ export default function AdminGallery() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-4xl font-bold text-brand-fg-primary">Gallery</h1>
-          <p className="mt-1 text-sm text-brand-fg-secondary">Manage public gallery images by path, URL, or upload. Alt text is required. Draft images stay out of the public gallery.</p>
+          <p className="mt-1 text-sm text-brand-fg-secondary">Manage public gallery images by path, URL, or upload. Published images appear before the default ASCA gallery photos; draft images stay out of the public gallery.</p>
         </div>
         <button onClick={openCreate} className="rounded-lg bg-brand-forest px-6 py-2 font-semibold text-white hover:bg-brand-forest-muted">
           + Add Image
@@ -186,7 +186,7 @@ export default function AdminGallery() {
 
       {items.length === 0 ? (
         <div className="rounded-xl border border-brand-border-subtle bg-brand-bg-elevated p-10 text-center text-brand-fg-muted">
-          No gallery images in the database yet. The public gallery will use static fallback images until items are added here.
+          No gallery images in the database yet. The public gallery is currently showing the default ASCA gallery photos.
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">

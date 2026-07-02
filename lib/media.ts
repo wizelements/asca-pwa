@@ -1,6 +1,4 @@
 export type SiteImageSlot =
-  | 'site.logo'
-  | 'footer.logo'
   | 'home.hero'
   | 'home.activity.trailRides'
   | 'home.activity.communityOutreach'
@@ -20,7 +18,6 @@ export type SiteImageSlot =
   | 'members.community.1'
   | 'members.community.2'
   | 'getInvolved.hero'
-  | 'whereToFindUs.hero'
   | 'support.hero'
   | 'gallery.hero'
   | 'gallery.fallback.1'
@@ -47,26 +44,6 @@ export type ManagedImageRecord = Record<string, Partial<ManagedImage> & { image?
 export const DEFAULT_LOGO = '/images/asca/logo.png';
 
 export const DEFAULT_MANAGED_IMAGES: ManagedImage[] = [
-  {
-    id: 'site-logo',
-    slot: 'site.logo',
-    src: DEFAULT_LOGO,
-    alt: 'Atlanta Saddle Club Association logo',
-    title: 'Header logo',
-    category: 'Site Chrome',
-    sortOrder: 10,
-    published: true,
-  },
-  {
-    id: 'footer-logo',
-    slot: 'footer.logo',
-    src: DEFAULT_LOGO,
-    alt: 'Atlanta Saddle Club Association logo',
-    title: 'Footer logo',
-    category: 'Site Chrome',
-    sortOrder: 20,
-    published: true,
-  },
   {
     id: 'home-hero',
     slot: 'home.hero',
@@ -255,16 +232,6 @@ export const DEFAULT_MANAGED_IMAGES: ManagedImage[] = [
     title: 'Get Involved hero',
     category: 'Get Involved',
     sortOrder: 500,
-    published: true,
-  },
-  {
-    id: 'where-to-find-us-hero',
-    slot: 'whereToFindUs.hero',
-    src: '/images/hero/calendar.jpg',
-    alt: 'ASCA event calendar and rides',
-    title: 'Event Calendar hero',
-    category: 'Event Calendar',
-    sortOrder: 600,
     published: true,
   },
   {

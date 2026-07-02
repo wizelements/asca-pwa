@@ -12,9 +12,18 @@ const STATUS_OPTIONS: Array<{ value: "" | ContactMessage["status"]; label: strin
   { value: "resolved", label: "Resolved" },
 ];
 
-const KNOWN_SOURCES = ["contact-form", "event-updates", "membership-form", "volunteer-form", "manual"];
+const KNOWN_SOURCES = ["contact", "event-updates", "membership", "volunteer", "manual"];
+const MESSAGE_STATUSES = STATUS_OPTIONS.map((status) => status.value).filter(Boolean);
 
 function displaySource(type: string) {
+  const labels: Record<string, string> = {
+    contact: "Contact Form",
+    "event-updates": "Event Updates",
+    membership: "Membership",
+    volunteer: "Volunteer",
+    manual: "Manual",
+  };
+  if (labels[type]) return labels[type];
   return type
     .split("-")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
@@ -42,6 +51,12 @@ export default function AdminForms() {
     const types = new Set([...KNOWN_SOURCES, ...messages.map((m) => m.sourcePage || "")].filter(Boolean));
     return Array.from(types).sort();
   }, [messages]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get("status") as ContactMessage["status"] | null;
+    if (status && MESSAGE_STATUSES.includes(status)) setStatusFilter(status);
+  }, []);
 
   useEffect(() => {
     fetchMessages();

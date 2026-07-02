@@ -14,42 +14,34 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Relationships",
     items: [
       { label: "Contacts", href: "/admin/contacts", icon: "🤝" },
-      { label: "Members", href: "/admin/members", icon: "👥" },
-      { label: "Volunteers", href: "/admin/volunteers", icon: "🙌" },
-      { label: "Organizations", href: "/admin/organizations", icon: "🏢" },
+      { label: "Member Records", href: "/admin/members", icon: "👥" },
     ],
   },
   {
     label: "Communications",
     items: [
       { label: "Messages", href: "/admin/forms", icon: "📬" },
-      { label: "Templates", href: "/admin/templates", icon: "📄" },
-      { label: "Campaigns", href: "/admin/campaigns", icon: "📢" },
     ],
   },
   {
-    label: "Events",
+    label: "Calendar",
     items: [
-      { label: "Events", href: "/admin/events", icon: "📅" },
-      { label: "Attendance", href: "/admin/attendance", icon: "✅" },
-      { label: "Follow-ups", href: "/admin/follow-ups", icon: "🔄" },
+      { label: "Event Calendar", href: "/admin/events", icon: "📅" },
     ],
   },
   {
     label: "Tasks",
     items: [
       { label: "Tasks", href: "/admin/tasks", icon: "☑️" },
-      { label: "AI Assistant", href: "/admin/ai-assistant", icon: "🤖" },
     ],
   },
   {
     label: "Site",
     items: [
-      { label: "Media", href: "/admin/media", icon: "📁" },
+      { label: "Page Images", href: "/admin/media", icon: "📁" },
       { label: "Gallery", href: "/admin/gallery", icon: "🖼️" },
       { label: "Theme", href: "/admin/theme", icon: "🎨" },
-      { label: "Website", href: "/admin/website", icon: "🌐" },
-      { label: "Settings", href: "/admin/settings", icon: "⚙️" },
+      { label: "Social & Donations", href: "/admin/settings", icon: "💝" },
     ],
   },
   {

@@ -11,6 +11,14 @@ import {
   type GalleryImage,
 } from '@/lib/db/queries';
 
+function canWrite(role: string): boolean {
+  return role === 'admin' || role === 'editor';
+}
+
+function forbidden() {
+  return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+}
+
 export async function GET(request: NextRequest) {
   try {
     await requireAuth(request);
@@ -42,6 +50,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const user = await requireAuth(request);
+    if (!canWrite(user.role)) return forbidden();
     const body = await request.json();
 
     if (!body.title || !body.image || !body.alt) {
@@ -72,6 +81,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const user = await requireAuth(request);
+    if (!canWrite(user.role)) return forbidden();
     const body = await request.json();
     const { id, ...updates } = body;
 
@@ -111,6 +121,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const user = await requireAuth(request);
+    if (!canWrite(user.role)) return forbidden();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 

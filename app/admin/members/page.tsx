@@ -193,11 +193,13 @@ export default function AdminMembers() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-brand-fg-primary">Members</h1>
-          <p className="mt-1 text-sm text-brand-fg-secondary">Manage ASCA member records.</p>
+          <h1 className="text-4xl font-bold text-brand-fg-primary">Member Records</h1>
+          <p className="mt-1 text-sm text-brand-fg-secondary">
+            Manage ASCA&apos;s internal roster. These records do not publish a public member directory.
+          </p>
         </div>
         <button onClick={openCreate} className="rounded-lg bg-brand-forest px-6 py-2 font-semibold text-white hover:bg-brand-forest-muted">
-          + Add Member
+          + Add Member Record
         </button>
       </div>
 
@@ -220,7 +222,7 @@ export default function AdminMembers() {
               {members.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-10 text-center text-brand-fg-muted">
-                    No members yet. Add members when the client is ready to manage records here.
+                    No internal member records yet.
                   </td>
                 </tr>
               ) : (
@@ -242,11 +244,8 @@ export default function AdminMembers() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2">
-                        <a
-                          href={member.contactId ? `/admin/contacts/${member.contactId}` : `/admin/contacts/new?memberId=${member.id}`}
-                          className="rounded-lg border border-brand-forest px-3 py-1 text-sm font-medium text-brand-forest hover:bg-brand-bg-soft"
-                        >
-                          {member.contactId ? 'CRM profile' : 'Create CRM contact'}
+                        <a href="/admin/contacts" className="rounded-lg border border-brand-forest px-3 py-1 text-sm font-medium text-brand-forest hover:bg-brand-bg-soft">
+                          View CRM contacts
                         </a>
 
                         <button onClick={() => openEdit(member)} className="rounded-lg bg-brand-forest px-3 py-1 text-sm text-white hover:bg-brand-forest-muted">Edit</button>
@@ -264,7 +263,7 @@ export default function AdminMembers() {
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-brand-bg-elevated p-6 shadow-xl">
-            <h2 className="mb-6 text-2xl font-bold text-brand-fg-primary">{editing ? 'Edit Member' : 'Add Member'}</h2>
+            <h2 className="mb-6 text-2xl font-bold text-brand-fg-primary">{editing ? 'Edit Member Record' : 'Add Member Record'}</h2>
             <form onSubmit={handleSave} className="space-y-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
@@ -316,7 +315,7 @@ export default function AdminMembers() {
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={() => setModalOpen(false)} className="rounded-lg border border-brand-border-subtle px-6 py-2 text-brand-fg-primary hover:bg-brand-bg-subtle">Cancel</button>
                 <button type="submit" disabled={saving} className="rounded-lg bg-brand-forest px-6 py-2 font-semibold text-white hover:bg-brand-forest-muted disabled:opacity-50">
-                  {saving ? 'Saving...' : editing ? 'Update Member' : 'Add Member'}
+                  {saving ? 'Saving...' : editing ? 'Update Member Record' : 'Add Member Record'}
                 </button>
               </div>
             </form>

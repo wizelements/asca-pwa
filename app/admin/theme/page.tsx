@@ -85,10 +85,9 @@ export default function AdminTheme() {
   const fetchTheme = async () => {
     setLoading(true);
     try {
-      const [themeRes, settingsRes] = await Promise.all([fetch('/api/theme'), fetch('/api/settings')]);
+      const themeRes = await fetch('/api/theme');
       const themeData = themeRes.ok ? await themeRes.json() : null;
-      const settingsData = settingsRes.ok ? await settingsRes.json() : null;
-      setTheme(resolveThemeSettings(themeData, settingsData?.tagline));
+      setTheme(resolveThemeSettings(themeData));
     } catch {
       setError('Unable to load theme settings.');
     } finally {
@@ -101,7 +100,7 @@ export default function AdminTheme() {
   };
 
   const resetDefaults = () => {
-    setTheme({ ...ASCA_DEFAULT_THEME, tagline: theme.tagline });
+    setTheme(ASCA_DEFAULT_THEME);
     setMessage('Default ASCA theme restored in the editor. Click Save Theme Changes to publish it.');
     setError('');
   };
@@ -133,20 +132,8 @@ export default function AdminTheme() {
         return;
       }
 
-      if (theme.tagline !== undefined) {
-        const settingsRes = await fetch('/api/settings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ tagline: theme.tagline }),
-        });
-        if (settingsRes.status === 401) {
-          logout();
-          return;
-        }
-      }
-
       const updated = await themeRes.json();
-      setTheme(resolveThemeSettings(updated, theme.tagline));
+      setTheme(resolveThemeSettings(updated));
       setMessage('Theme saved. Public pages consume these CSS variables on reload.');
     } catch {
       setError('Unable to save theme.');
@@ -163,7 +150,7 @@ export default function AdminTheme() {
         <div>
           <h1 className="text-4xl font-bold text-brand-fg-primary">Theme / Brand Settings</h1>
           <p className="mt-2 max-w-2xl text-sm text-brand-fg-secondary">
-            Update ASCA colors, fonts, logo, and tagline. These settings persist and are used by the public site through CSS variables.
+            Update ASCA colors, fonts, and logo. These settings persist and are used by the public site through CSS variables.
           </p>
         </div>
         <div className="flex gap-3">
@@ -210,10 +197,6 @@ export default function AdminTheme() {
                 <select value={theme.bodyFont || ''} onChange={(e) => updateField('bodyFont', e.target.value)} className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary">
                   {FONT_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                 </select>
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Site Tagline</label>
-                <input type="text" value={theme.tagline || ''} onChange={(e) => updateField('tagline', e.target.value)} className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary" />
               </div>
               <AdminImageField
                 label="Logo image path, URL, or upload"

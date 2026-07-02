@@ -58,7 +58,7 @@ export default function AdminAccount() {
       <div>
         <h1 className="text-4xl font-bold text-brand-fg-primary">Account Security</h1>
         <p className="mt-2 max-w-2xl text-brand-fg-secondary">
-          Change the admin password after handoff and any time a password has been shared outside a password manager.
+          Change your password after handoff and any time it has been shared outside a password manager.
         </p>
       </div>
 

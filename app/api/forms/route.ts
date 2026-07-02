@@ -20,6 +20,14 @@ import {
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'info@atlantasaddleclub.com';
 
+function canWrite(role: string): boolean {
+  return role === 'admin' || role === 'editor';
+}
+
+function forbidden() {
+  return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+}
+
 function isFormStatus(value: string): value is FormSubmission['status'] {
   return ['new', 'replied', 'resolved'].includes(value);
 }
@@ -55,6 +63,7 @@ export async function GET(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const user = await requireAuth(req);
+    if (!canWrite(user.role)) return forbidden();
     const body = await req.json();
     const id = Number(body.id);
     const status = String(body.status || '');

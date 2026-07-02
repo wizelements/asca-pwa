@@ -25,6 +25,7 @@ export default function AdminImagePicker({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
         <div className="shrink-0 overflow-hidden rounded-lg border border-admin-border-subtle bg-admin-bg-subtle">
           {hasImage ? (
+            // eslint-disable-next-line @next/next/no-img-element -- Admin previews accept arbitrary image URLs; next/image rejects unconfigured remote hosts.
             <img
               src={value}
               alt={previewAlt}

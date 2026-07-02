@@ -58,7 +58,6 @@ export default function ContactDetailPage() {
     description: "",
     dueDate: "",
     priority: "medium" as TaskPriority,
-    assignedTo: "",
   });
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Contact>>({});
@@ -160,7 +159,6 @@ export default function ContactDetailPage() {
         body: JSON.stringify({
           ...taskForm,
           dueDate: taskForm.dueDate ? new Date(taskForm.dueDate).toISOString() : undefined,
-          assignedTo: taskForm.assignedTo ? Number(taskForm.assignedTo) : undefined,
         }),
       });
       if (res.status === 401) {
@@ -173,7 +171,7 @@ export default function ContactDetailPage() {
         return;
       }
       setTaskModalOpen(false);
-      setTaskForm({ title: "", description: "", dueDate: "", priority: "medium", assignedTo: "" });
+      setTaskForm({ title: "", description: "", dueDate: "", priority: "medium" });
       await fetchData();
     } catch {
       setError("Unable to add task.");
@@ -416,15 +414,6 @@ export default function ContactDetailPage() {
                   <option value="high">High</option>
                 </select>
               </div>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-semibold text-admin-fg-primary">Assigned to (user ID)</label>
-              <input
-                type="number"
-                value={taskForm.assignedTo}
-                onChange={(e) => setTaskForm({ ...taskForm, assignedTo: e.target.value })}
-                className="w-full rounded-lg border border-admin-border-subtle bg-admin-bg-body px-4 py-2 text-admin-fg-primary"
-              />
             </div>
             <div className="flex gap-3 pt-2">
               <button type="button" onClick={() => setTaskModalOpen(false)} className="rounded-lg border border-admin-border-subtle px-4 py-2 text-admin-fg-primary hover:bg-admin-bg-subtle">

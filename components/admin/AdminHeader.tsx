@@ -21,12 +21,12 @@ export default function AdminHeader({ pageTitle, primaryAction }: AdminHeaderPro
       </div>
       <div className="flex items-center gap-3">
         <a
-          href="https://asca-pwa.vercel.app"
+          href="/"
           target="_blank"
           rel="noopener noreferrer"
           className="hidden text-sm font-medium text-admin-fg-secondary hover:text-admin-fg-primary sm:block"
         >
-          View Live Site →
+          View Public Site →
         </a>
         {primaryAction}
       </div>

@@ -10,6 +10,7 @@ export interface Social {
 export interface Venmo {
   username?: string;
   presets?: number[];
+  zelle?: string;
 }
 
 export interface Hero {

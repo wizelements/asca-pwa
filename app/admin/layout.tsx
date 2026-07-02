@@ -16,7 +16,7 @@ export default function AdminLayout({
   }
 
   return (
-    <AdminGuard>
+    <AdminGuard requiredRole="editor">
       <AdminShell activeHref={pathname}>{children}</AdminShell>
     </AdminGuard>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 import AdminActionButton from "@/components/admin/AdminActionButton";
@@ -9,8 +9,8 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminSection from "@/components/admin/AdminSection";
 import { ContactListCard } from "@/components/crm";
 import { getAdminToken, logout } from "@/components/AdminGuard";
-import type { Contact, ContactSource, ContactStatus, ContactTag, ContactSummary } from "@/lib/crm/types";
-import { mapContactForComponent, sourceLabel, statusLabel } from "@/lib/crm/types";
+import type { Contact, ContactSource, ContactStatus, ContactTag, ContactSummary, LifecycleStage } from "@/lib/crm/types";
+import { lifecycleLabel, mapContactForComponent, sourceLabel, statusLabel } from "@/lib/crm/types";
 
 const STATUSES: ContactStatus[] = [
   "lead",
@@ -30,6 +30,16 @@ const SOURCES: ContactSource[] = [
   "manual",
   "member-import",
   "rsvp",
+  "jotform",
+];
+
+const LIFECYCLE_STAGES: LifecycleStage[] = [
+  "awareness",
+  "engaged",
+  "member",
+  "volunteer",
+  "advocate",
+  "inactive",
 ];
 
 interface ContactCreateForm {
@@ -51,6 +61,7 @@ export default function ContactsPage() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"" | ContactStatus>("");
   const [source, setSource] = useState<"" | ContactSource>("");
+  const [lifecycleStage, setLifecycleStage] = useState<"" | LifecycleStage>("");
   const [error, setError] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -67,12 +78,7 @@ export default function ContactsPage() {
     notesSummary: "",
   });
 
-  useEffect(() => {
-    fetchTags();
-    fetchContacts();
-  }, [query, status, source]);
-
-  const fetchTags = async () => {
+  const fetchTags = useCallback(async () => {
     const token = getAdminToken();
     try {
       const res = await fetch("/api/admin/tags", {
@@ -85,9 +91,9 @@ export default function ContactsPage() {
     } catch {
       // ignore tag errors
     }
-  };
+  }, []);
 
-  const fetchContacts = async () => {
+  const fetchContacts = useCallback(async () => {
     const token = getAdminToken();
     setLoading(true);
     setError("");
@@ -96,6 +102,7 @@ export default function ContactsPage() {
       if (query) params.set("q", query);
       if (status) params.set("status", status);
       if (source) params.set("source", source);
+      if (lifecycleStage) params.set("lifecycleStage", lifecycleStage);
       const res = await fetch(`/api/admin/contacts?${params.toString()}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
@@ -115,7 +122,18 @@ export default function ContactsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [lifecycleStage, query, source, status]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const stage = params.get("lifecycleStage") as LifecycleStage | null;
+    if (stage && LIFECYCLE_STAGES.includes(stage)) setLifecycleStage(stage);
+  }, []);
+
+  useEffect(() => {
+    fetchTags();
+    fetchContacts();
+  }, [fetchContacts, fetchTags]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -224,6 +242,19 @@ export default function ContactsPage() {
               <option value="">All sources</option>
               {SOURCES.map((s) => (
                 <option key={s} value={s}>{sourceLabel(s)}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex-1">
+            <label className="block text-xs font-semibold text-admin-fg-muted">Lifecycle</label>
+            <select
+              value={lifecycleStage}
+              onChange={(e) => setLifecycleStage(e.target.value as "" | LifecycleStage)}
+              className="mt-1 w-full rounded-lg border border-admin-border-subtle bg-admin-surface px-4 py-2 text-sm text-admin-fg-primary focus:outline-none focus:ring-2 focus:ring-admin-primary"
+            >
+              <option value="">All lifecycle stages</option>
+              {LIFECYCLE_STAGES.map((stage) => (
+                <option key={stage} value={stage}>{lifecycleLabel(stage)}</option>
               ))}
             </select>
           </div>

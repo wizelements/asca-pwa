@@ -254,7 +254,7 @@ export default function AdminEvents() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-brand-fg-primary">Events</h1>
+          <h1 className="text-4xl font-bold text-brand-fg-primary">Event Calendar</h1>
           <p className="mt-1 text-sm text-brand-fg-secondary">
             Manage the public Event Calendar schedule. {publishedCount} of {events.length} events are published.
           </p>

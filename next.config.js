@@ -27,6 +27,15 @@ const nextConfig = {
       { source: '/calendar-of-events', destination: '/where-to-find-us', permanent: true },
       { source: '/donate', destination: '/support-asca', permanent: true },
       { source: '/visit', destination: '/#connect', permanent: true },
+      { source: '/admin/ai-assistant', destination: '/admin/tasks', permanent: false },
+      { source: '/admin/attendance', destination: '/admin/events', permanent: false },
+      { source: '/admin/blog', destination: '/admin/gallery', permanent: false },
+      { source: '/admin/campaigns', destination: '/admin/forms', permanent: false },
+      { source: '/admin/follow-ups', destination: '/admin/tasks', permanent: false },
+      { source: '/admin/organizations', destination: '/admin/contacts', permanent: false },
+      { source: '/admin/templates', destination: '/admin/forms', permanent: false },
+      { source: '/admin/volunteers', destination: '/admin/contacts', permanent: false },
+      { source: '/admin/website', destination: '/admin/media', permanent: false },
     ];
   },
 

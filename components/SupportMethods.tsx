@@ -22,8 +22,9 @@ export default function SupportMethods() {
           const cashAppIndex = next.findIndex((method) => method.label === 'Cash App');
           if (cashAppIndex >= 0) next[cashAppIndex] = { label: 'Cash App', handle: settings.cashApp };
         }
-        if (settings.venmo?.username) {
-          next.push({ label: 'Venmo', handle: settings.venmo.username });
+        if (settings.venmo?.zelle) {
+          const zelleIndex = next.findIndex((method) => method.label === 'Zelle');
+          if (zelleIndex >= 0) next[zelleIndex] = { label: 'Zelle', handle: settings.venmo.zelle };
         }
         setMethods(next);
       })

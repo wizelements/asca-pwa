@@ -90,5 +90,9 @@ export default function AdminGuard({ children, requiredRole = 'admin' }: AdminGu
 
   if (!user) return null;
 
+  const userIndex = ROLES.indexOf(user.role);
+  const requiredIndex = ROLES.indexOf(requiredRole);
+  if (userIndex < requiredIndex) return null;
+
   return <>{children}</>;
 }

@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { getSettings, updateSettings, logActivity } from '@/lib/db/queries';
 
+function canWrite(role: string): boolean {
+  return role === 'admin' || role === 'editor';
+}
+
+function forbidden() {
+  return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+}
+
 export async function GET() {
   try {
     const settings = await getSettings();
@@ -18,6 +26,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const user = await requireAuth(request);
+    if (!canWrite(user.role)) return forbidden();
     const data = await request.json();
 
     const updated = await updateSettings(data);
