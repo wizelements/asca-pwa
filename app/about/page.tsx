@@ -47,8 +47,7 @@ export default async function About() {
           <div className="container max-w-4xl">
             <div className="grid items-center gap-10 md:grid-cols-2">
               <div>
-                <p className="section-label">History</p>
-                <h2 className="section-title">History</h2>
+                <h2 className="section-title">How ASCA Began</h2>
                 <p className="leading-relaxed text-brand-fg-secondary">
                   The Atlanta Saddle Club Association (ASCA) was formed on May 5, 2020 by a group of dedicated
                   horsemen who wanted to create a community in metro Atlanta that promotes positive horsemanship,

@@ -6,7 +6,7 @@ import MeetingCallout from '@/components/MeetingCallout';
 import ConnectLearnGiveCards from '@/components/ConnectLearnGiveCards';
 import EventUpdatesForm from '@/components/EventUpdatesForm';
 import ManagedImage from '@/components/media/ManagedImage';
-import { MEMBERSHIP_APPLICATION_URL } from '@/lib/content/site';
+
 import { getManagedImage, type SiteImageSlot } from '@/lib/media';
 import { getPublicManagedImages } from '@/lib/public-content';
 
@@ -19,20 +19,21 @@ const ACTIVITY_SLOTS: SiteImageSlot[] = [
   'home.activity.fellowship',
 ];
 
-const GALLERY_PREVIEW_SLOTS: SiteImageSlot[] = [
-  'home.galleryPreview.1',
-  'home.galleryPreview.2',
-  'home.galleryPreview.3',
-  'home.galleryPreview.4',
-  'home.galleryPreview.5',
-  'home.galleryPreview.6',
-];
+/** Map an activity card title to a gallery category slug used in /gallery?category=<slug>. */
+const ACTIVITY_CATEGORY_MAP: Record<string, string> = {
+  'Trail Rides': 'Trail Rides',
+  'Community Outreach': 'Community Outreach',
+  'Parades': 'Parades',
+  'Horsemanship': 'Horsemanship',
+  'Festival & Rodeo Events': 'Festival & Rodeo Events',
+  'Fellowship': 'Fellowship',
+};
 
 export default async function Home() {
   const images = await getPublicManagedImages();
   const hero = getManagedImage(images, 'home.hero');
   const activityHighlights = ACTIVITY_SLOTS.map((slot) => getManagedImage(images, slot));
-  const galleryPhotos = GALLERY_PREVIEW_SLOTS.map((slot) => getManagedImage(images, slot));
+
 
   return (
     <>
@@ -53,14 +54,9 @@ export default async function Home() {
               <Link href="/where-to-find-us" className="btn-primary">
                 Attend a Meeting
               </Link>
-              <a
-                href={MEMBERSHIP_APPLICATION_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-secondary"
-              >
+              <Link href="/members" className="btn-secondary">
                 Become a Member
-              </a>
+              </Link>
               <Link href="/support-asca" className="btn-accent">
                 Support ASCA
               </Link>
@@ -80,16 +76,18 @@ export default async function Home() {
         {/* Our Latest Activities (replaces old blog section) */}
         <section className="py-20">
           <div className="container">
-            <p className="section-label text-center">What We&apos;ve Been Up To</p>
             <h2 className="section-title text-center">Our Latest Activities</h2>
             <p className="mx-auto mb-12 max-w-2xl text-center text-brand-fg-secondary">
               From trail rides to community outreach, here&apos;s a glimpse of how ASCA stays active across metro Atlanta and beyond.
             </p>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {activityHighlights.map((activity) => (
+              {activityHighlights.map((activity) => {
+                const category = ACTIVITY_CATEGORY_MAP[activity.title ?? ''];
+                const href = category ? `/gallery?category=${encodeURIComponent(category)}` : '/gallery';
+                return (
                 <Link
                   key={activity.slot}
-                  href="/gallery"
+                  href={href}
                   className="group relative block aspect-[4/3] overflow-hidden rounded-xl"
                 >
                   <ManagedImage
@@ -104,7 +102,8 @@ export default async function Home() {
                     {activity.title}
                   </span>
                 </Link>
-              ))}
+              );
+              })}
             </div>
             <div className="mt-10 text-center">
               <Link href="/gallery" className="btn-secondary">
@@ -114,31 +113,7 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* Photo Gallery preview */}
-        <section className="bg-brand-bg-subtle py-20">
-          <div className="container">
-            <p className="section-label text-center">Gallery</p>
-            <h2 className="section-title text-center">Life at ASCA</h2>
-            <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {galleryPhotos.map((photo) => (
-                <div key={photo.slot} className="relative aspect-[4/3] overflow-hidden rounded-xl">
-                  <ManagedImage
-                    src={photo.src}
-                    alt={photo.alt}
-                    fill
-                    className="object-cover transition-transform duration-300 hover:scale-105"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  />
-                </div>
-              ))}
-            </div>
-            <div className="mt-10 text-center">
-              <Link href="/gallery" className="btn-secondary">
-                View Full Gallery
-              </Link>
-            </div>
-          </div>
-        </section>
+
 
         {/* Stay Up to Date on our Events */}
         <section className="py-20">
@@ -155,20 +130,12 @@ export default async function Home() {
         {/* Membership CTA */}
         <section className="bg-brand-forest py-20 text-white">
           <div className="container text-center">
-            <p className="section-label text-brand-accent">Membership</p>
-            <h2 className="text-3xl font-bold md:text-4xl">Ready to Ride With Us?</h2>
+            <p className="section-label text-brand-accent">Get Involved</p>
+            <h2 className="text-3xl font-bold md:text-4xl">Ready to Get Involved?</h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-amber-100">
-              Attend a meeting, join the club, or get involved with ASCA today.
+              Attend a meeting, join the club, volunteer, or support ASCA today.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <a
-                href={MEMBERSHIP_APPLICATION_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-accent"
-              >
-                ASCA Membership Application
-              </a>
               <Link href="/get-involved" className="btn-secondary border-white text-white hover:bg-white/10">
                 Get Involved
               </Link>
