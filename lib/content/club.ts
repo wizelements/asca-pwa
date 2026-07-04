@@ -19,16 +19,16 @@ export const FUN_FACTS: FunFact[] = [
   { label: 'Members', value: '40' },
   {
     label: 'Trail rides completed',
-    value: '5 hosted by ASCA, plus dozens across Georgia, Alabama, South Carolina, and North Carolina',
+    value: 'ASCA Hosted - 5 and has attended dozens across the Southeast',
   },
   { label: 'Parades completed', value: '10' },
   {
     label: 'Community giving',
-    value: 'Thousands of pairs of socks and hundreds of pounds of toiletries collected for the homeless',
+    value: 'Volunteering at local food banks and Mobile Showers Atlanta, and completing donation drives to help the homeless',
   },
-  { label: 'Black History Cowboy Festival', value: 'Established in 2026' },
+  { label: 'Black Cowboy Heritage Festival', value: 'Established in 2026' },
   {
-    label: 'Trots for Tots Breakfast events',
+    label: 'Trots for Tots Breakfast with Santa',
     value: '4 — collecting toys for families in need during the holidays',
   },
 ];
