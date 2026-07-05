@@ -5,6 +5,7 @@ export type Role = 'admin' | 'editor' | 'viewer';
 export interface Social {
   facebook?: string;
   instagram?: string;
+  tiktok?: string;
 }
 
 export interface Venmo {
@@ -175,6 +176,7 @@ function sanitizeSocial(value: Social | Record<string, unknown> | null | undefin
   return {
     facebook: typeof value?.facebook === 'string' ? value.facebook : undefined,
     instagram: typeof value?.instagram === 'string' ? value.instagram : undefined,
+    tiktok: typeof value?.tiktok === 'string' ? value.tiktok : undefined,
   };
 }
 

@@ -14,13 +14,14 @@ export const MEETING = {
 };
 
 export const MEMBERSHIP_APPLICATION_URL =
-  'https://form.jotform.com/TheRealASCA/MembershipApplication';
+  'https://form.jotform.com/250195865459167';
 
 export const SOCIAL_LINKS = {
   facebook: 'https://www.facebook.com/TheRealASCA',
   instagram: 'https://www.instagram.com/therealasca/',
-  /** TikTok is not live yet — surfaced as "coming soon" text, not a link. */
-  tiktokComingSoon: true,
+  /** TikTok page — update to the real handle once confirmed. */
+  tiktok: 'https://www.tiktok.com/@therealasca',
+  tiktokComingSoon: false,
 };
 
 export const CONTACT_EMAILS = {
