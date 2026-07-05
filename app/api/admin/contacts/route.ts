@@ -26,10 +26,10 @@ function serverError(error: unknown) {
 }
 
 import { getContacts, createContact } from '@/lib/db/crm-queries';
-import {
-  type ContactSource,
-  type ContactStatus,
-  type LifecycleStage,
+import type {
+  ContactSource,
+  ContactStatus,
+  LifecycleStage,
 } from '@/lib/crm/types';
 
 const contactSchema = z.object({
