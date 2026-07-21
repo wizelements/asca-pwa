@@ -1,0 +1,15 @@
+import { run } from 'node:test';
+import { spec } from 'node:test/reporters';
+import { globSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+const files = globSync('**/*.test.mjs', { cwd: join(__dirname, '..') }).map(f => new URL('../' + f, import.meta.url));
+
+run({ files })
+  .on('test:fail', (data) => {
+    console.error('FAIL', data.name);
+  })
+  .compose(spec)
+  .pipe(process.stdout);
