@@ -20,12 +20,12 @@ CREATE TABLE IF NOT EXISTS "activity_albums" (
 	"id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	"title" text NOT NULL,
 	"slug" text NOT NULL,
-	"category_id" integer NOT NULL,
-	"event_id" integer,
+	"category_id" integer NOT NULL REFERENCES "activity_categories"("id"),
+	"event_id" integer REFERENCES "events"("id") ON DELETE SET NULL,
 	"activity_date" integer,
 	"location" text DEFAULT '',
 	"summary" text DEFAULT '',
-	"cover_media_asset_id" text,
+	"cover_media_asset_id" text REFERENCES "media_assets"("id") ON DELETE SET NULL,
 	"featured" integer DEFAULT false NOT NULL,
 	"status" text DEFAULT 'draft' NOT NULL,
 	"privacy_review_status" text DEFAULT 'not_required' NOT NULL,
@@ -39,8 +39,8 @@ CREATE INDEX IF NOT EXISTS "activity_albums_category_status_featured_sort_idx" O
 CREATE INDEX IF NOT EXISTS "activity_albums_event_idx" ON "activity_albums" ("event_id");
 
 CREATE TABLE IF NOT EXISTS "album_media_assets" (
-	"album_id" integer NOT NULL,
-	"media_asset_id" text NOT NULL,
+	"album_id" integer NOT NULL REFERENCES "activity_albums"("id") ON DELETE CASCADE,
+	"media_asset_id" text NOT NULL REFERENCES "media_assets"("id"),
 	"sort_order" integer DEFAULT 0,
 	"caption" text DEFAULT '',
 	"alt_text" text DEFAULT '' NOT NULL,
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS "horse_profiles" (
 	"name" text NOT NULL,
 	"slug" text NOT NULL,
 	"description" text DEFAULT '',
-	"primary_media_asset_id" text,
+	"primary_media_asset_id" text REFERENCES "media_assets"("id") ON DELETE SET NULL,
 	"status" text DEFAULT 'draft' NOT NULL,
 	"sort_order" integer DEFAULT 0,
 	"created_at" integer DEFAULT (unixepoch()),
@@ -67,8 +67,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS "horse_profiles_slug_unique" ON "horse_profile
 CREATE INDEX IF NOT EXISTS "horse_profiles_status_sort_idx" ON "horse_profiles" ("status", "sort_order");
 
 CREATE TABLE IF NOT EXISTS "horse_profile_media" (
-	"horse_profile_id" integer NOT NULL,
-	"media_asset_id" text NOT NULL,
+	"horse_profile_id" integer NOT NULL REFERENCES "horse_profiles"("id") ON DELETE CASCADE,
+	"media_asset_id" text NOT NULL REFERENCES "media_assets"("id"),
 	"sort_order" integer DEFAULT 0,
 	"caption" text DEFAULT '',
 	"alt_text" text DEFAULT '' NOT NULL,
@@ -87,8 +87,8 @@ CREATE TABLE IF NOT EXISTS "legacy_gallery_review" (
 	"legacy_media_reference" text NOT NULL,
 	"proposed_destination_type" text NOT NULL,
 	"proposed_category_slug" text,
-	"proposed_album_id" integer,
-	"proposed_horse_profile_id" integer,
+	"proposed_album_id" integer REFERENCES "activity_albums"("id") ON DELETE SET NULL,
+	"proposed_horse_profile_id" integer REFERENCES "horse_profiles"("id") ON DELETE SET NULL,
 	"migration_confidence" text NOT NULL,
 	"review_reason" text NOT NULL,
 	"review_status" text DEFAULT 'pending' NOT NULL,
@@ -96,7 +96,7 @@ CREATE TABLE IF NOT EXISTS "legacy_gallery_review" (
 	"notes" text DEFAULT '',
 	"created_at" integer DEFAULT (unixepoch()),
 	"reviewed_at" integer,
-	"reviewer_id" integer,
+	"reviewer_id" integer REFERENCES "users"("id") ON DELETE SET NULL,
 	UNIQUE("legacy_gallery_image_id")
 );
 

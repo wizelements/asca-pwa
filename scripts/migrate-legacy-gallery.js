@@ -14,7 +14,7 @@ async function main() {
 
   if (isProductionDatabaseUrl(url) && apply) {
     console.error('Refusing to run with --apply on a suspected production database.');
-    console.error('Use a local or staging database, or explicitly override with --force-production if you accept the risk.');
+    console.error('Use a local or staging database restored from a backup dump.');
     process.exit(1);
   }
 

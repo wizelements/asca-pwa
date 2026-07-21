@@ -55,8 +55,18 @@ export async function runLegacyMigration(opts: MigrationOptions): Promise<Migrat
   if (isProductionDatabaseUrl(opts.url) && opts.apply) {
     throw new Error(`Refusing to apply migration to suspected production database: ${opts.url}`);
   }
+  if (isProductionDatabaseUrl(opts.url)) {
+    report.warnings.push(
+      'Dry run is targeting a suspected production database. The run is read-only, but prefer a disposable restored copy.'
+    );
+  }
 
   const db = createClient({ url: opts.url, authToken: opts.authToken });
+  try {
+    await db.execute('PRAGMA foreign_keys = ON');
+  } catch {
+    report.warnings.push('Could not enable foreign_keys pragma; FK enforcement depends on server defaults.');
+  }
 
   const migrationPath = opts.migrationSqlPath ?? join(process.cwd(), 'drizzle', '0003_add_gallery_upgrade.sql');
   const sql = readFileSync(migrationPath, 'utf8');
@@ -66,7 +76,7 @@ export async function runLegacyMigration(opts: MigrationOptions): Promise<Migrat
     report.applied = true;
   }
 
-  const categories = await seedCategories(db, report);
+  const categories = await seedCategories(db, report, opts.apply);
   const legacy = await db.execute('SELECT id, title, category, image, alt FROM gallery_images ORDER BY id');
   const rows = legacy.rows as Array<{ id: number; title: string; category: string; image: string; alt: string }>;
   report.legacyRows = rows.length;
@@ -104,18 +114,18 @@ export async function runLegacyMigration(opts: MigrationOptions): Promise<Migrat
 
     if (classification.destinationType === 'album' && classification.proposedCategorySlug) {
       if (opts.apply) {
-        const catName = categoryNameBySlug[classification.proposedCategorySlug];
-        const baseSlug = slugify(`${catName} legacy`);
-        const slug = uniqueSlug(baseSlug, usedAlbumSlugs);
-        usedAlbumSlugs.add(slug);
+        // Deterministic per-legacy-row slug so reruns are idempotent (INSERT OR IGNORE
+        // no-ops when the album already exists) and never collide across runs.
+        const baseSlug = slugify(row.title) || slugify(`${categoryNameBySlug[classification.proposedCategorySlug]} legacy`);
+        const slug = `${baseSlug}-legacy-${row.id}`;
         const assetId = extractAssetId(row.image);
         await db.execute({
-          sql: `INSERT INTO activity_albums (title, slug, category_id, cover_media_asset_id, status, privacy_review_status, sort_order, summary)
+          sql: `INSERT OR IGNORE INTO activity_albums (title, slug, category_id, cover_media_asset_id, status, privacy_review_status, sort_order, summary)
                 VALUES (?, ?, (SELECT id FROM activity_categories WHERE slug = ?), ?, 'published', 'not_required', ?, ?)`,
           args: [row.title, slug, classification.proposedCategorySlug, assetId, row.id, ''],
         });
         await db.execute({
-          sql: `INSERT INTO album_media_assets (album_id, media_asset_id, sort_order, alt_text)
+          sql: `INSERT OR IGNORE INTO album_media_assets (album_id, media_asset_id, sort_order, alt_text)
                 VALUES ((SELECT id FROM activity_albums WHERE slug = ?), ?, ?, ?)`,
           args: [slug, assetId, 0, row.alt || `${row.title} photo`],
         });
@@ -150,20 +160,30 @@ export async function runLegacyMigration(opts: MigrationOptions): Promise<Migrat
 
 async function seedCategories(
   db: Client,
-  report: MigrationReport
+  report: MigrationReport,
+  apply: boolean
 ): Promise<Array<{ id: number; slug: string; name: string }>> {
   const inserted: Array<{ id: number; slug: string; name: string }> = [];
   for (const cat of CANONICAL_ACTIVITY_CATEGORIES) {
-    const existing = await db.execute({
-      sql: 'SELECT id, slug, name FROM activity_categories WHERE slug = ?',
-      args: [cat.slug],
-    });
-    if (existing.rows.length > 0) {
+    let existing: Awaited<ReturnType<Client['execute']>> | null = null;
+    try {
+      existing = await db.execute({
+        sql: 'SELECT id, slug, name FROM activity_categories WHERE slug = ?',
+        args: [cat.slug],
+      });
+    } catch {
+      // Table does not exist yet (dry run before schema apply); treat as missing.
+      existing = null;
+    }
+    if (existing && existing.rows.length > 0) {
       inserted.push({ id: Number(existing.rows[0].id), slug: cat.slug, name: cat.name });
       continue;
     }
-    if (report) {
-      // report is always defined in this context
+    if (!apply) {
+      // Dry run must be read-only: record the would-be seed with a sentinel id.
+      report.categoriesSeeded++;
+      inserted.push({ id: -1, slug: cat.slug, name: cat.name });
+      continue;
     }
     const result = await db.execute({
       sql: 'INSERT INTO activity_categories (name, slug, description, sort_order, active) VALUES (?, ?, ?, ?, ?)',

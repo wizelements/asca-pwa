@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { createClient } from '@libsql/client';
-import { readFileSync } from 'node:fs';
+import { readFileSync, unlinkSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { runLegacyMigration, isProductionDatabaseUrl } from '../../lib/gallery/migration.ts';
@@ -64,7 +64,7 @@ describe('migration', () => {
   it('dry-run classifies all rows', async () => {
     const path = '/tmp/asca-migration-dryrun-test.db';
     const cleanup = () => {
-      try { require('node:fs').unlinkSync(path); } catch {}
+      try { unlinkSync(path); } catch {}
     };
     cleanup();
     const db = await setupDb(path);

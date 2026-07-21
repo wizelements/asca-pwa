@@ -157,12 +157,12 @@ export const activityAlbums = sqliteTable('activity_albums', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   title: text('title').notNull(),
   slug: text('slug').notNull().unique(),
-  categoryId: integer('category_id').notNull(),
-  eventId: integer('event_id'),
+  categoryId: integer('category_id').notNull().references(() => activityCategories.id),
+  eventId: integer('event_id').references(() => events.id, { onDelete: 'set null' }),
   activityDate: integer('activity_date', { mode: 'timestamp' }),
   location: text('location').default(''),
   summary: text('summary').default(''),
-  coverMediaAssetId: text('cover_media_asset_id'),
+  coverMediaAssetId: text('cover_media_asset_id').references(() => mediaAssets.id, { onDelete: 'set null' }),
   featured: integer('featured', { mode: 'boolean' }).notNull().default(false),
   status: text('status', { enum: ['draft', 'published', 'archived'] }).notNull().default('draft'),
   privacyReviewStatus: text('privacy_review_status', { enum: ['not_required', 'pending', 'approved', 'restricted'] }).notNull().default('not_required'),
@@ -172,8 +172,8 @@ export const activityAlbums = sqliteTable('activity_albums', {
 });
 
 export const albumMediaAssets = sqliteTable('album_media_assets', {
-  albumId: integer('album_id').notNull(),
-  mediaAssetId: text('media_asset_id').notNull(),
+  albumId: integer('album_id').notNull().references(() => activityAlbums.id, { onDelete: 'cascade' }),
+  mediaAssetId: text('media_asset_id').notNull().references(() => mediaAssets.id),
   sortOrder: integer('sort_order').default(0),
   caption: text('caption').default(''),
   altText: text('alt_text').notNull().default(''),
@@ -188,7 +188,7 @@ export const horseProfiles = sqliteTable('horse_profiles', {
   name: text('name').notNull(),
   slug: text('slug').notNull().unique(),
   description: text('description').default(''),
-  primaryMediaAssetId: text('primary_media_asset_id'),
+  primaryMediaAssetId: text('primary_media_asset_id').references(() => mediaAssets.id, { onDelete: 'set null' }),
   status: text('status', { enum: ['draft', 'published', 'archived'] }).notNull().default('draft'),
   sortOrder: integer('sort_order').default(0),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
@@ -196,8 +196,8 @@ export const horseProfiles = sqliteTable('horse_profiles', {
 });
 
 export const horseProfileMedia = sqliteTable('horse_profile_media', {
-  horseProfileId: integer('horse_profile_id').notNull(),
-  mediaAssetId: text('media_asset_id').notNull(),
+  horseProfileId: integer('horse_profile_id').notNull().references(() => horseProfiles.id, { onDelete: 'cascade' }),
+  mediaAssetId: text('media_asset_id').notNull().references(() => mediaAssets.id),
   sortOrder: integer('sort_order').default(0),
   caption: text('caption').default(''),
   altText: text('alt_text').notNull().default(''),
@@ -215,8 +215,8 @@ export const legacyGalleryReview = sqliteTable('legacy_gallery_review', {
   legacyMediaReference: text('legacy_media_reference').notNull(),
   proposedDestinationType: text('proposed_destination_type', { enum: ['album', 'horse', 'review', 'skip'] }).notNull(),
   proposedCategorySlug: text('proposed_category_slug'),
-  proposedAlbumId: integer('proposed_album_id'),
-  proposedHorseProfileId: integer('proposed_horse_profile_id'),
+  proposedAlbumId: integer('proposed_album_id').references(() => activityAlbums.id, { onDelete: 'set null' }),
+  proposedHorseProfileId: integer('proposed_horse_profile_id').references(() => horseProfiles.id, { onDelete: 'set null' }),
   migrationConfidence: text('migration_confidence', { enum: ['high', 'medium', 'low'] }).notNull(),
   reviewReason: text('review_reason').notNull(),
   reviewStatus: text('review_status', { enum: ['pending', 'approved', 'rejected', 'resolved', 'skipped'] }).notNull().default('pending'),
@@ -224,7 +224,7 @@ export const legacyGalleryReview = sqliteTable('legacy_gallery_review', {
   notes: text('notes').default(''),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
   reviewedAt: integer('reviewed_at', { mode: 'timestamp' }),
-  reviewerId: integer('reviewer_id'),
+  reviewerId: integer('reviewer_id').references(() => users.id, { onDelete: 'set null' }),
 });
 
 // --- CRM tables ---
