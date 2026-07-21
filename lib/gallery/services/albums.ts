@@ -187,6 +187,14 @@ export async function getPublicAlbums(categorySlug?: string): Promise<AlbumRecor
   return result.rows.map((row) => rowToAlbum(row, row.category_id ? { id: Number(row.category_id), name: String(row.category_name ?? ''), slug: String(row.category_slug ?? '') } : null, Number(row.media_count ?? 0)));
 }
 
+export async function getAlbumsByCategory(categoryId: number): Promise<AlbumRecord[]> {
+  return getAdminAlbums({ categoryId });
+}
+
+export async function unfeatureAlbum(id: number): Promise<AlbumRecord | null> {
+  return featureAlbum(id, false);
+}
+
 export async function getFeaturedAlbums(limit = 6): Promise<AlbumRecord[]> {
   const db = getDbClient();
   const sql = `
@@ -458,4 +466,13 @@ export async function setAlbumPrivacyStatus(
     update.featured = false;
   }
   return updateAlbum(id, update);
+}
+
+export async function deleteAlbum(id: number): Promise<AlbumRecord | null> {
+  const db = getDbClient();
+  const existing = await getAlbumById(id);
+  if (!existing) return null;
+  await db.execute({ sql: 'DELETE FROM album_media_assets WHERE album_id = ?', args: [id] });
+  await db.execute({ sql: 'DELETE FROM activity_albums WHERE id = ?', args: [id] });
+  return existing;
 }

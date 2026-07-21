@@ -40,6 +40,10 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Page Images", href: "/admin/media", icon: "📁" },
       { label: "Gallery", href: "/admin/gallery", icon: "🖼️" },
+      { label: "Albums", href: "/admin/albums", icon: "🎞️" },
+      { label: "Horses", href: "/admin/horses", icon: "🐴" },
+      { label: "Categories", href: "/admin/categories", icon: "🏷️" },
+      { label: "Legacy Review", href: "/admin/legacy-review", icon: "🔍" },
       { label: "Theme", href: "/admin/theme", icon: "🎨" },
       { label: "Social & Donations", href: "/admin/settings", icon: "💝" },
     ],

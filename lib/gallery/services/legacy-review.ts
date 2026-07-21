@@ -346,6 +346,14 @@ export async function skipReview(
   return getLegacyReviewById(reviewId);
 }
 
+export async function resolveReviewToSkip(
+  reviewId: number,
+  reviewerId: number,
+  notes?: string
+): Promise<LegacyReviewRecord | null> {
+  return skipReview(reviewId, reviewerId, notes);
+}
+
 export async function rejectReview(
   reviewId: number,
   reviewerId: number,

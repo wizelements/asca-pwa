@@ -8,6 +8,9 @@ import type { GalleryImage } from '@/lib/db/queries';
 import { getCachedGalleryImages } from '@/lib/db/queries-cache';
 import { getManagedImage, type SiteImageSlot } from '@/lib/media';
 import { getPublicManagedImages } from '@/lib/public-content';
+import { getPublicAlbums, type AlbumRecord } from '@/lib/gallery/services/albums';
+import { getPublicCategories, type ActivityCategoryRecord } from '@/lib/gallery/services/categories';
+import { isPublicPreviewEnabled } from '@/lib/gallery/feature-state';
 
 export const metadata: Metadata = {
   title: { absolute: 'Photo Gallery | ASCA' },
@@ -36,18 +39,18 @@ function groupByCategory<T extends { category?: string }>(items: T[]): Record<st
   }, {} as Record<string, T[]>);
 }
 
-export default async function Gallery({ searchParams }: GalleryPageProps) {
-  const params = await searchParams ?? {};
-  const selectedCategory = params.category;
-
-  const [images, gallery] = await Promise.all([
-    getPublicManagedImages(),
-    getCachedGalleryImages(selectedCategory),
-  ]);
+function LegacyGallery({
+  selectedCategory,
+  images,
+  gallery,
+}: {
+  selectedCategory?: string;
+  images: Awaited<ReturnType<typeof getPublicManagedImages>>;
+  gallery: GalleryImage[];
+}) {
   const hero = getManagedImage(images, 'gallery.hero');
   const staticGallery = FALLBACK_GALLERY_SLOTS.map((slot) => getManagedImage(images, slot));
 
-  // For filtered view: if DB empty, fall back to static images matching the category.
   const filteredStatic: GalleryImage[] = selectedCategory
     ? staticGallery
         .filter(
@@ -75,68 +78,166 @@ export default async function Gallery({ searchParams }: GalleryPageProps) {
       }));
 
   const displayGallery: GalleryImage[] = gallery.length > 0 ? gallery : filteredStatic;
-
-  // If a specific category was requested and nothing matches, show a clear empty state (no 404).
   const groupedGallery = selectedCategory
     ? { [selectedCategory]: displayGallery }
     : groupByCategory(displayGallery);
 
   return (
     <>
-      <Header />
-      <main>
-        <Hero
-          image={hero.src}
-          imageAlt={hero.alt}
-          title="Photo Gallery"
-          subtitle="Moments from ASCA events and activities"
-        />
+      <Hero
+        image={hero.src}
+        imageAlt={hero.alt}
+        title="Photo Gallery"
+        subtitle="Moments from ASCA events and activities"
+      />
 
-        <section className="bg-brand-bg-subtle py-20">
-          <div className="container">
-            <div className="text-center">
-              <p className="section-label">{selectedCategory ? selectedCategory : 'Gallery'}</p>
-              <h2 className="section-title">
-                {selectedCategory ? `${selectedCategory} Photos` : 'Captured Moments'}
-              </h2>
+      <section className="bg-brand-bg-subtle py-20">
+        <div className="container">
+          <div className="text-center">
+            <p className="section-label">{selectedCategory ? selectedCategory : 'Gallery'}</p>
+            <h2 className="section-title">
+              {selectedCategory ? `${selectedCategory} Photos` : 'Captured Moments'}
+            </h2>
+          </div>
+
+          {Object.entries(groupedGallery).map(([category, items]) => (
+            <div key={category} className="mt-12">
+              {!selectedCategory && (
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-2xl font-bold text-brand-fg-primary">{category}</h3>
+                  <Link
+                    href={`/gallery?category=${encodeURIComponent(category)}`}
+                    className="text-sm font-semibold text-brand-forest hover:underline"
+                  >
+                    View all →
+                  </Link>
+                </div>
+              )}
+              {items.length > 0 ? (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {items.map((item: any) => (
+                    <GalleryCard
+                      key={item.id}
+                      title={item.title}
+                      image={item.image}
+                      alt={item.alt}
+                      description={item.description}
+                      category={item.category}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-xl border border-brand-border-subtle bg-brand-bg-elevated p-8 text-center text-brand-fg-muted">
+                  No photos in this category yet. Visit the admin gallery to add some.
+                </div>
+              )}
             </div>
+          ))}
+        </div>
+      </section>
+    </>
+  );
+}
 
-            {Object.entries(groupedGallery).map(([category, items]) => (
-              <div key={category} className="mt-12">
-                {!selectedCategory && (
-                  <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-2xl font-bold text-brand-fg-primary">{category}</h3>
-                    <Link
-                      href={`/gallery?category=${encodeURIComponent(category)}`}
-                      className="text-sm font-semibold text-brand-forest hover:underline"
-                    >
-                      View all →
-                    </Link>
-                  </div>
-                )}
-                {items.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {items.map((item: any) => (
-                      <GalleryCard
-                        key={item.id}
-                        title={item.title}
-                        image={item.image}
-                        alt={item.alt}
-                        description={item.description}
-                        category={item.category}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="rounded-xl border border-brand-border-subtle bg-brand-bg-elevated p-8 text-center text-brand-fg-muted">
-                    No photos in this category yet. Visit the admin gallery to add some.
-                  </div>
-                )}
-              </div>
+function AlbumCard({ album }: { album: AlbumRecord }) {
+  return (
+    <Link
+      href={`/gallery/${album.slug}`}
+      className="group block overflow-hidden rounded-xl bg-brand-bg-elevated shadow-sm transition hover:shadow-md"
+    >
+      {album.coverUrl ? (
+        <img
+          src={album.coverUrl}
+          alt={album.title}
+          className="aspect-[4/3] w-full object-cover transition group-hover:scale-105"
+          loading="lazy"
+        />
+      ) : (
+        <div className="aspect-[4/3] w-full bg-brand-bg-subtle" />
+      )}
+      <div className="p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-brand-forest">
+          {album.category?.name || 'Gallery'}
+        </p>
+        <h3 className="mt-1 text-lg font-bold text-brand-fg-primary">{album.title}</h3>
+        {album.summary && <p className="mt-1 line-clamp-2 text-sm text-brand-fg-secondary">{album.summary}</p>}
+      </div>
+    </Link>
+  );
+}
+
+async function NewGallery({ selectedCategory }: { selectedCategory?: string }) {
+  const [images, albums, categories] = await Promise.all([
+    getPublicManagedImages(),
+    selectedCategory ? getPublicAlbums(selectedCategory) : getPublicAlbums(),
+    getPublicCategories(),
+  ]);
+  const hero = getManagedImage(images, 'gallery.hero');
+
+  return (
+    <>
+      <Hero image={hero.src} imageAlt={hero.alt} title="Photo Gallery" subtitle="Albums from ASCA events and activities" />
+
+      <section className="bg-brand-bg-subtle py-20">
+        <div className="container">
+          <div className="mb-8 flex flex-wrap items-center gap-3">
+            <Link
+              href="/gallery"
+              className={`rounded-full px-4 py-2 text-sm font-medium ${!selectedCategory ? 'bg-brand-forest text-white' : 'bg-brand-bg-elevated text-brand-fg-primary'}`}
+            >
+              All
+            </Link>
+            {categories.map((cat) => (
+              <Link
+                key={cat.slug}
+                href={`/gallery?category=${encodeURIComponent(cat.slug)}`}
+                className={`rounded-full px-4 py-2 text-sm font-medium ${selectedCategory === cat.slug ? 'bg-brand-forest text-white' : 'bg-brand-bg-elevated text-brand-fg-primary'}`}
+              >
+                {cat.name}
+              </Link>
             ))}
           </div>
-        </section>
-      </main>
+
+          {albums.length > 0 ? (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {albums.map((album) => (
+                <AlbumCard key={album.id} album={album} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-brand-border-subtle bg-brand-bg-elevated p-8 text-center text-brand-fg-muted">
+              No albums yet.
+            </div>
+          )}
+        </div>
+      </section>
+    </>
+  );
+}
+
+export default async function Gallery({ searchParams }: GalleryPageProps) {
+  const params = await searchParams ?? {};
+  const selectedCategory = params.category;
+
+  if (isPublicPreviewEnabled()) {
+    return (
+      <>
+        <Header />
+        <NewGallery selectedCategory={selectedCategory} />
+        <Footer />
+      </>
+    );
+  }
+
+  const [images, gallery] = await Promise.all([
+    getPublicManagedImages(),
+    getCachedGalleryImages(selectedCategory),
+  ]);
+
+  return (
+    <>
+      <Header />
+      <LegacyGallery selectedCategory={selectedCategory} images={images} gallery={gallery} />
       <Footer />
     </>
   );
