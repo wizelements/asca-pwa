@@ -297,7 +297,6 @@ export function managedImagesToRecord(images: ManagedImage[]): ManagedImageRecor
       id: image.id,
       slot: image.slot,
       src: image.src,
-      image: image.src,
       alt: image.alt,
       title: image.title,
       caption: image.caption,

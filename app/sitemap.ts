@@ -1,6 +1,8 @@
 import type { MetadataRoute } from 'next';
 
-const BASE_URL = 'https://asca-pwa.vercel.app';
+import { getSiteUrl } from '@/lib/site-url';
+
+const BASE_URL = getSiteUrl();
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [

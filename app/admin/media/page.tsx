@@ -119,7 +119,7 @@ export default function AdminMediaLibrary() {
 
       <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
         <p className="font-semibold">Storage note</p>
-        <p className="mt-1">Uploads are optimized in the browser and saved with the site setting record. Use JPG, PNG, or WebP. For very large photo collections, keep using Gallery records or move to external storage later.</p>
+        <p className="mt-1">Uploads are optimized in the browser and stored separately from page settings so public pages stay lightweight. Use JPG, PNG, or WebP.</p>
       </div>
 
       {message && <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">{message}</div>}

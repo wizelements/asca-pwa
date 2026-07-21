@@ -2,6 +2,8 @@
 
 import { useId, useState } from 'react';
 
+import { getAdminToken } from '@/components/AdminGuard';
+
 const MAX_UPLOAD_SIZE_BYTES = 8 * 1024 * 1024;
 const MAX_OUTPUT_DIMENSION = 1600;
 const JPEG_QUALITY = 0.82;
@@ -54,13 +56,34 @@ async function optimizeImageFile(file: File): Promise<string> {
   }
 }
 
+async function storeImage(dataUrl: string): Promise<string> {
+  const token = getAdminToken();
+  if (!token) {
+    throw new Error('Your admin session has expired. Sign in and try again.');
+  }
+
+  const response = await fetch('/api/media', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ dataUrl }),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || typeof result.url !== 'string') {
+    throw new Error(result.error || 'Unable to store the optimized image.');
+  }
+  return result.url;
+}
+
 export default function AdminImageField({
   label,
   value,
   onChange,
   required,
   placeholder = '/images/gallery/event.jpg or https://...',
-  helper = 'Paste an image path/URL, or upload a JPG/PNG/WebP. Uploads are optimized and stored with the record.',
+  helper = 'Paste an image path/URL, or upload a JPG/PNG/WebP. Uploads are optimized and stored separately so pages stay fast.',
   previewAlt = 'Image preview',
 }: AdminImageFieldProps) {
   const textId = useId();
@@ -74,7 +97,7 @@ export default function AdminImageField({
     setError('');
     try {
       const dataUrl = await optimizeImageFile(file);
-      onChange(dataUrl);
+      onChange(await storeImage(dataUrl));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to upload image.');
     } finally {

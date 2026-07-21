@@ -65,6 +65,13 @@ const nextConfig = {
           { key: 'Cache-Control', value: 'private, no-store, must-revalidate' },
         ],
       },
+      // Versioned media assets are immutable; keep this after the generic API rule so it wins.
+      {
+        source: '/api/media/:kind/:key',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
       // Content images may be replaced at the same URL by admins; force revalidation.
       {
         source: '/images/:path*',

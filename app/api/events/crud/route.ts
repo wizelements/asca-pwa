@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { requireAuth } from '@/lib/auth';
 import {
   createEvent,
@@ -10,6 +11,7 @@ import {
   type Event,
 } from '@/lib/db/queries';
 import { EVENT_CATEGORY_VALUES, isEventCategory } from '@/lib/content/events';
+import { CACHE_TAG_EVENTS } from '@/lib/db/queries-cache';
 
 function canWrite(role: string): boolean {
   return role === 'admin' || role === 'editor';
@@ -105,6 +107,7 @@ export async function POST(request: NextRequest) {
     };
 
     const event = await createEvent(data as any);
+    revalidateTag(CACHE_TAG_EVENTS);
     await logActivity('event', `Created event "${event.title}"`, user.name || user.email);
 
     return NextResponse.json(event, { status: 201 });
@@ -167,6 +170,7 @@ export async function PUT(request: NextRequest) {
     }
 
     await logActivity('event', `Updated event "${event.title}"`, user.name || user.email);
+    revalidateTag(CACHE_TAG_EVENTS);
 
     return NextResponse.json(event);
   } catch (error: any) {
@@ -201,6 +205,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await deleteEvent(Number(id));
+    revalidateTag(CACHE_TAG_EVENTS);
     await logActivity('event', `Deleted event "${event.title}"`, user.name || user.email);
 
     return NextResponse.json({ success: true, message: 'Event deleted' });

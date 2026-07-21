@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { requireAuth } from '@/lib/auth';
 import { getTheme, updateTheme, logActivity } from '@/lib/db/queries';
+import { CACHE_TAG_THEME } from '@/lib/db/queries-cache';
 
 function canWrite(role: string): boolean {
   return role === 'admin' || role === 'editor';
@@ -30,7 +32,7 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
 
     const updated = await updateTheme(data);
-
+    revalidateTag(CACHE_TAG_THEME);
     await logActivity('theme', 'Updated site theme', user.name || user.email);
 
     return NextResponse.json(updated);

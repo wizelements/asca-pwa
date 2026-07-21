@@ -16,9 +16,12 @@ pnpm type-check       # TypeScript validation
 pnpm db:check          # Validate Drizzle schema
 pnpm db:generate       # Generate Drizzle migration SQL if using checked-in migrations
 pnpm db:migrate        # Push current Drizzle schema to Turso/libSQL
+pnpm db:migrate-media  # Dry-run extraction of inline images into media_assets
 ```
 
 Run `pnpm db:migrate` against the target Turso database after pulling changes that add or alter database fields. The admin-managed events/gallery implementation requires the latest `events` and `gallery_images` columns before public pages can read the new fields.
+
+For the media-bloat rollout: back up the target database, apply the additive `drizzle/0002_add_media_assets.sql` table, deploy the media routes, then run `pnpm db:migrate-media -- --apply`. The data migration is idempotent: each image is copied to `media_assets` before its original record is replaced by a versioned media URL.
 
 ## Testing
 

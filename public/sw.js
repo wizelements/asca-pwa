@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'asca-pwa';
-const CACHE_VERSION = '20260701-no-stale-pages';
+const CACHE_VERSION = '20260720-speed-optimization';
 const STATIC_CACHE = `${CACHE_PREFIX}-${CACHE_VERSION}-static`;
 const IMMUTABLE_CACHE = `${CACHE_PREFIX}-${CACHE_VERSION}-immutable`;
 const STATIC_ASSETS = ['/offline.html', '/icons/icon-192.png', '/icons/icon-512.png'];

@@ -4,7 +4,8 @@ import Hero from '@/components/Hero';
 import GalleryCard from '@/components/Cards/GalleryCard';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { getGalleryImages, type GalleryImage } from '@/lib/db/queries';
+import type { GalleryImage } from '@/lib/db/queries';
+import { getCachedGalleryImages } from '@/lib/db/queries-cache';
 import { getManagedImage, type SiteImageSlot } from '@/lib/media';
 import { getPublicManagedImages } from '@/lib/public-content';
 
@@ -41,9 +42,7 @@ export default async function Gallery({ searchParams }: GalleryPageProps) {
 
   const [images, gallery] = await Promise.all([
     getPublicManagedImages(),
-    selectedCategory
-      ? getGalleryImages(selectedCategory, true)
-      : getGalleryImages(undefined, true),
+    getCachedGalleryImages(selectedCategory),
   ]);
   const hero = getManagedImage(images, 'gallery.hero');
   const staticGallery = FALLBACK_GALLERY_SLOTS.map((slot) => getManagedImage(images, slot));

@@ -2,9 +2,12 @@ import type { Metadata, Viewport } from 'next'
 import { Poppins, Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
-import { getSettings, getTheme } from '@/lib/db/queries'
+import { getCachedSiteTagline, getCachedTheme } from '@/lib/db/queries-cache'
 import { ASCA_DEFAULT_THEME, resolveThemeSettings, themeSettingsToCss } from '@/lib/theme'
+import { getSiteUrl } from '@/lib/site-url'
 
+// Keep the first media-migration deployment dynamic: legacy settings exceed
+// Next's 2 MB data-cache limit until the post-deploy extraction script runs.
 export const dynamic = 'force-dynamic'
 
 const poppins = Poppins({
@@ -30,7 +33,7 @@ export const metadata: Metadata = {
   },
   description: 'Atlanta Saddle Club Association promotes horsemanship, fellowship, education, community service, and equestrian experiences across metro Atlanta.',
   manifest: '/manifest.json',
-  metadataBase: new URL('https://asca-pwa.vercel.app'),
+  metadataBase: new URL(getSiteUrl()),
   openGraph: {
     type: 'website',
     siteName: 'Atlanta Saddle Club Association',
@@ -70,8 +73,8 @@ export const viewport: Viewport = {
 
 async function getRootThemeCss() {
   try {
-    const [theme, settings] = await Promise.all([getTheme(), getSettings()])
-    const resolved = resolveThemeSettings(theme, settings.tagline)
+    const [theme, tagline] = await Promise.all([getCachedTheme(), getCachedSiteTagline()])
+    const resolved = resolveThemeSettings(theme, tagline)
     return { css: themeSettingsToCss(resolved), themeColor: resolved.accentColor }
   } catch (error) {
     console.error('[ROOT THEME]', error)

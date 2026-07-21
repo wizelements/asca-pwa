@@ -118,6 +118,13 @@ export const galleryImages = sqliteTable('gallery_images', {
   uploadedAt: integer('uploaded_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
 });
 
+export const mediaAssets = sqliteTable('media_assets', {
+  id: text('id').primaryKey(),
+  dataUrl: text('data_url').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+});
+
 export const formSubmissions = sqliteTable('form_submissions', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   type: text('type').notNull(),

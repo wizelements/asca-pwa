@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import EventCalendar from '@/components/events/EventCalendar';
-import { getPublicEvents } from '@/lib/events';
+import { getCachedPublicEvents } from '@/lib/db/queries-cache';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: { absolute: 'Event Calendar | ASCA' },
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function WhereToFindUs() {
-  const events = await getPublicEvents();
+  const events = await getCachedPublicEvents();
 
   return (
     <>
