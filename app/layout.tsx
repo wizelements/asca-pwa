@@ -6,9 +6,10 @@ import { getCachedSiteTagline, getCachedTheme } from '@/lib/db/queries-cache'
 import { ASCA_DEFAULT_THEME, resolveThemeSettings, themeSettingsToCss } from '@/lib/theme'
 import { getSiteUrl } from '@/lib/site-url'
 
-// Keep the first media-migration deployment dynamic: legacy settings exceed
-// Next's 2 MB data-cache limit until the post-deploy extraction script runs.
-export const dynamic = 'force-dynamic'
+// Inline base64 media has been extracted to media_assets (2026-07-20), so the
+// cached settings payload is small enough for Next's data cache again.
+export const dynamic = 'force-static'
+export const revalidate = 60
 
 const poppins = Poppins({
   subsets: ['latin'],
