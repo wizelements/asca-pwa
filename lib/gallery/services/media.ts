@@ -1,5 +1,12 @@
 import { getDbClient, type DbClient } from './db.ts';
-import { createMediaAsset as createStoredAsset, mediaAssetUrl, getMediaAssetDataUrl } from '../../media-storage.ts';
+import {
+  createMediaAsset as createStoredAsset,
+  mediaAssetUrl,
+  getMediaAssetDataUrl,
+  ALLOWED_IMAGE_TYPES,
+} from '../../media-storage.ts';
+
+export { ALLOWED_IMAGE_TYPES };
 
 export interface MediaAssetRecord {
   id: string;

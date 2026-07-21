@@ -35,6 +35,9 @@ export async function GET(request: NextRequest) {
       if (!horse) {
         return NextResponse.json({ error: 'Horse not found' }, { status: 404 });
       }
+      if (!canEdit(user) && horse.status !== 'published') {
+        return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      }
       return NextResponse.json(horse);
     }
 
@@ -43,7 +46,15 @@ export async function GET(request: NextRequest) {
       if (!horse) {
         return NextResponse.json({ error: 'Horse not found' }, { status: 404 });
       }
+      if (!canEdit(user) && horse.status !== 'published') {
+        return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      }
       return NextResponse.json(horse);
+    }
+
+    if (!canEdit(user)) {
+      const horses = await getPublicHorses();
+      return NextResponse.json(horses);
     }
 
     const horses = await getAdminHorses(status ? { status: status as any } : undefined);

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidateTag } from 'next/cache';
 import { requireAuth } from '@/lib/auth';
 import {
   canEdit,
@@ -9,6 +8,7 @@ import {
   getAdminAlbums,
   getPublicAlbums,
   getAlbumDetailBySlug,
+  getAlbumById,
   getAlbumsByCategory,
   createAlbum,
   updateAlbum,
@@ -41,18 +41,25 @@ export async function GET(request: NextRequest) {
     const statusParam = searchParams.get('status');
     const id = searchParams.get('id');
 
+    if (id && /^\d+$/.test(id)) {
+      const album = await getAlbumById(Number(id));
+      if (!album) {
+        return NextResponse.json({ error: 'Album not found' }, { status: 404 });
+      }
+      if (!canEdit(user) && (album.status !== 'published' || album.privacyReviewStatus === 'restricted' || album.privacyReviewStatus === 'pending')) {
+        return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      }
+      return NextResponse.json(album);
+    }
+
     if (slug) {
       const album = await getAlbumDetailBySlug(slug);
       if (!album) {
         return NextResponse.json({ error: 'Album not found' }, { status: 404 });
       }
-      return NextResponse.json(album);
-    }
-
-    if (id) {
-      const album = await getAlbumDetailBySlug(id); // id lookup not implemented; slug is unique
-      if (!album) {
-        return NextResponse.json({ error: 'Album not found' }, { status: 404 });
+      // Only editors/admins can view draft/archived/restricted albums via API.
+      if (!canEdit(user) && (album.status !== 'published' || album.privacyReviewStatus === 'restricted' || album.privacyReviewStatus === 'pending')) {
+        return NextResponse.json({ error: 'Not found' }, { status: 404 });
       }
       return NextResponse.json(album);
     }
@@ -62,15 +69,23 @@ export async function GET(request: NextRequest) {
       if (!category) {
         return NextResponse.json({ error: 'Category not found' }, { status: 404 });
       }
-      const albums = await getAlbumsByCategory(category.id);
+      const albums = canEdit(user)
+        ? await getAlbumsByCategory(category.id)
+        : await getPublicAlbums(categorySlug);
       return NextResponse.json(albums);
     }
 
-    // Admin list can see all statuses; public list is for unauthenticated consumers elsewhere.
     const status: ActivityAlbumStatus | undefined =
       statusParam === 'published' || statusParam === 'archived' || statusParam === 'draft'
         ? statusParam
         : undefined;
+
+    if (!canEdit(user)) {
+      // Non-editors only see published, non-restricted albums.
+      const albums = await getPublicAlbums();
+      return NextResponse.json(albums);
+    }
+
     const albums = await getAdminAlbums({ status });
     return NextResponse.json(albums);
   } catch (error: any) {
@@ -130,17 +145,25 @@ export async function PUT(request: NextRequest) {
     // Admin-only actions.
     if (action === 'publish' || action === 'archive' || action === 'feature' || action === 'unfeature') {
       if (!canAdmin(user)) return forbidden();
-      let album;
-      if (action === 'publish') album = await publishAlbum(albumId);
-      else if (action === 'archive') album = await archiveAlbum(albumId);
-      else if (action === 'feature') album = await featureAlbum(albumId, true);
-      else album = await unfeatureAlbum(albumId);
-      if (!album) {
-        return NextResponse.json({ error: 'Album not found' }, { status: 404 });
+      try {
+        let album;
+        if (action === 'publish') album = await publishAlbum(albumId);
+        else if (action === 'archive') album = await archiveAlbum(albumId);
+        else if (action === 'feature') album = await featureAlbum(albumId, true);
+        else album = await unfeatureAlbum(albumId);
+        if (!album) {
+          return NextResponse.json({ error: 'Album not found' }, { status: 404 });
+        }
+        invalidateAlbumPublicSurfaces();
+        await logActivity('album', `${action} album "${album.title}"`, user.name || user.email);
+        return NextResponse.json(album);
+      } catch (err: any) {
+        // publishAlbum validates publishability and throws a descriptive message on failure.
+        if (action === 'publish' && err?.message) {
+          return NextResponse.json({ error: err.message }, { status: 400 });
+        }
+        throw err;
       }
-      invalidateAlbumPublicSurfaces();
-      await logActivity('album', `${action} album "${album.title}"`, user.name || user.email);
-      return NextResponse.json(album);
     }
 
     if (action === 'setPrivacy') {
