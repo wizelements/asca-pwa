@@ -35,7 +35,7 @@ export interface AlbumMediaInput {
 export interface HorseProfileInput {
   name: string;
   slug: string;
-  description?: string;
+  description?: string | null;
   primaryMediaAssetId?: string | null;
   status?: 'draft' | 'published' | 'archived';
   sortOrder?: number;
@@ -44,7 +44,7 @@ export interface HorseProfileInput {
 export interface HorseProfileMediaInput {
   mediaAssetId: string;
   sortOrder?: number;
-  caption?: string;
+  caption?: string | null;
   altText: string;
 }
 

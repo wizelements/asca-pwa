@@ -1,5 +1,5 @@
-import { getDb } from '@/lib/db';
-import { createMediaAsset } from '@/lib/media-storage';
+import { getDb } from '../db.ts';
+import { createMediaAsset } from '../media-storage.ts';
 
 export type Role = 'admin' | 'editor' | 'viewer';
 

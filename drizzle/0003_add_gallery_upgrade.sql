@@ -95,6 +95,7 @@ CREATE TABLE IF NOT EXISTS "legacy_gallery_review" (
 	"privacy_review_status" text DEFAULT 'not_required' NOT NULL,
 	"notes" text DEFAULT '',
 	"created_at" integer DEFAULT (unixepoch()),
+	"updated_at" integer DEFAULT (unixepoch()),
 	"reviewed_at" integer,
 	"reviewer_id" integer REFERENCES "users"("id") ON DELETE SET NULL,
 	UNIQUE("legacy_gallery_image_id")

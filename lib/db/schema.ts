@@ -223,6 +223,7 @@ export const legacyGalleryReview = sqliteTable('legacy_gallery_review', {
   privacyReviewStatus: text('privacy_review_status', { enum: ['not_required', 'pending', 'approved', 'restricted'] }).notNull().default('not_required'),
   notes: text('notes').default(''),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
   reviewedAt: integer('reviewed_at', { mode: 'timestamp' }),
   reviewerId: integer('reviewer_id').references(() => users.id, { onDelete: 'set null' }),
 });

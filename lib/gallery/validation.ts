@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { CANONICAL_CATEGORY_SLUGS } from './constants';
-import { isValidSlug } from './slug';
+import { CANONICAL_CATEGORY_SLUGS } from './constants.ts';
+import { isValidSlug } from './slug.ts';
 
 const ActivityAlbumStatus = z.enum(['draft', 'published', 'archived']);
 const PrivacyReviewStatus = z.enum(['not_required', 'pending', 'approved', 'restricted']);

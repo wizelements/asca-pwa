@@ -3,8 +3,8 @@ import {
   REVIEW_REQUIRED_LEGACY_CATEGORIES,
   isGenericTitle,
   looksLikeHorseTitle,
-  type CanonicalCategory,
 } from './constants.ts';
+import type { CanonicalCategory } from './types.ts';
 
 export interface LegacyClassification {
   destinationType: 'album' | 'horse' | 'review' | 'skip';

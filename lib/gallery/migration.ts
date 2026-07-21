@@ -78,7 +78,7 @@ export async function runLegacyMigration(opts: MigrationOptions): Promise<Migrat
 
   const categories = await seedCategories(db, report, opts.apply);
   const legacy = await db.execute('SELECT id, title, category, image, alt FROM gallery_images ORDER BY id');
-  const rows = legacy.rows as Array<{ id: number; title: string; category: string; image: string; alt: string }>;
+  const rows = legacy.rows as unknown as Array<{ id: number; title: string; category: string; image: string; alt: string }>;
   report.legacyRows = rows.length;
 
   const usedAlbumSlugs = new Set<string>();
@@ -94,18 +94,19 @@ export async function runLegacyMigration(opts: MigrationOptions): Promise<Migrat
     if (classification.destinationType === 'horse') {
       if (opts.apply) {
         const horse = looksLikeHorseTitle(row.title);
-        const baseSlug = slugify(horse.name ?? row.title);
+        const horseName = horse.name ?? row.title;
+        const baseSlug = slugify(horseName);
         const slug = uniqueSlug(baseSlug, usedAlbumSlugs);
         usedAlbumSlugs.add(slug);
         await db.execute({
           sql: `INSERT OR IGNORE INTO horse_profiles (name, slug, primary_media_asset_id, status, sort_order, description)
                 VALUES (?, ?, ?, 'published', ?, ?)`,
-          args: [horse.name, slug, extractAssetId(row.image), row.id, ''],
+          args: [horseName, slug, extractAssetId(row.image) ?? null, row.id, ''] as const,
         });
         await db.execute({
           sql: `INSERT OR IGNORE INTO horse_profile_media (horse_profile_id, media_asset_id, sort_order, alt_text)
                 VALUES ((SELECT id FROM horse_profiles WHERE slug = ?), ?, ?, ?)`,
-          args: [slug, extractAssetId(row.image), 0, row.alt || `${horse.name} photo`],
+          args: [slug, extractAssetId(row.image) ?? null, 0, row.alt || `${horseName} photo`],
         });
       }
       report.horseProfilesCreated++;
@@ -122,12 +123,12 @@ export async function runLegacyMigration(opts: MigrationOptions): Promise<Migrat
         await db.execute({
           sql: `INSERT OR IGNORE INTO activity_albums (title, slug, category_id, cover_media_asset_id, status, privacy_review_status, sort_order, summary)
                 VALUES (?, ?, (SELECT id FROM activity_categories WHERE slug = ?), ?, 'published', 'not_required', ?, ?)`,
-          args: [row.title, slug, classification.proposedCategorySlug, assetId, row.id, ''],
+          args: [row.title, slug, classification.proposedCategorySlug, extractAssetId(row.image) ?? null, row.id, ''],
         });
         await db.execute({
           sql: `INSERT OR IGNORE INTO album_media_assets (album_id, media_asset_id, sort_order, alt_text)
                 VALUES ((SELECT id FROM activity_albums WHERE slug = ?), ?, ?, ?)`,
-          args: [slug, assetId, 0, row.alt || `${row.title} photo`],
+          args: [slug, extractAssetId(row.image) ?? null, 0, row.alt || `${row.title} photo`],
         });
       }
       report.albumsCreated++;

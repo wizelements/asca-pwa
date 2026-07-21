@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 
-import { getDb } from '@/lib/db';
+import { getDb } from './db.ts';
 
 const DATA_IMAGE_PATTERN = /^data:(image\/(?:avif|gif|jpeg|png|webp));base64,([a-z0-9+/=\s]+)$/i;
 const MAX_DATA_URL_LENGTH = 8 * 1024 * 1024;

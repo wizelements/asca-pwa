@@ -5,7 +5,8 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
-const files = globSync('**/*.test.mjs', { cwd: join(__dirname, '..') }).map(f => new URL('../' + f, import.meta.url));
+const root = join(__dirname, '..');
+const files = globSync('tests/**/*.test.mjs', { cwd: root }).map(f => fileURLToPath(new URL('../tests/' + f.split('/').slice(1).join('/'), import.meta.url)));
 
 run({ files })
   .on('test:fail', (data) => {
