@@ -245,7 +245,7 @@ export async function getFeaturedAlbums(limit = 6): Promise<AlbumRecord[]> {
     WHERE a.deleted_at IS NULL
       AND a.status = 'published'
       AND a.featured = 1
-      AND a.privacy_review_status = 'not_required'
+      AND a.privacy_review_status IN ('not_required', 'approved')
       AND c.active = 1
       AND a.cover_media_asset_id IS NOT NULL
       AND (SELECT COUNT(*) FROM album_media_assets WHERE album_id = a.id) > 0
