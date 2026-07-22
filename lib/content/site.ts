@@ -42,6 +42,7 @@ export const NAV_LINKS = [
   { href: '/get-involved', label: 'Get Involved' },
   { href: '/where-to-find-us', label: 'Event Calendar' },
   { href: '/gallery', label: 'Gallery' },
+  { href: '/horses', label: 'Our Horses' },
   { href: '/support-asca', label: 'Support ASCA' },
 ];
 
