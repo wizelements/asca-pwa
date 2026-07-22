@@ -1,3 +1,5 @@
+import Image from 'next/image';
+import Link from 'next/link';
 import type { Metadata } from 'next';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -33,17 +35,20 @@ export default async function HorsesPage() {
             {horses.length > 0 ? (
               <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
                 {horses.map((horse) => (
-                  <a
+                  <Link
                     key={horse.id}
                     href={`/horses/${horse.slug}`}
                     className="group block overflow-hidden rounded-xl bg-brand-bg-elevated shadow-sm transition hover:shadow-md"
                   >
                     {horse.primaryUrl ? (
-                      <img
+                      <Image
                         src={horse.primaryUrl}
                         alt={horse.name}
+                        width={600}
+                        height={450}
                         className="aspect-[4/3] w-full object-cover transition group-hover:scale-105"
                         loading="lazy"
+                        unoptimized
                       />
                     ) : (
                       <div className="aspect-[4/3] w-full bg-brand-bg-subtle" />
@@ -52,7 +57,7 @@ export default async function HorsesPage() {
                       <h3 className="text-lg font-bold text-brand-fg-primary">{horse.name}</h3>
                       {horse.description && <p className="mt-1 line-clamp-2 text-sm text-brand-fg-secondary">{horse.description}</p>}
                     </div>
-                  </a>
+                  </Link>
                 ))}
               </div>
             ) : (

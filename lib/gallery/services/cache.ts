@@ -11,30 +11,41 @@ export const CACHE_TAG_SETTINGS = 'settings';
 export const CACHE_TAG_THEME = 'theme';
 export const CACHE_TAG_EVENTS = 'events';
 
+// Cache invalidation must never fail the write that triggered it.
+// revalidateTag throws when called outside a Next.js request context
+// (for example in plain-node tests), so failures are logged and swallowed.
+function safeRevalidateTag(tag: string): void {
+  try {
+    revalidateTag(tag);
+  } catch (error) {
+    console.warn(`[cache] revalidateTag(${tag}) skipped:`, error instanceof Error ? error.message : error);
+  }
+}
+
 export function invalidateAlbums(): void {
-  revalidateTag(CACHE_TAG_ALBUMS);
-  revalidateTag(CACHE_TAG_GALLERY_LEGACY);
+  safeRevalidateTag(CACHE_TAG_ALBUMS);
+  safeRevalidateTag(CACHE_TAG_GALLERY_LEGACY);
 }
 
 export function invalidateHomepage(): void {
-  revalidateTag(CACHE_TAG_HOME);
+  safeRevalidateTag(CACHE_TAG_HOME);
 }
 
 export function invalidateCategories(): void {
-  revalidateTag(CACHE_TAG_CATEGORIES);
-  revalidateTag(CACHE_TAG_ALBUMS);
+  safeRevalidateTag(CACHE_TAG_CATEGORIES);
+  safeRevalidateTag(CACHE_TAG_ALBUMS);
 }
 
 export function invalidateHorses(): void {
-  revalidateTag(CACHE_TAG_HORSES);
+  safeRevalidateTag(CACHE_TAG_HORSES);
 }
 
 export function invalidateLegacyReview(): void {
-  revalidateTag(CACHE_TAG_LEGACY_REVIEW);
+  safeRevalidateTag(CACHE_TAG_LEGACY_REVIEW);
 }
 
 export function invalidateMediaIntegrity(): void {
-  revalidateTag(CACHE_TAG_MEDIA_INTEGRITY);
+  safeRevalidateTag(CACHE_TAG_MEDIA_INTEGRITY);
 }
 
 export function invalidateAlbumPublicSurfaces(): void {

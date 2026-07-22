@@ -23,5 +23,14 @@ export async function resolve(specifier, context, nextResolve) {
       }
     }
   }
+  if (specifier.startsWith('next/')) {
+    try {
+      return nextResolve(`${specifier}.js`, context);
+    } catch {}
+  }
   return nextResolve(specifier, context);
+}
+
+export async function load(url, context, nextLoad) {
+  return nextLoad(url, context);
 }

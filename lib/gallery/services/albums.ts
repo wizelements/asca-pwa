@@ -1,9 +1,30 @@
 import { getDbClient, withTransaction, isUniqueConstraintError, type DbClient } from './db.ts';
-import { getCategoryById } from './categories.ts';
+import { getCategoryById, type ActivityCategoryRecord } from './categories.ts';
 import { getMediaAssetById, getMediaAssetPublicUrl } from './media.ts';
 import { slugify, uniqueSlug, isValidSlug } from '../slug.ts';
 import type { ActivityAlbumStatus, PrivacyReviewStatus } from '../types.ts';
 import { albumInputSchema, albumMediaInputSchema, validatePublishableAlbum } from '../validation.ts';
+
+function categoryFromRow(row: Record<string, unknown>): ActivityCategoryRecord {
+  return {
+    id: Number(row.category_id),
+    name: String(row.category_name ?? ''),
+    slug: String(row.category_slug ?? ''),
+    description: null,
+    sortOrder: 0,
+    active: Boolean(row.category_active ?? 1),
+    createdAt: null,
+    updatedAt: null,
+  };
+}
+
+function categoryFromRowNullable(row: Record<string, unknown>): ActivityCategoryRecord | null {
+  return row.category_id ? categoryFromRow(row) : null;
+}
+
+function categoryToMinimal(category: ActivityCategoryRecord): { id: number; name: string; slug: string; active: boolean } {
+  return { id: category.id, name: category.name, slug: category.slug, active: category.active };
+}
 
 export interface AlbumRecord {
   id: number;
@@ -21,7 +42,7 @@ export interface AlbumRecord {
   sortOrder: number;
   createdAt: Date | null;
   updatedAt: Date | null;
-  category: { id: number; name: string; slug: string } | null;
+  category: { id: number; name: string; slug: string; active: boolean } | null;
   coverUrl: string | null;
   mediaCount: number;
 }
@@ -80,25 +101,10 @@ function rowToAlbum(row: Record<string, unknown>, category?: ActivityCategoryRec
     sortOrder: Number(row.sort_order ?? 0),
     createdAt: row.created_at ? new Date(Number(row.created_at) * 1000) : null,
     updatedAt: row.updated_at ? new Date(Number(row.updated_at) * 1000) : null,
-    category: category ? { id: category.id, name: category.name, slug: category.slug } : null,
+    category: category ? categoryToMinimal(category) : null,
     coverUrl: coverId ? getMediaAssetPublicUrl(coverId, row.updated_at ? new Date(Number(row.updated_at) * 1000) : null) : null,
     mediaCount,
   };
-}
-
-interface ActivityCategoryRecord {
-  id: number;
-  name: string;
-  slug: string;
-}
-
-async function loadCategory(db: DbClient, categoryId: number): Promise<ActivityCategoryRecord | null> {
-  const result = await db.execute({
-    sql: 'SELECT id, name, slug FROM activity_categories WHERE id = ?',
-    args: [categoryId],
-  });
-  if (result.rows.length === 0) return null;
-  return { id: Number(result.rows[0].id), name: String(result.rows[0].name), slug: String(result.rows[0].slug) };
 }
 
 async function albumMediaCount(db: DbClient, albumId: number): Promise<number> {
@@ -184,7 +190,7 @@ export async function getPublicAlbums(categorySlug?: string): Promise<AlbumRecor
   `;
   const args = categorySlug ? [categorySlug] : [];
   const result = await db.execute({ sql, args });
-  return result.rows.map((row) => rowToAlbum(row, row.category_id ? { id: Number(row.category_id), name: String(row.category_name ?? ''), slug: String(row.category_slug ?? '') } : null, Number(row.media_count ?? 0)));
+  return result.rows.map((row) => rowToAlbum(row, categoryFromRowNullable(row), Number(row.media_count ?? 0)));
 }
 
 export async function getAlbumsByCategory(categoryId: number): Promise<AlbumRecord[]> {
@@ -212,7 +218,7 @@ export async function getFeaturedAlbums(limit = 6): Promise<AlbumRecord[]> {
     LIMIT ?
   `;
   const result = await db.execute({ sql, args: [limit] });
-  return result.rows.map((row) => rowToAlbum(row, { id: Number(row.category_id), name: String(row.category_name ?? ''), slug: String(row.category_slug ?? '') }, Number(row.media_count ?? 0)));
+  return result.rows.map((row) => rowToAlbum(row, categoryFromRow(row), Number(row.media_count ?? 0)));
 }
 
 export async function getAlbumDetailBySlug(slug: string): Promise<AlbumDetail | null> {
@@ -229,7 +235,7 @@ export async function getAlbumDetailBySlug(slug: string): Promise<AlbumDetail | 
   });
   if (result.rows.length === 0) return null;
   const row = result.rows[0];
-  const album = rowToAlbum(row, { id: Number(row.category_id), name: String(row.category_name ?? ''), slug: String(row.category_slug ?? '') }, Number(row.media_count ?? 0));
+  const album = rowToAlbum(row, categoryFromRow(row), Number(row.media_count ?? 0));
   const media = await albumMedia(db, album.id);
   const event = await relatedEvent(db, album.eventId);
   return { ...album, media, relatedEvent: event };
@@ -256,7 +262,7 @@ export async function getAdminAlbums(filters?: { status?: ActivityAlbumStatus; c
     ORDER BY a.status, a.featured DESC, a.sort_order, a.created_at DESC
   `;
   const result = await db.execute({ sql, args });
-  return result.rows.map((row) => rowToAlbum(row, { id: Number(row.category_id), name: String(row.category_name ?? ''), slug: String(row.category_slug ?? '') }, Number(row.media_count ?? 0)));
+  return result.rows.map((row) => rowToAlbum(row, categoryFromRow(row), Number(row.media_count ?? 0)));
 }
 
 export async function getAlbumById(id: number): Promise<AlbumRecord | null> {
@@ -273,7 +279,7 @@ export async function getAlbumById(id: number): Promise<AlbumRecord | null> {
   });
   if (result.rows.length === 0) return null;
   const row = result.rows[0];
-  return rowToAlbum(row, { id: Number(row.category_id), name: String(row.category_name ?? ''), slug: String(row.category_slug ?? '') }, Number(row.media_count ?? 0));
+  return rowToAlbum(row, categoryFromRow(row), Number(row.media_count ?? 0));
 }
 
 export async function createAlbum(
@@ -335,99 +341,112 @@ export async function updateAlbum(
   if (!existing) return null;
 
   if (input.status === 'published') {
+    const media = await albumMedia(db, id);
     const validation = validatePublishableAlbum({
-      title: input.title ?? existing.title,
-      status: 'published',
+      title: existing.title,
+      status: input.status ?? existing.status,
       privacyReviewStatus: input.privacyReviewStatus ?? existing.privacyReviewStatus,
-      mediaCount: existing.mediaCount,
+      mediaCount: media.length,
       coverMediaAssetId: input.coverMediaAssetId ?? existing.coverMediaAssetId,
-      altTexts: [], // Will be checked separately if needed; media alt lives in album_media_assets.
+      altTexts: media.map((m) => m.altText),
     });
-    if (!validation.ok) throw new Error(validation.errors.join('; '));
+    if (!validation.ok) {
+      throw new Error(`Cannot publish album: ${validation.errors.join('; ')}`);
+    }
   }
 
-  const updates: string[] = [];
+  if (input.featured && !existing.featured) {
+    const featuredCheck = isAlbumFeaturedEligible({ ...existing, featured: true, ...input });
+    if (!featuredCheck.eligible) {
+      throw new Error(`Cannot feature album: ${featuredCheck.reasons.join('; ')}`);
+    }
+  }
+
+  const setters: string[] = [];
   const args: (string | number | null)[] = [];
-
-  if (input.title !== undefined) { updates.push('title = ?'); args.push(input.title); }
-  if (input.slug !== undefined) { args.push(await ensureUniqueSlug(db, input.slug, id)); updates.push('slug = ?'); }
-  if (input.categoryId !== undefined) {
-    const category = await getCategoryById(input.categoryId);
-    if (!category) throw new Error(`Category not found: ${input.categoryId}`);
-    updates.push('category_id = ?'); args.push(input.categoryId);
+  if (input.title !== undefined) { setters.push('title = ?'); args.push(input.title); }
+  if (input.slug !== undefined) {
+    const candidate = await ensureUniqueSlug(db, input.slug, id);
+    setters.push('slug = ?'); args.push(candidate);
   }
-  if (input.eventId !== undefined) { updates.push('event_id = ?'); args.push(input.eventId ?? null); }
-  if (input.activityDate !== undefined) { updates.push('activity_date = ?'); args.push(input.activityDate ? Math.floor(input.activityDate.getTime() / 1000) : null); }
-  if (input.location !== undefined) { updates.push('location = ?'); args.push(input.location ?? null); }
-  if (input.summary !== undefined) { updates.push('summary = ?'); args.push(input.summary ?? null); }
-  if (input.coverMediaAssetId !== undefined) {
-    if (input.coverMediaAssetId) {
-      const exists = await getMediaAssetById(input.coverMediaAssetId);
-      if (!exists) throw new Error(`Cover media asset not found: ${input.coverMediaAssetId}`);
-    }
-    updates.push('cover_media_asset_id = ?'); args.push(input.coverMediaAssetId ?? null);
-  }
-  if (input.featured !== undefined) { updates.push('featured = ?'); args.push(input.featured ? 1 : 0); }
-  if (input.status !== undefined) { updates.push('status = ?'); args.push(input.status); }
-  if (input.privacyReviewStatus !== undefined) { updates.push('privacy_review_status = ?'); args.push(input.privacyReviewStatus); }
-  if (input.sortOrder !== undefined) { updates.push('sort_order = ?'); args.push(input.sortOrder); }
-
-  if (updates.length > 0) {
-    updates.push('updated_at = unixepoch()');
-    args.push(id);
-    await db.execute({
-      sql: `UPDATE activity_albums SET ${updates.join(', ')} WHERE id = ?`,
-      args,
-    });
+  if (input.categoryId !== undefined) { setters.push('category_id = ?'); args.push(input.categoryId); }
+  if (input.eventId !== undefined) { setters.push('event_id = ?'); args.push(input.eventId); }
+  if (input.activityDate !== undefined) { setters.push('activity_date = ?'); args.push(input.activityDate ? Math.floor(input.activityDate.getTime() / 1000) : null); }
+  if (input.location !== undefined) { setters.push('location = ?'); args.push(input.location); }
+  if (input.summary !== undefined) { setters.push('summary = ?'); args.push(input.summary); }
+  if (input.coverMediaAssetId !== undefined) { setters.push('cover_media_asset_id = ?'); args.push(input.coverMediaAssetId); }
+  if (input.featured !== undefined) { setters.push('featured = ?'); args.push(input.featured ? 1 : 0); }
+  if (input.status !== undefined) { setters.push('status = ?'); args.push(input.status); }
+  if (input.privacyReviewStatus !== undefined) { setters.push('privacy_review_status = ?'); args.push(input.privacyReviewStatus); }
+  if (input.sortOrder !== undefined) { setters.push('sort_order = ?'); args.push(input.sortOrder); }
+  if (setters.length === 0 && (!mediaUpdates || (!mediaUpdates.reorder?.length && !mediaUpdates.remove?.length))) {
+    return existing;
   }
 
-  if (mediaUpdates?.reorder) {
-    for (const item of mediaUpdates.reorder) {
-      await db.execute({
-        sql: 'UPDATE album_media_assets SET sort_order = ? WHERE album_id = ? AND media_asset_id = ?',
-        args: [item.sortOrder, id, item.mediaAssetId],
+  return withTransaction(async (txDb) => {
+    if (setters.length > 0) {
+      setters.push('updated_at = unixepoch()');
+      args.push(id);
+      await txDb.execute({
+        sql: `UPDATE activity_albums SET ${setters.join(', ')} WHERE id = ?`,
+        args,
       });
     }
-  }
 
-  if (mediaUpdates?.remove?.length) {
-    for (const mediaAssetId of mediaUpdates.remove) {
-      await db.execute({
-        sql: 'DELETE FROM album_media_assets WHERE album_id = ? AND media_asset_id = ?',
-        args: [id, mediaAssetId],
-      });
+    if (mediaUpdates?.reorder) {
+      for (const { mediaAssetId, sortOrder } of mediaUpdates.reorder) {
+        await txDb.execute({
+          sql: 'UPDATE album_media_assets SET sort_order = ? WHERE album_id = ? AND media_asset_id = ?',
+          args: [sortOrder, id, mediaAssetId],
+        });
+      }
     }
-  }
 
-  return getAlbumById(id);
+    if (mediaUpdates?.remove) {
+      for (const mediaAssetId of mediaUpdates.remove) {
+        await txDb.execute({
+          sql: 'DELETE FROM album_media_assets WHERE album_id = ? AND media_asset_id = ?',
+          args: [id, mediaAssetId],
+        });
+      }
+    }
+
+    const album = await getAlbumById(id);
+    if (!album) throw new Error('Album update failed');
+    return album;
+  });
 }
 
 export async function addAlbumMedia(albumId: number, items: AlbumMediaInput[]): Promise<AlbumRecord | null> {
   const db = getDbClient();
   const album = await getAlbumById(albumId);
   if (!album) return null;
-  await validateCoverAndMedia(db, null, items);
-  for (let i = 0; i < items.length; i++) {
-    const parsed = albumMediaInputSchema.parse(items[i]);
-    await db.execute({
-      sql: 'INSERT OR IGNORE INTO album_media_assets (album_id, media_asset_id, sort_order, caption, alt_text) VALUES (?, ?, ?, ?, ?)',
-      args: [albumId, parsed.mediaAssetId, parsed.sortOrder ?? (album.mediaCount + i) * 10, parsed.caption ?? null, parsed.altText],
-    });
-  }
-  return getAlbumById(albumId);
+
+  const count = await albumMediaCount(db, albumId);
+  return withTransaction(async (txDb) => {
+    for (let i = 0; i < items.length; i++) {
+      const m = albumMediaInputSchema.parse(items[i]);
+      const exists = await getMediaAssetById(m.mediaAssetId);
+      if (!exists) throw new Error(`Media asset not found: ${m.mediaAssetId}`);
+      await txDb.execute({
+        sql: 'INSERT INTO album_media_assets (album_id, media_asset_id, sort_order, caption, alt_text) VALUES (?, ?, ?, ?, ?)',
+        args: [albumId, m.mediaAssetId, m.sortOrder ?? (count + i) * 10, m.caption ?? null, m.altText],
+      });
+    }
+    return getAlbumById(albumId);
+  });
 }
 
 export async function updateAlbumMediaMeta(
   albumId: number,
   mediaAssetId: string,
-  updates: { caption?: string | null; altText?: string; sortOrder?: number }
+  updates: { caption?: string | null; altText?: string }
 ): Promise<void> {
   const db = getDbClient();
   const setters: string[] = [];
   const args: (string | number | null)[] = [];
-  if (updates.caption !== undefined) { setters.push('caption = ?'); args.push(updates.caption ?? null); }
+  if (updates.caption !== undefined) { setters.push('caption = ?'); args.push(updates.caption); }
   if (updates.altText !== undefined) { setters.push('alt_text = ?'); args.push(updates.altText); }
-  if (updates.sortOrder !== undefined) { setters.push('sort_order = ?'); args.push(updates.sortOrder); }
   if (setters.length === 0) return;
   setters.push('updated_at = unixepoch()');
   args.push(albumId, mediaAssetId);
@@ -443,6 +462,31 @@ export async function removeAlbumMedia(albumId: number, mediaAssetId: string): P
     sql: 'DELETE FROM album_media_assets WHERE album_id = ? AND media_asset_id = ?',
     args: [albumId, mediaAssetId],
   });
+}
+
+export function isAlbumPubliclyEligible(album: AlbumRecord): { eligible: boolean; reasons: string[] } {
+  const reasons: string[] = [];
+  if (album.status !== 'published') reasons.push('Album is not published.');
+  if (album.privacyReviewStatus === 'pending') reasons.push('Privacy review is pending.');
+  if (album.privacyReviewStatus === 'restricted') reasons.push('Content is restricted.');
+  if (!album.categoryId || !album.category?.active) reasons.push('Category is missing or inactive.');
+  if (album.mediaCount === 0) reasons.push('Album has no media.');
+  if (!album.coverMediaAssetId) reasons.push('Album has no cover image.');
+  return { eligible: reasons.length === 0, reasons };
+}
+
+export function isAlbumFeaturedEligible(album: AlbumRecord): { eligible: boolean; reasons: string[] } {
+  const reasons: string[] = [];
+  if (album.status !== 'published') reasons.push('Album is not published.');
+  if (album.privacyReviewStatus === 'restricted') reasons.push('Content is restricted.');
+  if (!album.categoryId || !album.category?.active) reasons.push('Category is missing or inactive.');
+  if (album.mediaCount === 0) reasons.push('Album has no media.');
+  if (!album.coverMediaAssetId) reasons.push('Album has no cover image.');
+  return { eligible: reasons.length === 0, reasons };
+}
+
+export async function restoreAlbum(id: number): Promise<AlbumRecord | null> {
+  return updateAlbum(id, { status: 'draft', featured: false });
 }
 
 export async function publishAlbum(id: number): Promise<AlbumRecord | null> {
@@ -462,9 +506,6 @@ export async function setAlbumPrivacyStatus(
   privacyReviewStatus: PrivacyReviewStatus
 ): Promise<AlbumRecord | null> {
   const update: Partial<AlbumInput> = { privacyReviewStatus };
-  if (privacyReviewStatus === 'pending' || privacyReviewStatus === 'restricted') {
-    update.featured = false;
-  }
   return updateAlbum(id, update);
 }
 
@@ -472,7 +513,9 @@ export async function deleteAlbum(id: number): Promise<AlbumRecord | null> {
   const db = getDbClient();
   const existing = await getAlbumById(id);
   if (!existing) return null;
-  await db.execute({ sql: 'DELETE FROM album_media_assets WHERE album_id = ?', args: [id] });
-  await db.execute({ sql: 'DELETE FROM activity_albums WHERE id = ?', args: [id] });
+  await withTransaction(async (txDb) => {
+    await txDb.execute({ sql: 'DELETE FROM album_media_assets WHERE album_id = ?', args: [id] });
+    await txDb.execute({ sql: 'DELETE FROM activity_albums WHERE id = ?', args: [id] });
+  });
   return existing;
 }

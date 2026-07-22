@@ -323,7 +323,25 @@ export async function removeHorseMedia(horseId: number, mediaAssetId: string): P
   });
 }
 
+export function isHorsePubliclyEligible(horse: HorseProfileRecord): { eligible: boolean; reasons: string[] } {
+  const reasons: string[] = [];
+  if (horse.status !== 'published') reasons.push('Horse profile is not published.');
+  if (!horse.primaryMediaAssetId) reasons.push('Horse profile has no primary image.');
+  return { eligible: reasons.length === 0, reasons };
+}
+
+export async function restoreHorse(id: number): Promise<HorseProfileRecord | null> {
+  return updateHorse(id, { status: 'draft' });
+}
+
 export async function publishHorse(id: number): Promise<HorseProfileRecord | null> {
+  const db = getDbClient();
+  const existing = await getHorseById(id);
+  if (!existing) return null;
+  const eligibility = isHorsePubliclyEligible({ ...existing, status: 'published' });
+  if (!eligibility.eligible) {
+    throw new Error(eligibility.reasons.join('; '));
+  }
   return updateHorse(id, { status: 'published' });
 }
 

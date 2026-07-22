@@ -6,12 +6,15 @@ import {
   getLegacyReviewById,
   resolveReviewToExistingAlbum,
   resolveReviewToExistingHorse,
+  resolveReviewToNewAlbum,
+  resolveReviewToNewHorse,
   resolveReviewToSkip,
   updateLegacyReviewPrivacy,
 } from '@/lib/gallery/services/legacy-review';
 import { invalidateLegacyReview, invalidateAlbumPublicSurfaces, invalidateHorses } from '@/lib/gallery/services/cache';
 import { logActivity } from '@/lib/db/queries';
 import type { LegacyGalleryReviewStatus, PrivacyReviewStatus } from '@/lib/gallery/types';
+import { albumInputSchema, horseProfileInputSchema } from '@/lib/gallery/validation';
 
 function forbidden() {
   return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -59,7 +62,7 @@ export async function PUT(request: NextRequest) {
     if (!canAdmin(user)) return forbidden();
 
     const body = await request.json();
-    const { id, action, albumId, horseProfileId, privacyReviewStatus, notes } = body;
+    const { id, action, albumId, horseProfileId, privacyReviewStatus, notes, newRecord, initialMedia } = body;
 
     if (!id || Number.isNaN(Number(id))) {
       return NextResponse.json({ error: 'Review ID required' }, { status: 400 });
@@ -81,6 +84,13 @@ export async function PUT(request: NextRequest) {
         notes
       );
       invalidateAlbumPublicSurfaces();
+    } else if (action === 'createAlbum') {
+      const parsed = albumInputSchema.safeParse(newRecord);
+      if (!parsed.success) {
+        return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+      }
+      review = await resolveReviewToNewAlbum(reviewId, parsed.data, initialMedia || [], reviewerId, notes);
+      invalidateAlbumPublicSurfaces();
     } else if (action === 'resolveToHorse') {
       if (!horseProfileId || Number.isNaN(Number(horseProfileId))) {
         return NextResponse.json({ error: 'horseProfileId required' }, { status: 400 });
@@ -92,6 +102,13 @@ export async function PUT(request: NextRequest) {
         reviewerId,
         notes
       );
+      invalidateHorses();
+    } else if (action === 'createHorse') {
+      const parsed = horseProfileInputSchema.safeParse(newRecord);
+      if (!parsed.success) {
+        return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+      }
+      review = await resolveReviewToNewHorse(reviewId, parsed.data, initialMedia || [], reviewerId, notes);
       invalidateHorses();
     } else if (action === 'skip') {
       review = await resolveReviewToSkip(reviewId, reviewerId, notes);

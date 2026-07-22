@@ -10,6 +10,7 @@ import {
   updateHorse,
   publishHorse,
   archiveHorse,
+  restoreHorse,
   addHorseMedia,
   removeHorseMedia,
   updateHorseMediaMeta,
@@ -108,15 +109,25 @@ export async function PUT(request: NextRequest) {
 
     const horseId = Number(id);
 
-    if (action === 'publish' || action === 'archive') {
+    if (action === 'publish' || action === 'archive' || action === 'restore') {
       if (!canAdmin(user)) return forbidden();
-      const horse = action === 'publish' ? await publishHorse(horseId) : await archiveHorse(horseId);
-      if (!horse) {
-        return NextResponse.json({ error: 'Horse not found' }, { status: 404 });
+      try {
+        let horse;
+        if (action === 'publish') horse = await publishHorse(horseId);
+        else if (action === 'archive') horse = await archiveHorse(horseId);
+        else horse = await restoreHorse(horseId);
+        if (!horse) {
+          return NextResponse.json({ error: 'Horse not found' }, { status: 404 });
+        }
+        invalidateHorses();
+        await logActivity('horse', `${action} horse "${horse.name}"`, user.name || user.email);
+        return NextResponse.json(horse);
+      } catch (err: any) {
+        if (action === 'publish' && err?.message) {
+          return NextResponse.json({ error: err.message }, { status: 400 });
+        }
+        throw err;
       }
-      invalidateHorses();
-      await logActivity('horse', `${action} horse "${horse.name}"`, user.name || user.email);
-      return NextResponse.json(horse);
     }
 
     if (action === 'addMedia' && Array.isArray(media)) {

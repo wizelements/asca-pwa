@@ -14,10 +14,12 @@ import {
   updateAlbum,
   publishAlbum,
   archiveAlbum,
+  restoreAlbum,
   featureAlbum,
   unfeatureAlbum,
   setAlbumPrivacyStatus,
   deleteAlbum,
+  isAlbumFeaturedEligible,
 } from '@/lib/gallery/services/albums';
 import { getCategoryBySlug, getCategoryById } from '@/lib/gallery/services/categories';
 import {
@@ -143,13 +145,23 @@ export async function PUT(request: NextRequest) {
     const albumId = Number(id);
 
     // Admin-only actions.
-    if (action === 'publish' || action === 'archive' || action === 'feature' || action === 'unfeature') {
+    if (action === 'publish' || action === 'archive' || action === 'feature' || action === 'unfeature' || action === 'restore') {
       if (!canAdmin(user)) return forbidden();
       try {
         let album;
         if (action === 'publish') album = await publishAlbum(albumId);
         else if (action === 'archive') album = await archiveAlbum(albumId);
-        else if (action === 'feature') album = await featureAlbum(albumId, true);
+        else if (action === 'restore') album = await restoreAlbum(albumId);
+        else if (action === 'feature') {
+          const existing = await getAlbumById(albumId);
+          if (existing) {
+            const featuredCheck = isAlbumFeaturedEligible(existing);
+            if (!featuredCheck.eligible) {
+              return NextResponse.json({ error: featuredCheck.reasons.join('; ') }, { status: 400 });
+            }
+          }
+          album = await featureAlbum(albumId, true);
+        }
         else album = await unfeatureAlbum(albumId);
         if (!album) {
           return NextResponse.json({ error: 'Album not found' }, { status: 404 });
@@ -158,8 +170,7 @@ export async function PUT(request: NextRequest) {
         await logActivity('album', `${action} album "${album.title}"`, user.name || user.email);
         return NextResponse.json(album);
       } catch (err: any) {
-        // publishAlbum validates publishability and throws a descriptive message on failure.
-        if (action === 'publish' && err?.message) {
+        if ((action === 'publish' || action === 'feature') && err?.message) {
           return NextResponse.json({ error: err.message }, { status: 400 });
         }
         throw err;

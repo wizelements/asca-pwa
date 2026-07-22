@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import type { Metadata } from 'next';
 import Hero from '@/components/Hero';
 import GalleryCard from '@/components/Cards/GalleryCard';
@@ -146,11 +147,14 @@ function AlbumCard({ album }: { album: AlbumRecord }) {
       className="group block overflow-hidden rounded-xl bg-brand-bg-elevated shadow-sm transition hover:shadow-md"
     >
       {album.coverUrl ? (
-        <img
+        <Image
           src={album.coverUrl}
           alt={album.title}
+          width={600}
+          height={450}
           className="aspect-[4/3] w-full object-cover transition group-hover:scale-105"
           loading="lazy"
+          unoptimized
         />
       ) : (
         <div className="aspect-[4/3] w-full bg-brand-bg-subtle" />
@@ -161,6 +165,9 @@ function AlbumCard({ album }: { album: AlbumRecord }) {
         </p>
         <h3 className="mt-1 text-lg font-bold text-brand-fg-primary">{album.title}</h3>
         {album.summary && <p className="mt-1 line-clamp-2 text-sm text-brand-fg-secondary">{album.summary}</p>}
+        {album.activityDate && (
+          <p className="mt-1 text-xs text-brand-fg-muted">{album.activityDate.toLocaleDateString()}</p>
+        )}
       </div>
     </Link>
   );
@@ -187,7 +194,7 @@ async function NewGallery({ selectedCategory }: { selectedCategory?: string }) {
             >
               All
             </Link>
-            {categories.map((cat) => (
+            {categories.map((cat: ActivityCategoryRecord) => (
               <Link
                 key={cat.slug}
                 href={`/gallery?category=${encodeURIComponent(cat.slug)}`}
@@ -200,7 +207,7 @@ async function NewGallery({ selectedCategory }: { selectedCategory?: string }) {
 
           {albums.length > 0 ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {albums.map((album) => (
+              {albums.map((album: AlbumRecord) => (
                 <AlbumCard key={album.id} album={album} />
               ))}
             </div>
