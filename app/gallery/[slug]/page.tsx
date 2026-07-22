@@ -9,6 +9,7 @@ import Breadcrumbs from '@/components/gallery/Breadcrumbs';
 
 interface AlbumDetailPageProps {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ photo?: string }>;
 }
 
 export async function generateMetadata({ params }: AlbumDetailPageProps): Promise<Metadata> {
@@ -20,8 +21,9 @@ export async function generateMetadata({ params }: AlbumDetailPageProps): Promis
   };
 }
 
-export default async function AlbumDetailPage({ params }: AlbumDetailPageProps) {
+export default async function AlbumDetailPage({ params, searchParams }: AlbumDetailPageProps) {
   const { slug } = await params;
+  const { photo } = await searchParams ?? {};
   const album = await getAlbumDetailBySlug(slug);
 
   if (!isPublicPreviewEnabled() || !album) {
@@ -32,12 +34,15 @@ export default async function AlbumDetailPage({ params }: AlbumDetailPageProps) 
   if (!eligibility.eligible) {
     notFound();
   }
+  const photoNumber = Number(photo);
+  const initialPhotoIndex = Number.isInteger(photoNumber) && photoNumber >= 1 && photoNumber <= album.media.length ? photoNumber - 1 : null;
 
   return (
     <>
       <Header />
       <AlbumDetailClient
         album={album}
+        initialPhotoIndex={initialPhotoIndex}
         breadcrumbs={<Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Gallery', href: '/gallery' }, { label: album.title }]} />}
       />
       <Footer />

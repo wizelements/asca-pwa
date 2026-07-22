@@ -152,6 +152,7 @@ function AlbumCard({ album }: { album: AlbumRecord }) {
       href={`/gallery/${album.slug}`}
       className="group block overflow-hidden rounded-xl bg-brand-bg-elevated shadow-sm transition hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-forest focus-visible:ring-offset-2 motion-reduce:transition-none"
     >
+      <div className="relative">
       {album.coverUrl ? (
         <Image
           src={album.coverUrl}
@@ -165,6 +166,9 @@ function AlbumCard({ album }: { album: AlbumRecord }) {
       ) : (
         <div className="aspect-[4/3] w-full bg-brand-bg-subtle" />
       )}
+        <span aria-hidden="true" className="absolute bottom-3 right-3 rounded-full bg-black/70 px-2.5 py-1 text-xs font-medium text-white">{album.mediaCount} photos</span>
+        <span className="sr-only">{album.mediaCount} photos</span>
+      </div>
       <div className="p-4">
         <p className="text-xs font-semibold uppercase tracking-wider text-brand-forest">
           {album.category?.name || 'Gallery'}
@@ -197,10 +201,11 @@ async function NewGallery({ selectedCategory, page }: { selectedCategory?: strin
       <section className="bg-brand-bg-subtle py-20">
         <div className="container">
           <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Gallery' }]} />
-          <div className="mb-8 flex flex-wrap items-center gap-3">
+          <div className="mb-8 flex snap-x items-center gap-2 overflow-x-auto py-2 md:flex-wrap md:gap-3">
             <Link
               href="/gallery"
-              className={`rounded-full px-4 py-2 text-sm font-medium ${!selectedCategory ? 'bg-brand-forest text-white' : 'bg-brand-bg-elevated text-brand-fg-primary'}`}
+              aria-current={!selectedCategory ? 'true' : undefined}
+              className={`flex min-h-[44px] shrink-0 snap-start items-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ${!selectedCategory ? 'bg-brand-forest text-white' : 'bg-brand-bg-elevated text-brand-fg-primary'}`}
             >
               All
             </Link>
@@ -208,7 +213,8 @@ async function NewGallery({ selectedCategory, page }: { selectedCategory?: strin
               <Link
                 key={cat.slug}
                 href={`/gallery?category=${encodeURIComponent(cat.slug)}`}
-                className={`rounded-full px-4 py-2 text-sm font-medium ${selectedCategory === cat.slug ? 'bg-brand-forest text-white' : 'bg-brand-bg-elevated text-brand-fg-primary'}`}
+                aria-current={selectedCategory === cat.slug ? 'true' : undefined}
+                className={`flex min-h-[44px] shrink-0 snap-start items-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ${selectedCategory === cat.slug ? 'bg-brand-forest text-white' : 'bg-brand-bg-elevated text-brand-fg-primary'}`}
               >
                 {cat.name}
               </Link>

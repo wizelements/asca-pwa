@@ -9,6 +9,7 @@ import Breadcrumbs from '@/components/gallery/Breadcrumbs';
 
 interface HorseDetailPageProps {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ photo?: string }>;
 }
 
 export async function generateMetadata({ params }: HorseDetailPageProps): Promise<Metadata> {
@@ -20,8 +21,9 @@ export async function generateMetadata({ params }: HorseDetailPageProps): Promis
   };
 }
 
-export default async function HorseDetailPage({ params }: HorseDetailPageProps) {
+export default async function HorseDetailPage({ params, searchParams }: HorseDetailPageProps) {
   const { slug } = await params;
+  const { photo } = await searchParams ?? {};
   const horse = await getHorseDetailBySlug(slug);
 
   if (!isPublicPreviewEnabled() || !horse) {
@@ -32,12 +34,16 @@ export default async function HorseDetailPage({ params }: HorseDetailPageProps) 
   if (!eligibility.eligible) {
     notFound();
   }
+  const mediaCount = horse.media.length + (horse.primaryUrl ? 1 : 0);
+  const photoNumber = Number(photo);
+  const initialPhotoIndex = Number.isInteger(photoNumber) && photoNumber >= 1 && photoNumber <= mediaCount ? photoNumber - 1 : null;
 
   return (
     <>
       <Header />
       <HorseDetailClient
         horse={horse}
+        initialPhotoIndex={initialPhotoIndex}
         breadcrumbs={<Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Horses', href: '/horses' }, { label: horse.name }]} />}
       />
       <Footer />

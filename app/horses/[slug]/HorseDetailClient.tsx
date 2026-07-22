@@ -1,23 +1,27 @@
 'use client';
 
 import { useState } from 'react';
-import type { ReactNode } from 'react';
+import type { ReactNode, UIEvent } from 'react';
 import Image from 'next/image';
 import AccessibleImageViewer from '@/components/gallery/AccessibleImageViewer';
+import { useViewerHistory } from '@/components/gallery/useViewerHistory';
 import type { HorseProfileDetail } from '@/lib/gallery/services/horses';
 
 interface HorseDetailClientProps {
   horse: NonNullable<HorseProfileDetail>;
   breadcrumbs: ReactNode;
+  initialPhotoIndex?: number | null;
 }
 
-export default function HorseDetailClient({ horse, breadcrumbs }: HorseDetailClientProps) {
-  const [viewerOpen, setViewerOpen] = useState(false);
-  const [viewerIndex, setViewerIndex] = useState(0);
+export default function HorseDetailClient({ horse, breadcrumbs, initialPhotoIndex }: HorseDetailClientProps) {
+  const [mobileIndex, setMobileIndex] = useState(0);
 
   const allImages = horse.primaryUrl
     ? [{ url: horse.primaryUrl, altText: horse.name, caption: null }, ...horse.media.map((m) => ({ url: m.url, altText: m.altText, caption: m.caption }))]
     : horse.media.map((m) => ({ url: m.url, altText: m.altText, caption: m.caption }));
+
+  const { viewerOpen, viewerIndex, openViewer, moveViewer, closeViewer } = useViewerHistory(allImages.length, initialPhotoIndex);
+  const mosaic = allImages.length >= 5;
 
   return (
     <>
@@ -30,14 +34,21 @@ export default function HorseDetailClient({ horse, breadcrumbs }: HorseDetailCli
             {horse.description && <p className="mt-4 max-w-2xl text-brand-fg-secondary">{horse.description}</p>}
           </div>
 
+          {mosaic && <section className="relative mb-10" aria-label="Featured photos">
+            <div className="hidden h-[32rem] grid-cols-4 grid-rows-2 gap-2 overflow-hidden rounded-xl md:grid">{allImages.slice(0, 5).map((image, idx) => <button key={`${image.url}-${idx}`} onClick={() => openViewer(idx)} className={`group relative overflow-hidden focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-forest focus-visible:ring-inset ${idx === 0 ? 'col-span-2 row-span-2' : ''}`} aria-label={`Open photo ${idx + 1} of ${allImages.length}`}><Image src={image.url} alt={image.altText} fill priority={idx === 0} sizes={idx === 0 ? '(max-width: 768px) 100vw, 50vw' : '25vw'} className="object-cover" /><span className="absolute inset-0 bg-black/10 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none" /></button>)}</div>
+            <div className="relative md:hidden"><div className="flex snap-x snap-mandatory overflow-x-auto" style={{ scrollbarWidth: 'none' }} onScroll={(e: UIEvent<HTMLDivElement>) => setMobileIndex(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}>{allImages.map((image, idx) => <button key={`${image.url}-${idx}`} onClick={() => openViewer(idx)} className="relative aspect-[4/3] min-w-full snap-center"><Image src={image.url} alt={image.altText} fill priority={idx === 0} sizes="100vw" className="object-cover" /></button>)}</div><span className="absolute bottom-3 right-3 rounded-full bg-black/70 px-3 py-1 text-sm text-white">{mobileIndex + 1} / {allImages.length}</span></div>
+            <button onClick={() => openViewer(0)} className="absolute bottom-4 right-4 hidden min-h-[44px] items-center gap-2 rounded-lg border border-brand-border-subtle bg-white px-4 font-semibold text-brand-fg-primary shadow md:flex"><svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z" /></svg>Show all photos</button>
+          </section>}
+          {mosaic && <h2 className="mb-6 text-2xl font-bold text-brand-fg-primary">All photos</h2>}
+
           {horse.primaryUrl && (
             <figure
               className="group mb-8 cursor-pointer overflow-hidden rounded-xl bg-brand-bg-elevated shadow-sm transition hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-forest focus-visible:ring-offset-2 motion-reduce:transition-none"
-              onClick={() => { setViewerIndex(0); setViewerOpen(true); }}
+              onClick={() => openViewer(0)}
               role="button"
               tabIndex={0}
               aria-label="Open primary image"
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setViewerIndex(0); setViewerOpen(true); } }}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openViewer(0); } }}
             >
               <div className="relative overflow-hidden">
               <Image
@@ -64,11 +75,11 @@ export default function HorseDetailClient({ horse, breadcrumbs }: HorseDetailCli
                   <figure
                     key={item.mediaAssetId}
                     className="group cursor-pointer overflow-hidden rounded-xl bg-brand-bg-elevated shadow-sm transition hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-forest focus-visible:ring-offset-2 motion-reduce:transition-none"
-                    onClick={() => { setViewerIndex(figureIndex); setViewerOpen(true); }}
+                    onClick={() => openViewer(figureIndex)}
                     role="button"
                     tabIndex={0}
                     aria-label={`Open image ${figureIndex + 1} of ${allImages.length}`}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setViewerIndex(figureIndex); setViewerOpen(true); } }}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openViewer(figureIndex); } }}
                   >
                     <div className="relative overflow-hidden">
                     <Image
@@ -98,9 +109,9 @@ export default function HorseDetailClient({ horse, breadcrumbs }: HorseDetailCli
         images={allImages}
         currentIndex={viewerIndex}
         isOpen={viewerOpen}
-        onClose={() => setViewerOpen(false)}
-        onNext={() => setViewerIndex((i) => Math.min(i + 1, allImages.length - 1))}
-        onPrev={() => setViewerIndex((i) => Math.max(i - 1, 0))}
+        onClose={closeViewer}
+        onNext={() => moveViewer(Math.min(viewerIndex + 1, allImages.length - 1))}
+        onPrev={() => moveViewer(Math.max(viewerIndex - 1, 0))}
       />
     </>
   );
