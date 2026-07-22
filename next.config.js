@@ -11,6 +11,11 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: '**',
+        pathname: '/api/media/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**',
       },
     ],
     formats: ['image/avif', 'image/webp'],

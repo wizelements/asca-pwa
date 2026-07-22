@@ -4,21 +4,34 @@ import type { Metadata } from 'next';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Hero from '@/components/Hero';
-import { getPublicHorses } from '@/lib/gallery/services/horses';
+import Pagination from '@/components/gallery/Pagination';
+import { countPublicHorses, getPublicHorses } from '@/lib/gallery/services/horses';
 import { isPublicPreviewEnabled } from '@/lib/gallery/feature-state';
 import { notFound } from 'next/navigation';
+
+interface HorsesPageProps {
+  searchParams?: Promise<{ page?: string }>;
+}
 
 export const metadata: Metadata = {
   title: 'Our Horses | ASCA',
   description: 'Meet the horses of the Atlanta Saddle Club Association.',
 };
 
-export default async function HorsesPage() {
+export default async function HorsesPage({ searchParams }: HorsesPageProps) {
   if (!isPublicPreviewEnabled()) {
     notFound();
   }
 
-  const horses = await getPublicHorses();
+  const params = await searchParams ?? {};
+  const page = Math.max(1, Number(params.page || '1'));
+  const pageSize = 12;
+
+  const [horses, total] = await Promise.all([
+    getPublicHorses(pageSize, (page - 1) * pageSize),
+    countPublicHorses(),
+  ]);
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
     <>
@@ -48,7 +61,7 @@ export default async function HorsesPage() {
                         height={450}
                         className="aspect-[4/3] w-full object-cover transition group-hover:scale-105"
                         loading="lazy"
-                        unoptimized
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
                     ) : (
                       <div className="aspect-[4/3] w-full bg-brand-bg-subtle" />
@@ -65,6 +78,7 @@ export default async function HorsesPage() {
                 No horse profiles published yet.
               </div>
             )}
+            <Pagination currentPage={page} totalPages={totalPages} baseUrl="/horses" />
           </div>
         </section>
       </main>

@@ -14,6 +14,8 @@ import {
   addHorseMedia,
   removeHorseMedia,
   updateHorseMediaMeta,
+  countPublicHorses,
+  countAdminHorses,
 } from '@/lib/gallery/services/horses';
 import { horseProfileInputSchema, horseProfileMediaInputSchema } from '@/lib/gallery/validation';
 import { invalidateHorses } from '@/lib/gallery/services/cache';
@@ -30,6 +32,9 @@ export async function GET(request: NextRequest) {
     const slug = searchParams.get('slug');
     const id = searchParams.get('id');
     const status = searchParams.get('status');
+    const page = Math.max(1, Number(searchParams.get('page') || '1'));
+    const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') || '24')));
+    const offset = (page - 1) * pageSize;
 
     if (slug) {
       const horse = await getHorseDetailBySlug(slug);
@@ -54,12 +59,18 @@ export async function GET(request: NextRequest) {
     }
 
     if (!canEdit(user)) {
-      const horses = await getPublicHorses();
-      return NextResponse.json(horses);
+      const [horses, total] = await Promise.all([
+        getPublicHorses(pageSize, offset),
+        countPublicHorses(),
+      ]);
+      return NextResponse.json(horses, { headers: { 'X-Total-Count': String(total) } });
     }
 
-    const horses = await getAdminHorses(status ? { status: status as any } : undefined);
-    return NextResponse.json(horses);
+    const [horses, total] = await Promise.all([
+      getAdminHorses(status ? { status: status as any } : undefined, pageSize, offset),
+      countAdminHorses(status ? { status: status as any } : undefined),
+    ]);
+    return NextResponse.json(horses, { headers: { 'X-Total-Count': String(total) } });
   } catch (error: any) {
     console.error('[HORSES GET]', error);
     if (error.message === 'Unauthorized') {

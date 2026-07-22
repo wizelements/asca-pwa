@@ -37,6 +37,8 @@ async function setupDb(path) {
 
   const upgrade = readFileSync(join(root, 'drizzle/0003_add_gallery_upgrade.sql'), 'utf8');
   await db.executeMultiple(upgrade);
+  const softDelete = readFileSync(join(root, 'drizzle/0004_add_soft_delete_to_gallery.sql'), 'utf8');
+  await db.executeMultiple(softDelete);
   return db;
 }
 

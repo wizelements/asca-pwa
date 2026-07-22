@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getAdminToken, logout } from '@/components/AdminGuard';
 import AdminShell from '@/components/admin/AdminShell';
+import AdminPagination from '@/components/admin/AdminPagination';
 
 interface Horse {
   id: number;
@@ -15,29 +16,42 @@ interface Horse {
   sortOrder: number;
 }
 
+const PAGE_SIZE = 20;
+
 export default function AdminHorsesPage() {
   const [horses, setHorses] = useState<Horse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    fetchHorses();
+    setPage(1);
+    fetchHorses(1, statusFilter);
   }, [statusFilter]);
 
-  const fetchHorses = async () => {
+  useEffect(() => {
+    fetchHorses(page, statusFilter);
+  }, [page]);
+
+  const fetchHorses = async (p: number, status: string) => {
     setLoading(true);
     setError('');
     const token = getAdminToken();
     try {
-      const url = statusFilter ? `/api/gallery/horses?status=${statusFilter}` : '/api/gallery/horses';
-      const res = await fetch(url, {
+      const params = new URLSearchParams({ page: String(p), pageSize: String(PAGE_SIZE) });
+      if (status) params.set('status', status);
+      const res = await fetch(`/api/gallery/horses?${params.toString()}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.status === 401) { logout(); return; }
       if (!res.ok) throw new Error('Failed to load horses');
       const data = await res.json();
+      const totalHeader = res.headers.get('X-Total-Count');
+      const total = totalHeader ? Number(totalHeader) : data.length;
       setHorses(Array.isArray(data) ? data : []);
+      setTotalPages(Math.max(1, Math.ceil(total / PAGE_SIZE)));
     } catch {
       setError('Unable to load horse profiles.');
     } finally {
@@ -57,10 +71,10 @@ export default function AdminHorsesPage() {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      alert(err.error || 'Action failed');
+      setError(err.error || 'Action failed');
       return;
     }
-    fetchHorses();
+    fetchHorses(page, statusFilter);
   };
 
   return (
@@ -79,18 +93,18 @@ export default function AdminHorsesPage() {
         </select>
       </div>
 
-      {loading && <p className="text-admin-fg-muted">Loading...</p>}
-      {error && <p className="text-red-600">{error}</p>}
+      {loading && <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-12 animate-pulse rounded-md bg-admin-bg-subtle" />)}</div>}
+      {error && <div className="mb-4 rounded-md bg-red-100 p-3 text-red-800">{error}</div>}
 
       {!loading && !error && (
         <div className="overflow-x-auto rounded-lg border border-admin-border-subtle">
           <table className="w-full text-left text-sm">
             <thead className="bg-admin-bg-subtle text-admin-fg-secondary">
               <tr>
-                <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Media</th>
-                <th className="px-4 py-3">Actions</th>
+                <th scope="col" className="px-4 py-3">Name</th>
+                <th scope="col" className="px-4 py-3">Status</th>
+                <th scope="col" className="px-4 py-3">Media</th>
+                <th scope="col" className="px-4 py-3">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-admin-border-subtle">
@@ -104,10 +118,20 @@ export default function AdminHorsesPage() {
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-2">
                       {horse.status !== 'published' && (
-                        <button onClick={() => action(horse.id, 'publish')} className="text-xs font-medium text-green-700 hover:underline">Publish</button>
+                        <button
+                          onClick={() => action(horse.id, 'publish')}
+                          className="rounded-md bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 hover:bg-green-200"
+                        >
+                          Publish
+                        </button>
                       )}
                       {horse.status !== 'archived' && (
-                        <button onClick={() => action(horse.id, 'archive')} className="text-xs font-medium text-red-700 hover:underline">Archive</button>
+                        <button
+                          onClick={() => action(horse.id, 'archive')}
+                          className="rounded-md bg-red-100 px-2.5 py-1 text-xs font-medium text-red-800 hover:bg-red-200"
+                        >
+                          Archive
+                        </button>
                       )}
                     </div>
                   </td>
@@ -115,9 +139,15 @@ export default function AdminHorsesPage() {
               ))}
             </tbody>
           </table>
-          {horses.length === 0 && <p className="p-8 text-center text-admin-fg-muted">No horse profiles found.</p>}
+          {horses.length === 0 && (
+            <div className="p-8 text-center text-admin-fg-muted">
+              No horse profiles found. <Link href="/admin/horses/new" className="text-brand-forest hover:underline">Create one</Link>.
+            </div>
+          )}
         </div>
       )}
+
+      <AdminPagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
     </AdminShell>
   );
 }

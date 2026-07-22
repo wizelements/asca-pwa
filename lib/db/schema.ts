@@ -167,7 +167,7 @@ export const activityAlbums = sqliteTable('activity_albums', {
   status: text('status', { enum: ['draft', 'published', 'archived'] }).notNull().default('draft'),
   privacyReviewStatus: text('privacy_review_status', { enum: ['not_required', 'pending', 'approved', 'restricted'] }).notNull().default('not_required'),
   sortOrder: integer('sort_order').default(0),
-  createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+  deletedAt: integer('deleted_at', { mode: 'timestamp' }),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
 });
 
@@ -191,6 +191,7 @@ export const horseProfiles = sqliteTable('horse_profiles', {
   primaryMediaAssetId: text('primary_media_asset_id').references(() => mediaAssets.id, { onDelete: 'set null' }),
   status: text('status', { enum: ['draft', 'published', 'archived'] }).notNull().default('draft'),
   sortOrder: integer('sort_order').default(0),
+  deletedAt: integer('deleted_at', { mode: 'timestamp' }),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
 });

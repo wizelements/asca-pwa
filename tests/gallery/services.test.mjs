@@ -43,6 +43,8 @@ async function setupDb() {
 
   const upgrade = readFileSync(join(root, 'drizzle/0003_add_gallery_upgrade.sql'), 'utf8');
   await db.executeMultiple(upgrade);
+  const softDelete = readFileSync(join(root, 'drizzle/0004_add_soft_delete_to_gallery.sql'), 'utf8');
+  await db.executeMultiple(softDelete);
 
   // Inject the test DB into the shared getDb singleton. The env URL alone is not
   // enough: getDb caches its first client, which goes stale (SQLITE_READONLY_DBMOVED)

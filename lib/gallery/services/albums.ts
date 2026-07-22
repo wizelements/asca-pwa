@@ -175,22 +175,56 @@ async function validateCoverAndMedia(db: DbClient, coverId: string | null | unde
   }
 }
 
-export async function getPublicAlbums(categorySlug?: string): Promise<AlbumRecord[]> {
+export async function getPublicAlbums(categorySlug?: string, limit?: number, offset?: number): Promise<AlbumRecord[]> {
   const db = getDbClient();
   const sql = `
     SELECT a.*, c.name as category_name, c.slug as category_slug,
            (SELECT COUNT(*) FROM album_media_assets WHERE album_id = a.id) as media_count
     FROM activity_albums a
     LEFT JOIN activity_categories c ON a.category_id = c.id
-    WHERE a.status = 'published'
+    WHERE a.deleted_at IS NULL
+      AND a.status = 'published'
       AND a.privacy_review_status IN ('not_required', 'approved')
       AND (c.active = 1 OR c.active IS NULL)
       ${categorySlug ? "AND c.slug = ?" : ''}
     ORDER BY a.featured DESC, a.sort_order, a.activity_date DESC, a.created_at DESC
+    ${limit !== undefined ? 'LIMIT ?' : ''}
+    ${offset !== undefined ? 'OFFSET ?' : ''}
+  `;
+  const args: (string | number)[] = [];
+  if (categorySlug) args.push(categorySlug);
+  if (limit !== undefined) args.push(limit);
+  if (offset !== undefined) args.push(offset);
+  const result = await db.execute({ sql, args });
+  return result.rows.map((row) => rowToAlbum(row, categoryFromRowNullable(row), Number(row.media_count ?? 0)));
+}
+
+export async function countPublicAlbums(categorySlug?: string): Promise<number> {
+  const db = getDbClient();
+  const sql = `
+    SELECT COUNT(*) as c
+    FROM activity_albums a
+    LEFT JOIN activity_categories c ON a.category_id = c.id
+    WHERE a.deleted_at IS NULL
+      AND a.status = 'published'
+      AND a.privacy_review_status IN ('not_required', 'approved')
+      AND (c.active = 1 OR c.active IS NULL)
+      ${categorySlug ? "AND c.slug = ?" : ''}
   `;
   const args = categorySlug ? [categorySlug] : [];
   const result = await db.execute({ sql, args });
-  return result.rows.map((row) => rowToAlbum(row, categoryFromRowNullable(row), Number(row.media_count ?? 0)));
+  return Number(result.rows[0]?.c ?? 0);
+}
+
+export async function countAdminAlbums(filters?: { status?: ActivityAlbumStatus; categoryId?: number }): Promise<number> {
+  const db = getDbClient();
+  const where: string[] = [];
+  const args: (string | number)[] = [];
+  if (filters?.status) { where.push('status = ?'); args.push(filters.status); }
+  if (filters?.categoryId) { where.push('category_id = ?'); args.push(filters.categoryId); }
+  const sql = `SELECT COUNT(*) as c FROM activity_albums WHERE deleted_at IS NULL ${where.length > 0 ? `AND ${where.join(' AND ')}` : ''}`;
+  const result = await db.execute({ sql, args });
+  return Number(result.rows[0]?.c ?? 0);
 }
 
 export async function getAlbumsByCategory(categoryId: number): Promise<AlbumRecord[]> {
@@ -208,7 +242,8 @@ export async function getFeaturedAlbums(limit = 6): Promise<AlbumRecord[]> {
            (SELECT COUNT(*) FROM album_media_assets WHERE album_id = a.id) as media_count
     FROM activity_albums a
     LEFT JOIN activity_categories c ON a.category_id = c.id
-    WHERE a.status = 'published'
+    WHERE a.deleted_at IS NULL
+      AND a.status = 'published'
       AND a.featured = 1
       AND a.privacy_review_status = 'not_required'
       AND c.active = 1
@@ -229,7 +264,7 @@ export async function getAlbumDetailBySlug(slug: string): Promise<AlbumDetail | 
              (SELECT COUNT(*) FROM album_media_assets WHERE album_id = a.id) as media_count
       FROM activity_albums a
       LEFT JOIN activity_categories c ON a.category_id = c.id
-      WHERE a.slug = ?
+      WHERE a.deleted_at IS NULL AND a.slug = ?
     `,
     args: [slug],
   });
@@ -241,7 +276,7 @@ export async function getAlbumDetailBySlug(slug: string): Promise<AlbumDetail | 
   return { ...album, media, relatedEvent: event };
 }
 
-export async function getAdminAlbums(filters?: { status?: ActivityAlbumStatus; categoryId?: number }): Promise<AlbumRecord[]> {
+export async function getAdminAlbums(filters?: { status?: ActivityAlbumStatus; categoryId?: number }, limit?: number, offset?: number): Promise<AlbumRecord[]> {
   const db = getDbClient();
   const where: string[] = [];
   const args: (string | number)[] = [];
@@ -258,9 +293,14 @@ export async function getAdminAlbums(filters?: { status?: ActivityAlbumStatus; c
            (SELECT COUNT(*) FROM album_media_assets WHERE album_id = a.id) as media_count
     FROM activity_albums a
     LEFT JOIN activity_categories c ON a.category_id = c.id
-    ${where.length > 0 ? `WHERE ${where.join(' AND ')}` : ''}
+    WHERE a.deleted_at IS NULL
+    ${where.length > 0 ? `AND ${where.join(' AND ')}` : ''}
     ORDER BY a.status, a.featured DESC, a.sort_order, a.created_at DESC
+    ${limit !== undefined ? 'LIMIT ?' : ''}
+    ${offset !== undefined ? 'OFFSET ?' : ''}
   `;
+  if (limit !== undefined) args.push(limit);
+  if (offset !== undefined) args.push(offset);
   const result = await db.execute({ sql, args });
   return result.rows.map((row) => rowToAlbum(row, categoryFromRow(row), Number(row.media_count ?? 0)));
 }
@@ -273,7 +313,7 @@ export async function getAlbumById(id: number): Promise<AlbumRecord | null> {
              (SELECT COUNT(*) FROM album_media_assets WHERE album_id = a.id) as media_count
       FROM activity_albums a
       LEFT JOIN activity_categories c ON a.category_id = c.id
-      WHERE a.id = ?
+      WHERE a.deleted_at IS NULL AND a.id = ?
     `,
     args: [id],
   });
@@ -377,6 +417,13 @@ export async function updateAlbum(
   if (input.coverMediaAssetId !== undefined) { setters.push('cover_media_asset_id = ?'); args.push(input.coverMediaAssetId); }
   if (input.featured !== undefined) { setters.push('featured = ?'); args.push(input.featured ? 1 : 0); }
   if (input.status !== undefined) { setters.push('status = ?'); args.push(input.status); }
+  if (input.status === 'archived') {
+    setters.push('deleted_at = unixepoch()');
+    setters.push('featured = 0');
+  }
+  if (input.status === 'draft' || input.status === 'published') {
+    setters.push('deleted_at = NULL');
+  }
   if (input.privacyReviewStatus !== undefined) { setters.push('privacy_review_status = ?'); args.push(input.privacyReviewStatus); }
   if (input.sortOrder !== undefined) { setters.push('sort_order = ?'); args.push(input.sortOrder); }
   if (setters.length === 0 && (!mediaUpdates || (!mediaUpdates.reorder?.length && !mediaUpdates.remove?.length))) {
@@ -411,9 +458,21 @@ export async function updateAlbum(
       }
     }
 
-    const album = await getAlbumById(id);
-    if (!album) throw new Error('Album update failed');
-    return album;
+    // After soft-deleting, getAlbumById would return null. Refetch using tx connection
+    // and raw row to return the updated record without deleted_at filter.
+    const result = await txDb.execute({
+      sql: `
+        SELECT a.*, c.name as category_name, c.slug as category_slug,
+               (SELECT COUNT(*) FROM album_media_assets WHERE album_id = a.id) as media_count
+        FROM activity_albums a
+        LEFT JOIN activity_categories c ON a.category_id = c.id
+        WHERE a.id = ?
+      `,
+      args: [id],
+    });
+    if (result.rows.length === 0) throw new Error('Album update failed');
+    const row = result.rows[0];
+    return rowToAlbum(row, categoryFromRow(row), Number(row.media_count ?? 0));
   });
 }
 
@@ -510,6 +569,10 @@ export async function setAlbumPrivacyStatus(
 }
 
 export async function deleteAlbum(id: number): Promise<AlbumRecord | null> {
+  return updateAlbum(id, { status: 'archived', featured: false, privacyReviewStatus: 'not_required' });
+}
+
+export async function purgeAlbum(id: number): Promise<AlbumRecord | null> {
   const db = getDbClient();
   const existing = await getAlbumById(id);
   if (!existing) return null;

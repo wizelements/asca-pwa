@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 export interface ManagedMediaItem {
   mediaAssetId: string;
@@ -28,6 +28,23 @@ export default function MediaManager({
   maxItems,
 }: MediaManagerProps) {
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
+  const liveRef = useRef<HTMLDivElement>(null);
+  const focusRef = useRef<string | null>(null);
+
+  const announce = useCallback((message: string) => {
+    if (liveRef.current) {
+      liveRef.current.textContent = message;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (focusRef.current) {
+      const el = document.getElementById(`media-row-${focusRef.current}`);
+      el?.focus();
+      focusRef.current = null;
+    }
+  }, [media]);
 
   const updateItem = useCallback(
     (id: string, patch: Partial<ManagedMediaItem>) => {
@@ -36,32 +53,40 @@ export default function MediaManager({
     [media, onChange]
   );
 
-  const move = useCallback(
-    (index: number, direction: -1 | 1) => {
-      const newIndex = index + direction;
-      if (newIndex < 0 || newIndex >= media.length) return;
+  const reorder = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      if (toIndex < 0 || toIndex >= media.length || fromIndex === toIndex) return;
       const next = [...media];
-      const [moved] = next.splice(index, 1);
-      next.splice(newIndex, 0, moved);
-      onChange(next.map((m, i) => ({ ...m, sortOrder: i * 10 })));
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      const reordered = next.map((m, i) => ({ ...m, sortOrder: i * 10 }));
+      onChange(reordered);
+      focusRef.current = moved.mediaAssetId;
+      announce(`Moved image to position ${toIndex + 1} of ${reordered.length}`);
     },
-    [media, onChange]
+    [media, onChange, announce]
   );
 
   const remove = useCallback(
     (id: string) => {
-      if (!confirm('Remove this image from the collection? The uploaded file will be preserved.')) return;
+      const index = media.findIndex((m) => m.mediaAssetId === id);
       const next = media.filter((m) => m.mediaAssetId !== id);
-      onChange(next.map((m, i) => ({ ...m, sortOrder: i * 10 })));
+      const reordered = next.map((m, i) => ({ ...m, sortOrder: i * 10 }));
+      onChange(reordered);
       if (coverId === id && onCoverChange) {
         onCoverChange(next[0]?.mediaAssetId ?? null);
       }
+      const focusId = reordered[index]?.mediaAssetId ?? reordered[index - 1]?.mediaAssetId ?? null;
+      if (focusId) focusRef.current = focusId;
+      announce('Image removed');
+      setPendingDelete(null);
     },
-    [media, coverId, onChange, onCoverChange]
+    [media, coverId, onChange, onCoverChange, announce]
   );
 
   return (
     <div className="space-y-4">
+      <div ref={liveRef} aria-live="polite" className="sr-only" />
       {maxItems && media.length >= maxItems && (
         <p className="text-sm text-admin-fg-muted">Maximum {maxItems} images reached.</p>
       )}
@@ -69,6 +94,8 @@ export default function MediaManager({
         {media.map((item, index) => (
           <li
             key={item.mediaAssetId}
+            id={`media-row-${item.mediaAssetId}`}
+            tabIndex={-1}
             draggable
             onDragStart={() => setDraggingId(item.mediaAssetId)}
             onDragOver={(e) => {
@@ -83,7 +110,10 @@ export default function MediaManager({
                 }
               }
             }}
-            onDragEnd={() => setDraggingId(null)}
+            onDragEnd={() => {
+              setDraggingId(null);
+              announce(`Image dropped at position ${index + 1}`);
+            }}
             className={`flex flex-col gap-3 p-4 transition ${draggingId === item.mediaAssetId ? 'opacity-50' : 'opacity-100'}`}
           >
             <div className="flex items-start gap-4">
@@ -125,7 +155,7 @@ export default function MediaManager({
               )}
               <button
                 type="button"
-                onClick={() => move(index, -1)}
+                onClick={() => reorder(index, index - 1)}
                 disabled={index === 0}
                 className="rounded-md bg-admin-bg-subtle px-3 py-1.5 text-xs font-medium text-admin-fg-secondary hover:bg-admin-border-subtle disabled:opacity-40"
                 aria-label={`Move image ${index + 1} up`}
@@ -134,20 +164,41 @@ export default function MediaManager({
               </button>
               <button
                 type="button"
-                onClick={() => move(index, 1)}
+                onClick={() => reorder(index, index + 1)}
                 disabled={index === media.length - 1}
                 className="rounded-md bg-admin-bg-subtle px-3 py-1.5 text-xs font-medium text-admin-fg-secondary hover:bg-admin-border-subtle disabled:opacity-40"
                 aria-label={`Move image ${index + 1} down`}
               >
                 ↓
               </button>
-              <button
-                type="button"
-                onClick={() => remove(item.mediaAssetId)}
-                className="ml-auto rounded-md bg-red-100 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-200"
-              >
-                Remove
-              </button>
+
+              {pendingDelete === item.mediaAssetId ? (
+                <span className="ml-auto flex items-center gap-2">
+                  <span className="text-xs text-admin-fg-secondary">Remove?</span>
+                  <button
+                    type="button"
+                    onClick={() => remove(item.mediaAssetId)}
+                    className="rounded-md bg-red-100 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-200"
+                  >
+                    Confirm
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPendingDelete(null)}
+                    className="rounded-md bg-admin-bg-subtle px-3 py-1.5 text-xs font-medium text-admin-fg-secondary hover:bg-admin-border-subtle"
+                  >
+                    Cancel
+                  </button>
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setPendingDelete(item.mediaAssetId)}
+                  className="ml-auto rounded-md bg-red-100 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-200"
+                >
+                  Remove
+                </button>
+              )}
             </div>
           </li>
         ))}

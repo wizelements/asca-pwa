@@ -20,6 +20,8 @@ import {
   setAlbumPrivacyStatus,
   deleteAlbum,
   isAlbumFeaturedEligible,
+  countPublicAlbums,
+  countAdminAlbums,
 } from '@/lib/gallery/services/albums';
 import { getCategoryBySlug, getCategoryById } from '@/lib/gallery/services/categories';
 import {
@@ -42,6 +44,9 @@ export async function GET(request: NextRequest) {
     const categorySlug = searchParams.get('category');
     const statusParam = searchParams.get('status');
     const id = searchParams.get('id');
+    const page = Math.max(1, Number(searchParams.get('page') || '1'));
+    const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') || '24')));
+    const offset = (page - 1) * pageSize;
 
     if (id && /^\d+$/.test(id)) {
       const album = await getAlbumById(Number(id));
@@ -71,10 +76,13 @@ export async function GET(request: NextRequest) {
       if (!category) {
         return NextResponse.json({ error: 'Category not found' }, { status: 404 });
       }
-      const albums = canEdit(user)
-        ? await getAlbumsByCategory(category.id)
-        : await getPublicAlbums(categorySlug);
-      return NextResponse.json(albums);
+      const [albums, total] = await Promise.all([
+        canEdit(user)
+          ? getAlbumsByCategory(category.id)
+          : getPublicAlbums(categorySlug, pageSize, offset),
+        canEdit(user) ? Promise.resolve(0) : countPublicAlbums(categorySlug),
+      ]);
+      return NextResponse.json(albums, { headers: { 'X-Total-Count': String(total) } });
     }
 
     const status: ActivityAlbumStatus | undefined =
@@ -83,13 +91,18 @@ export async function GET(request: NextRequest) {
         : undefined;
 
     if (!canEdit(user)) {
-      // Non-editors only see published, non-restricted albums.
-      const albums = await getPublicAlbums();
-      return NextResponse.json(albums);
+      const [albums, total] = await Promise.all([
+        getPublicAlbums(undefined, pageSize, offset),
+        countPublicAlbums(),
+      ]);
+      return NextResponse.json(albums, { headers: { 'X-Total-Count': String(total) } });
     }
 
-    const albums = await getAdminAlbums({ status });
-    return NextResponse.json(albums);
+    const [albums, total] = await Promise.all([
+      getAdminAlbums({ status }, pageSize, offset),
+      countAdminAlbums({ status }),
+    ]);
+    return NextResponse.json(albums, { headers: { 'X-Total-Count': String(total) } });
   } catch (error: any) {
     console.error('[ALBUMS GET]', error);
     if (error.message === 'Unauthorized') {

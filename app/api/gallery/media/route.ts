@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { canEdit } from '@/lib/gallery/services/authorization';
-import { createMediaAssetFromDataUrl, ALLOWED_IMAGE_TYPES } from '@/lib/gallery/services/media';
+import { createMediaAssetFromDataUrl, ALLOWED_IMAGE_TYPES, deleteMediaAsset } from '@/lib/gallery/services/media';
 
 const MAX_UPLOAD_SIZE = 6 * 1024 * 1024; // 6 MB data URL cap
 
@@ -42,5 +42,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     return NextResponse.json({ error: error.message || 'Failed to store media asset' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const user = await requireAuth(request);
+    if (!canEdit(user)) return forbidden();
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    if (!id) return invalidPayload('Media asset ID required');
+
+    await deleteMediaAsset(id);
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('[GALLERY MEDIA DELETE]', error);
+    if (error.message === 'Unauthorized') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    return NextResponse.json({ error: error.message || 'Failed to delete media asset' }, { status: 500 });
   }
 }

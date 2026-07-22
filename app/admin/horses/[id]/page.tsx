@@ -63,25 +63,51 @@ export default function AdminHorseEditPage() {
     }
   };
 
+  const deleteMediaAsset = async (assetId: string) => {
+    await fetch(`/api/gallery/media?id=${assetId}`, {
+      method: 'DELETE',
+      headers: authHeaders(),
+    });
+  };
+
   const uploadNewMedia = async (): Promise<ManagedMediaItem[]> => {
+    const entries = newMedia.filter((item) => item.dataUrl);
+    if (entries.length === 0) return [];
+
+    const results = await Promise.allSettled(
+      entries.map(async (item, idx) => {
+        const res = await fetch('/api/gallery/media', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeaders() },
+          body: JSON.stringify({ dataUrl: item.dataUrl }),
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(`Image ${idx + 1}: ${body.error || res.statusText}`);
+        }
+        const asset = await res.json();
+        return {
+          mediaAssetId: asset.id,
+          url: asset.url,
+          altText: item.altText,
+          caption: item.caption || null,
+          sortOrder: 0,
+        };
+      })
+    );
+
     const uploaded: ManagedMediaItem[] = [];
-    for (const item of newMedia) {
-      if (!item.dataUrl) continue;
-      const res = await fetch('/api/gallery/media', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ dataUrl: item.dataUrl }),
-      });
-      if (!res.ok) throw new Error(`Media upload failed: ${(await res.json()).error || res.statusText}`);
-      const asset = await res.json();
-      uploaded.push({
-        mediaAssetId: asset.id,
-        url: asset.url,
-        altText: item.altText,
-        caption: item.caption || null,
-        sortOrder: 0,
-      });
+    const errors: string[] = [];
+    for (const result of results) {
+      if (result.status === 'fulfilled') uploaded.push(result.value);
+      else errors.push(result.reason?.message || 'Upload failed');
     }
+
+    if (errors.length > 0) {
+      await Promise.all(uploaded.map((m) => deleteMediaAsset(m.mediaAssetId)));
+      throw new Error(errors.join('; '));
+    }
+
     return uploaded;
   };
 

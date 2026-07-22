@@ -114,18 +114,41 @@ async function validateMedia(db: DbClient, mediaInputs: HorseProfileMediaInput[]
   }
 }
 
-export async function getPublicHorses(limit?: number): Promise<HorseProfileRecord[]> {
+export async function countPublicHorses(): Promise<number> {
+  const db = getDbClient();
+  const result = await db.execute({
+    sql: `SELECT COUNT(*) as c FROM horse_profiles WHERE deleted_at IS NULL AND status = 'published' AND primary_media_asset_id IS NOT NULL`,
+    args: [],
+  });
+  return Number(result.rows[0]?.c ?? 0);
+}
+
+export async function countAdminHorses(filters?: { status?: HorseStatus }): Promise<number> {
+  const db = getDbClient();
+  const where: string[] = [];
+  const args: (string | number)[] = [];
+  if (filters?.status) { where.push('status = ?'); args.push(filters.status); }
+  const sql = `SELECT COUNT(*) as c FROM horse_profiles WHERE deleted_at IS NULL ${where.length > 0 ? `AND ${where.join(' AND ')}` : ''}`;
+  const result = await db.execute({ sql, args });
+  return Number(result.rows[0]?.c ?? 0);
+}
+
+export async function getPublicHorses(limit?: number, offset?: number): Promise<HorseProfileRecord[]> {
   const db = getDbClient();
   const sql = `
     SELECT h.*,
            (SELECT COUNT(*) FROM horse_profile_media WHERE horse_profile_id = h.id) as media_count
     FROM horse_profiles h
-    WHERE h.status = 'published'
+    WHERE h.deleted_at IS NULL
+      AND h.status = 'published'
       AND h.primary_media_asset_id IS NOT NULL
     ORDER BY h.sort_order, h.name
     ${limit !== undefined ? 'LIMIT ?' : ''}
+    ${offset !== undefined ? 'OFFSET ?' : ''}
   `;
-  const args = limit !== undefined ? [limit] : [];
+  const args: (number)[] = [];
+  if (limit !== undefined) args.push(limit);
+  if (offset !== undefined) args.push(offset);
   const result = await db.execute({ sql, args });
   return result.rows.map((row) => rowToHorse(row, Number(row.media_count ?? 0)));
 }
@@ -137,7 +160,7 @@ export async function getHorseDetailBySlug(slug: string): Promise<HorseProfileDe
       SELECT h.*,
              (SELECT COUNT(*) FROM horse_profile_media WHERE horse_profile_id = h.id) as media_count
       FROM horse_profiles h
-      WHERE h.slug = ?
+      WHERE h.deleted_at IS NULL AND h.slug = ?
     `,
     args: [slug],
   });
@@ -148,7 +171,7 @@ export async function getHorseDetailBySlug(slug: string): Promise<HorseProfileDe
   return { ...horse, media };
 }
 
-export async function getAdminHorses(filters?: { status?: HorseStatus }): Promise<HorseProfileRecord[]> {
+export async function getAdminHorses(filters?: { status?: HorseStatus }, limit?: number, offset?: number): Promise<HorseProfileRecord[]> {
   const db = getDbClient();
   const where: string[] = [];
   const args: (string | number)[] = [];
@@ -160,9 +183,14 @@ export async function getAdminHorses(filters?: { status?: HorseStatus }): Promis
     SELECT h.*,
            (SELECT COUNT(*) FROM horse_profile_media WHERE horse_profile_id = h.id) as media_count
     FROM horse_profiles h
-    ${where.length > 0 ? `WHERE ${where.join(' AND ')}` : ''}
+    WHERE h.deleted_at IS NULL
+    ${where.length > 0 ? `AND ${where.join(' AND ')}` : ''}
     ORDER BY h.status, h.sort_order, h.name
+    ${limit !== undefined ? 'LIMIT ?' : ''}
+    ${offset !== undefined ? 'OFFSET ?' : ''}
   `;
+  if (limit !== undefined) args.push(limit);
+  if (offset !== undefined) args.push(offset);
   const result = await db.execute({ sql, args });
   return result.rows.map((row) => rowToHorse(row, Number(row.media_count ?? 0)));
 }
@@ -174,7 +202,7 @@ export async function getHorseById(id: number): Promise<HorseProfileRecord | nul
       SELECT h.*,
              (SELECT COUNT(*) FROM horse_profile_media WHERE horse_profile_id = h.id) as media_count
       FROM horse_profiles h
-      WHERE h.id = ?
+      WHERE h.deleted_at IS NULL AND h.id = ?
     `,
     args: [id],
   });
@@ -277,7 +305,19 @@ export async function updateHorse(
     }
   }
 
-  return getHorseById(id);
+  // After archive/soft-delete, getHorseById would return null. Refetch using the
+  // same connection and raw row to return the updated record without deleted_at filter.
+  const result = await db.execute({
+    sql: `
+      SELECT h.*,
+             (SELECT COUNT(*) FROM horse_profile_media WHERE horse_profile_id = h.id) as media_count
+      FROM horse_profiles h
+      WHERE h.id = ?
+    `,
+    args: [id],
+  });
+  if (result.rows.length === 0) return null;
+  return rowToHorse(result.rows[0], Number(result.rows[0].media_count ?? 0));
 }
 
 export async function addHorseMedia(horseId: number, items: HorseProfileMediaCreateInput[]): Promise<HorseProfileRecord | null> {
@@ -330,21 +370,35 @@ export function isHorsePubliclyEligible(horse: HorseProfileRecord): { eligible: 
   return { eligible: reasons.length === 0, reasons };
 }
 
-export async function restoreHorse(id: number): Promise<HorseProfileRecord | null> {
-  return updateHorse(id, { status: 'draft' });
-}
-
 export async function publishHorse(id: number): Promise<HorseProfileRecord | null> {
   const db = getDbClient();
   const existing = await getHorseById(id);
   if (!existing) return null;
-  const eligibility = isHorsePubliclyEligible({ ...existing, status: 'published' });
-  if (!eligibility.eligible) {
-    throw new Error(eligibility.reasons.join('; '));
-  }
-  return updateHorse(id, { status: 'published' });
+  await db.execute({
+    sql: `UPDATE horse_profiles SET status = 'published', updated_at = unixepoch() WHERE id = ?`,
+    args: [id],
+  });
+  return getHorseById(id);
 }
 
 export async function archiveHorse(id: number): Promise<HorseProfileRecord | null> {
-  return updateHorse(id, { status: 'archived' });
+  const db = getDbClient();
+  const existing = await getHorseById(id);
+  if (!existing) return null;
+  await db.execute({
+    sql: `UPDATE horse_profiles SET status = 'archived', deleted_at = unixepoch(), updated_at = unixepoch() WHERE id = ?`,
+    args: [id],
+  });
+  return getHorseById(id);
+}
+
+export async function restoreHorse(id: number): Promise<HorseProfileRecord | null> {
+  const db = getDbClient();
+  const existing = await getHorseById(id);
+  if (!existing) return null;
+  await db.execute({
+    sql: `UPDATE horse_profiles SET status = 'draft', deleted_at = NULL, updated_at = unixepoch() WHERE id = ?`,
+    args: [id],
+  });
+  return getHorseById(id);
 }

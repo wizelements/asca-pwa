@@ -46,3 +46,11 @@ export function getMediaAssetPublicUrl(id: string, updatedAt?: Date | null): str
   const version = updatedAt ? Math.floor(updatedAt.getTime() / 1000) : Date.now();
   return mediaAssetUrl(id, version);
 }
+
+export async function deleteMediaAsset(id: string): Promise<void> {
+  const db = getDbClient();
+  await db.execute({
+    sql: 'DELETE FROM media_assets WHERE id = ?',
+    args: [id],
+  });
+}

@@ -9,9 +9,10 @@ import type { GalleryImage } from '@/lib/db/queries';
 import { getCachedGalleryImages } from '@/lib/db/queries-cache';
 import { getManagedImage, type SiteImageSlot } from '@/lib/media';
 import { getPublicManagedImages } from '@/lib/public-content';
-import { getPublicAlbums, type AlbumRecord } from '@/lib/gallery/services/albums';
+import { getPublicAlbums, countPublicAlbums, type AlbumRecord } from '@/lib/gallery/services/albums';
 import { getPublicCategories, type ActivityCategoryRecord } from '@/lib/gallery/services/categories';
 import { isPublicPreviewEnabled } from '@/lib/gallery/feature-state';
+import Pagination from '@/components/gallery/Pagination';
 
 export const metadata: Metadata = {
   title: { absolute: 'Photo Gallery | ASCA' },
@@ -28,7 +29,7 @@ const FALLBACK_GALLERY_SLOTS: SiteImageSlot[] = [
 ];
 
 interface GalleryPageProps {
-  searchParams?: Promise<{ category?: string }>;
+  searchParams?: Promise<{ category?: string; page?: string }>;
 }
 
 function groupByCategory<T extends { category?: string }>(items: T[]): Record<string, T[]> {
@@ -154,7 +155,7 @@ function AlbumCard({ album }: { album: AlbumRecord }) {
           height={450}
           className="aspect-[4/3] w-full object-cover transition group-hover:scale-105"
           loading="lazy"
-          unoptimized
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
       ) : (
         <div className="aspect-[4/3] w-full bg-brand-bg-subtle" />
@@ -173,13 +174,16 @@ function AlbumCard({ album }: { album: AlbumRecord }) {
   );
 }
 
-async function NewGallery({ selectedCategory }: { selectedCategory?: string }) {
-  const [images, albums, categories] = await Promise.all([
+async function NewGallery({ selectedCategory, page }: { selectedCategory?: string; page: number }) {
+  const pageSize = 12;
+  const [images, albums, categories, total] = await Promise.all([
     getPublicManagedImages(),
-    selectedCategory ? getPublicAlbums(selectedCategory) : getPublicAlbums(),
+    selectedCategory ? getPublicAlbums(selectedCategory, pageSize, (page - 1) * pageSize) : getPublicAlbums(undefined, pageSize, (page - 1) * pageSize),
     getPublicCategories(),
+    selectedCategory ? countPublicAlbums(selectedCategory) : countPublicAlbums(),
   ]);
   const hero = getManagedImage(images, 'gallery.hero');
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
     <>
@@ -216,6 +220,12 @@ async function NewGallery({ selectedCategory }: { selectedCategory?: string }) {
               No albums yet.
             </div>
           )}
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            baseUrl="/gallery"
+            query={selectedCategory ? { category: selectedCategory } : {}}
+          />
         </div>
       </section>
     </>
@@ -225,12 +235,13 @@ async function NewGallery({ selectedCategory }: { selectedCategory?: string }) {
 export default async function Gallery({ searchParams }: GalleryPageProps) {
   const params = await searchParams ?? {};
   const selectedCategory = params.category;
+  const page = Math.max(1, Number(params.page || '1'));
 
   if (isPublicPreviewEnabled()) {
     return (
       <>
         <Header />
-        <NewGallery selectedCategory={selectedCategory} />
+        <NewGallery selectedCategory={selectedCategory} page={page} />
         <Footer />
       </>
     );
