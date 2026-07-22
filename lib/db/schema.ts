@@ -168,6 +168,7 @@ export const activityAlbums = sqliteTable('activity_albums', {
   privacyReviewStatus: text('privacy_review_status', { enum: ['not_required', 'pending', 'approved', 'restricted'] }).notNull().default('not_required'),
   sortOrder: integer('sort_order').default(0),
   deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
 });
 
