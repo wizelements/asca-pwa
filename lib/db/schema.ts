@@ -142,6 +142,94 @@ export const activities = sqliteTable("activities", {
   timestamp: integer("timestamp", { mode: "timestamp" }).default(sql`(unixepoch())`),
 });
 
+export const activityCategories = sqliteTable('activity_categories', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
+  slug: text('slug').notNull().unique(),
+  description: text('description').default(''),
+  sortOrder: integer('sort_order').default(0),
+  active: integer('active', { mode: 'boolean' }).notNull().default(true),
+  createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+});
+
+export const activityAlbums = sqliteTable('activity_albums', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  title: text('title').notNull(),
+  slug: text('slug').notNull().unique(),
+  categoryId: integer('category_id').notNull().references(() => activityCategories.id),
+  eventId: integer('event_id').references(() => events.id, { onDelete: 'set null' }),
+  activityDate: integer('activity_date', { mode: 'timestamp' }),
+  location: text('location').default(''),
+  summary: text('summary').default(''),
+  coverMediaAssetId: text('cover_media_asset_id').references(() => mediaAssets.id, { onDelete: 'set null' }),
+  featured: integer('featured', { mode: 'boolean' }).notNull().default(false),
+  status: text('status', { enum: ['draft', 'published', 'archived'] }).notNull().default('draft'),
+  privacyReviewStatus: text('privacy_review_status', { enum: ['not_required', 'pending', 'approved', 'restricted'] }).notNull().default('not_required'),
+  sortOrder: integer('sort_order').default(0),
+  deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+});
+
+export const albumMediaAssets = sqliteTable('album_media_assets', {
+  albumId: integer('album_id').notNull().references(() => activityAlbums.id, { onDelete: 'cascade' }),
+  mediaAssetId: text('media_asset_id').notNull().references(() => mediaAssets.id),
+  sortOrder: integer('sort_order').default(0),
+  caption: text('caption').default(''),
+  altText: text('alt_text').notNull().default(''),
+  createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.albumId, table.mediaAssetId] }),
+}));
+
+export const horseProfiles = sqliteTable('horse_profiles', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
+  slug: text('slug').notNull().unique(),
+  description: text('description').default(''),
+  primaryMediaAssetId: text('primary_media_asset_id').references(() => mediaAssets.id, { onDelete: 'set null' }),
+  status: text('status', { enum: ['draft', 'published', 'archived'] }).notNull().default('draft'),
+  sortOrder: integer('sort_order').default(0),
+  deletedAt: integer('deleted_at', { mode: 'timestamp' }),
+  createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+});
+
+export const horseProfileMedia = sqliteTable('horse_profile_media', {
+  horseProfileId: integer('horse_profile_id').notNull().references(() => horseProfiles.id, { onDelete: 'cascade' }),
+  mediaAssetId: text('media_asset_id').notNull().references(() => mediaAssets.id),
+  sortOrder: integer('sort_order').default(0),
+  caption: text('caption').default(''),
+  altText: text('alt_text').notNull().default(''),
+  createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.horseProfileId, table.mediaAssetId] }),
+}));
+
+export const legacyGalleryReview = sqliteTable('legacy_gallery_review', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  legacyGalleryImageId: integer('legacy_gallery_image_id').notNull().unique(),
+  legacyTitle: text('legacy_title').notNull(),
+  legacyCategory: text('legacy_category').notNull(),
+  legacyMediaReference: text('legacy_media_reference').notNull(),
+  proposedDestinationType: text('proposed_destination_type', { enum: ['album', 'horse', 'review', 'skip'] }).notNull(),
+  proposedCategorySlug: text('proposed_category_slug'),
+  proposedAlbumId: integer('proposed_album_id').references(() => activityAlbums.id, { onDelete: 'set null' }),
+  proposedHorseProfileId: integer('proposed_horse_profile_id').references(() => horseProfiles.id, { onDelete: 'set null' }),
+  migrationConfidence: text('migration_confidence', { enum: ['high', 'medium', 'low'] }).notNull(),
+  reviewReason: text('review_reason').notNull(),
+  reviewStatus: text('review_status', { enum: ['pending', 'approved', 'rejected', 'resolved', 'skipped'] }).notNull().default('pending'),
+  privacyReviewStatus: text('privacy_review_status', { enum: ['not_required', 'pending', 'approved', 'restricted'] }).notNull().default('not_required'),
+  notes: text('notes').default(''),
+  createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
+  reviewedAt: integer('reviewed_at', { mode: 'timestamp' }),
+  reviewerId: integer('reviewer_id').references(() => users.id, { onDelete: 'set null' }),
+});
+
 // --- CRM tables ---
 
 export const contacts = sqliteTable("contacts", {

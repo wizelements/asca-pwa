@@ -3,6 +3,7 @@ import { createClient, type Client } from '@libsql/client';
 let client: Client | null = null;
 
 export function getDb(): Client {
+  if ((getDb as any).__testClient) return (getDb as any).__testClient;
   if (client) return client;
 
   const url = process.env.TURSO_DATABASE_URL;

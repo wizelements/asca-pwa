@@ -56,6 +56,9 @@
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    // Playwright is installed and type-checked only in CI; browsers/tooling cannot run in the local ARM64 PRoot.
+    "e2e",
+    "playwright.config.ts"
   ]
 }

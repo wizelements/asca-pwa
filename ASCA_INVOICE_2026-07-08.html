@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASCA Service Agreement & Invoice — cod3black Agency</title>
+  <style>
+    :root {
+      --brand-dark: #1a1a1a;
+      --brand-olive: #4a4b02;
+      --brand-gold: #f5d800;
+      --brand-muted: #6b6b6b;
+      --brand-border: #e3dac9;
+      --brand-bg: #fffdf5;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      background: #f4f1ea;
+      color: var(--brand-dark);
+      margin: 0;
+      padding: 32px 16px;
+      line-height: 1.55;
+    }
+    .page {
+      max-width: 850px;
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid var(--brand-border);
+      padding: 48px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 3px solid var(--brand-gold);
+      padding-bottom: 24px;
+      margin-bottom: 32px;
+    }
+    .brand h1 {
+      font-size: 1.6rem;
+      margin: 0 0 4px;
+      color: var(--brand-dark);
+    }
+    .brand p {
+      margin: 0;
+      color: var(--brand-muted);
+      font-size: 0.95rem;
+    }
+    .doc-meta {
+      text-align: right;
+      font-size: 0.92rem;
+      color: var(--brand-muted);
+    }
+    .doc-meta strong {
+      color: var(--brand-dark);
+      display: block;
+      font-size: 1.05rem;
+      margin-bottom: 4px;
+    }
+    h2 {
+      color: var(--brand-olive);
+      font-size: 1.25rem;
+      margin-top: 32px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--brand-border);
+      padding-bottom: 6px;
+    }
+    h3 {
+      font-size: 1.05rem;
+      margin-top: 24px;
+      margin-bottom: 8px;
+      color: var(--brand-dark);
+    }
+    p, li {
+      font-size: 0.98rem;
+    }
+    ul {
+      margin: 8px 0;
+      padding-left: 24px;
+    }
+    li { margin-bottom: 6px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 24px;
+      font-size: 0.95rem;
+    }
+    th, td {
+      border: 1px solid var(--brand-border);
+      padding: 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--brand-bg);
+      font-weight: 700;
+    }
+    .total-row td {
+      font-weight: 700;
+      background: var(--brand-bg);
+    }
+    .highlight {
+      background: #fffbe6;
+      border-left: 4px solid var(--brand-gold);
+      padding: 16px 18px;
+      margin: 20px 0;
+    }
+    .terms {
+      background: #faf9f6;
+      border: 1px solid var(--brand-border);
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 6px;
+    }
+    .signature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      margin-top: 40px;
+    }
+    .signature-block {
+      border-top: 1px solid var(--brand-dark);
+      padding-top: 8px;
+      margin-top: 48px;
+    }
+    .signature-block strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+    .note {
+      font-size: 0.9rem;
+      color: var(--brand-muted);
+      margin-top: 8px;
+    }
+    .stamp {
+      display: inline-block;
+      background: var(--brand-dark);
+      color: var(--brand-gold);
+      padding: 4px 12px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .page { box-shadow: none; border: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="brand">
+        <h1>cod3black Agency</h1>
+        <p>Service Agreement & Invoice</p>
+      </div>
+      <div class="doc-meta">
+        <strong>ASCA PWA — Atlanta Saddle Club Association</strong>
+        Date: July 8, 2026<br />
+        Site: https://asca-pwa.vercel.app
+      </div>
+    </header>
+
+    <section>
+      <h2>1. What’s Included</h2>
+      <p>
+        cod3black Agency will host and maintain the ASCA Progressive Web App
+        currently deployed at <strong>https://asca-pwa.vercel.app</strong>.
+        The site will be moved from its current GoDaddy hosting/setup to Vercel
+        under the agreed domain arrangement.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Details</th>
+            <th style="text-align:right;">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Hosting & deployment monitoring</td>
+            <td>Vercel hosting, SSL, domain routing, uptime checks</td>
+            <td style="text-align:right;">$20.00/mo</td>
+          </tr>
+          <tr>
+            <td>Admin dashboard access</td>
+            <td>Events, members, CRM contacts, gallery, forms, settings, backup export</td>
+            <td style="text-align:right;">Included</td>
+          </tr>
+          <tr>
+            <td>Admin setup fee</td>
+            <td>One-time onboarding and configuration</td>
+            <td style="text-align:right;"><strong>Waived</strong></td>
+          </tr>
+          <tr class="total-row">
+            <td colspan="2"><strong>Monthly total</strong></td>
+            <td style="text-align:right;"><strong>$20.00/mo</strong></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="highlight">
+        <span class="stamp">NOTE</span>
+        <p>
+          The base $20/month plan covers hosting and the existing admin features
+          in the current codebase. It does <strong>not</strong> include major new
+          feature development, custom code work, image-storage migration, email
+          campaigns, or hands-on monthly content updates beyond hosting-level
+          maintenance.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <h2>2. Optional: Use on Your Own Domain (Platform License)</h2>
+      <p>
+        If ASCA wants the site served on its own custom domain while continuing to
+        use the cod3black-built platform, the following licensing fee applies:
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Option</th>
+            <th>Description</th>
+            <th style="text-align:right;">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Platform license on client domain</td>
+            <td>Run the site on ASCA’s own domain, managed by cod3black</td>
+            <td style="text-align:right;"><strong>$50.00/mo</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>3. Optional: Full Ownership of Code & Platform</h2>
+      <p>
+        If ASCA wants to fully own the codebase, domain, deployment account, and
+        all related assets:
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Details</th>
+            <th style="text-align:right;">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Full ownership buyout</td>
+            <td>Transfer of code repository, domain, Vercel project, and all assets</td>
+            <td style="text-align:right;"><strong>$1,000.00</strong></td>
+          </tr>
+          <tr>
+            <td>Handoff / bug-free guarantee work</td>
+            <td>
+              cod3black will work at <strong>$65/hour</strong> until the project is
+              bug-free and fully manageable by the client
+            </td>
+            <td style="text-align:right;">$65.00/hr</td>
+          </tr>
+          <tr>
+            <td>Ongoing updates & maintenance (optional)</td>
+            <td>
+              After handoff, ASCA may hire cod3black for updates and maintenance at
+              the same hourly rate
+            </td>
+            <td style="text-align:right;">$65.00/hr</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>4. What’s Not Included</h2>
+      <ul>
+        <li>Domain registration or renewal fees (billed at cost).</li>
+        <li>Vercel Pro, Turso database overages, Resend email overages, or future image-CDN costs (billed at cost).</li>
+        <li>Major new features: newsletter campaigns, payment/membership integration, custom admin roles, public member directory, image-storage migration, etc. These are quoted separately.</li>
+        <li>Monthly content entry, gallery cleanup, or event updates beyond hosting-level support.</li>
+        <li>Raw photo backup storage. Only web-optimized images displayed on the site are included.</li>
+      </ul>
+    </section>
+
+    <section class="terms">
+      <h2>5. Agreement Terms</h2>
+      <p>
+        <strong>Website-ready optimized photos only.</strong> Client-supplied images
+        must be web-optimized JPG/PNG/WebP. Raw camera files, PSDs, video, or
+        print-resolution assets are not included. The agency may recompress or
+        resize images for performance.
+      </p>
+      <p>
+        <strong>Raw photo backup storage is not included.</strong> The monthly fee
+        covers live, admin-managed images displayed on the site. Offline backups
+        of original files are the client’s responsibility unless a separate backup
+        add-on is purchased.
+      </p>
+      <p>
+        <strong>Third-party platform fees pass through at cost.</strong> Domain
+        registration, Vercel Pro (if needed), Turso database overages, Resend email
+        volume, and any future image CDN or payment-processor fees are billed to
+        the client at actual cost.
+      </p>
+      <p>
+        <strong>Major new features are quoted separately.</strong> Anything not
+        included above — such as newsletter campaigns, payment/membership
+        integration, custom admin roles, public member directory, push
+        notifications, or migration to object storage — will be quoted before
+        work begins.
+      </p>
+      <p>
+        <strong>Billing.</strong> Service is billed monthly in advance. The first
+        month is due upon signing. Cancellation requires 30 days written notice.
+      </p>
+    </section>
+
+    <section>
+      <h2>6. Authorization</h2>
+      <p>
+        By signing below, the Client agrees to the terms above and authorizes
+        cod3black Agency to proceed with the selected arrangement.
+      </p>
+      <div class="signature-grid">
+        <div>
+          <div class="signature-block">
+            <strong>Client — Atlanta Saddle Club Association</strong>
+            <p class="note">Signature &nbsp;&nbsp;&nbsp;&nbsp; Date</p>
+            <p class="note">Print Name: _______________________________</p>
+            <p class="note">Title: ____________________________________</p>
+          </div>
+        </div>
+        <div>
+          <div class="signature-block">
+            <strong>cod3black Agency</strong>
+            <p class="note">Signature &nbsp;&nbsp;&nbsp;&nbsp; Date</p>
+            <p class="note">Print Name: _______________________________</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>7. Client Selection (check one)</h2>
+      <ul style="list-style: none; padding-left: 0;">
+        <li>☐ <strong>$20/month</strong> — Vercel hosting on cod3black-managed domain</li>
+        <li>☐ <strong>$50/month</strong> — Platform license on ASCA’s own domain</li>
+        <li>☐ <strong>$1,000 + $65/hr</strong> — Full ownership buyout with handoff support</li>
+      </ul>
+    </section>
+
+    <footer style="margin-top: 48px; border-top: 1px solid var(--brand-border); padding-top: 16px; font-size: 0.85rem; color: var(--brand-muted);">
+      Prepared by cod3black Agency for Atlanta Saddle Club Association.<br />
+      Questions: contact your cod3black representative.
+    </footer>
+  </div>
+</body>
+</html>
