@@ -5,6 +5,7 @@ import Footer from '@/components/Footer';
 import { getAlbumDetailBySlug, isAlbumPubliclyEligible } from '@/lib/gallery/services/albums';
 import { isPublicPreviewEnabled } from '@/lib/gallery/feature-state';
 import AlbumDetailClient from './AlbumDetailClient';
+import Breadcrumbs from '@/components/gallery/Breadcrumbs';
 
 interface AlbumDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -35,7 +36,10 @@ export default async function AlbumDetailPage({ params }: AlbumDetailPageProps) 
   return (
     <>
       <Header />
-      <AlbumDetailClient album={album} />
+      <AlbumDetailClient
+        album={album}
+        breadcrumbs={<Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Gallery', href: '/gallery' }, { label: album.title }]} />}
+      />
       <Footer />
     </>
   );

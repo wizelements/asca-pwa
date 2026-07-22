@@ -9,6 +9,8 @@
     "lint": "eslint . --ext ts,tsx",
     "type-check": "tsc --noEmit",
     "test": "node tests/run.mjs",
+    "test:e2e": "playwright test",
+    "perf:baseline": "node scripts/perf-baseline.mjs",
     "test:api": "node --experimental-strip-types --import ./tests/register.mjs tests/gallery/api.test.mjs",
     "db:check": "drizzle-kit check --config=drizzle.config.ts",
     "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
@@ -39,6 +41,7 @@
     "zod": "^3.22.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.54.1",
     "@types/node": "^20.10.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",

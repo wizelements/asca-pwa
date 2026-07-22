@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { getAdminToken, logout } from '@/components/AdminGuard';
 import AdminShell from '@/components/admin/AdminShell';
+import AdminEmptyState from '@/components/admin/AdminEmptyState';
+import { useToast } from '@/components/admin/ToastProvider';
 
 interface Category {
   id: number;
@@ -14,6 +16,7 @@ interface Category {
 }
 
 export default function AdminCategoriesPage() {
+  const { toast } = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -40,7 +43,7 @@ export default function AdminCategoriesPage() {
     }
   };
 
-  const toggle = async (id: number, active: boolean) => {
+  const toggle = async (id: number, active: boolean): Promise<void> => {
     const res = await fetch('/api/gallery/categories', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
@@ -48,10 +51,13 @@ export default function AdminCategoriesPage() {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      alert(err.error || 'Update failed');
+      toast.error(err.error || 'Update failed');
       return;
     }
-    fetchCategories();
+    await fetchCategories();
+    toast.success(active ? 'Category activated.' : 'Category deactivated.', {
+      action: { label: 'Undo', onClick: () => void toggle(id, !active) },
+    });
   };
 
   return (
@@ -89,6 +95,13 @@ export default function AdminCategoriesPage() {
               ))}
             </tbody>
           </table>
+          {categories.length === 0 && (
+            <AdminEmptyState
+              title="No categories yet"
+              description="Categories will appear here once they have been created."
+              illustration="generic"
+            />
+          )}
         </div>
       )}
     </AdminShell>

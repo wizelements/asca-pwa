@@ -6,8 +6,10 @@ import { getAdminToken, logout } from '@/components/AdminGuard';
 import AdminShell from '@/components/admin/AdminShell';
 import AdminImageField from '@/components/AdminImageField';
 import MediaManager, { type ManagedMediaItem } from '@/components/gallery/MediaManager';
+import { useToast } from '@/components/admin/ToastProvider';
 
 export default function AdminHorseEditPage() {
+  const { toast } = useToast();
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
@@ -24,7 +26,6 @@ export default function AdminHorseEditPage() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!isNew);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
 
   useEffect(() => {
     if (!isNew) fetchHorse();
@@ -105,7 +106,9 @@ export default function AdminHorseEditPage() {
 
     if (errors.length > 0) {
       await Promise.all(uploaded.map((m) => deleteMediaAsset(m.mediaAssetId)));
-      throw new Error(errors.join('; '));
+      throw new Error(
+        `Image upload failed: ${errors.join('; ')}${uploaded.length > 0 ? ' Successful parallel uploads were rolled back.' : ''}`
+      );
     }
 
     return uploaded;
@@ -115,7 +118,6 @@ export default function AdminHorseEditPage() {
     e.preventDefault();
     setSaving(true);
     setError('');
-    setMessage('');
 
     try {
       const uploaded = await uploadNewMedia();
@@ -159,9 +161,13 @@ export default function AdminHorseEditPage() {
         });
         const pubResult = await pubRes.json();
         if (!pubRes.ok) throw new Error(pubResult.error || 'Publish failed');
-        setMessage('Horse profile saved and published.');
+        toast.success(uploaded.length > 0
+          ? `Horse profile saved and published with ${uploaded.length} new ${uploaded.length === 1 ? 'image' : 'images'}.`
+          : 'Horse profile saved and published.');
       } else {
-        setMessage('Horse profile saved.');
+        toast.success(uploaded.length > 0
+          ? `Horse profile saved with ${uploaded.length} new ${uploaded.length === 1 ? 'image' : 'images'}.`
+          : isNew ? 'Horse profile created.' : 'Horse profile saved.');
       }
 
       if (isNew) router.push(`/admin/horses/${result.id}`);
@@ -170,7 +176,7 @@ export default function AdminHorseEditPage() {
         setMedia(allMedia);
       }
     } catch (err: any) {
-      setError(err.message || 'Save failed');
+      toast.error(err.message || 'Save failed');
     } finally {
       setSaving(false);
     }
@@ -180,7 +186,6 @@ export default function AdminHorseEditPage() {
 
   return (
     <AdminShell pageTitle={isNew ? 'Create Horse Profile' : 'Edit Horse Profile'}>
-      {message && <p className="mb-4 rounded-md bg-green-100 p-3 text-green-800">{message}</p>}
       {error && <p className="mb-4 rounded-md bg-red-100 p-3 text-red-800">{error}</p>}
       <form onSubmit={(e) => handleSubmit(e, false)} className="max-w-3xl space-y-5">
         <div>

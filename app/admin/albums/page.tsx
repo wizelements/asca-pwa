@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { getAdminToken, logout } from '@/components/AdminGuard';
 import AdminShell from '@/components/admin/AdminShell';
 import AdminPagination from '@/components/admin/AdminPagination';
+import AdminEmptyState from '@/components/admin/AdminEmptyState';
+import { useToast } from '@/components/admin/ToastProvider';
 
 interface Album {
   id: number;
@@ -22,6 +24,7 @@ interface Album {
 const PAGE_SIZE = 20;
 
 export default function AdminAlbumsPage() {
+  const { toast } = useToast();
   const [albums, setAlbums] = useState<Album[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -65,24 +68,45 @@ export default function AdminAlbumsPage() {
     }
   };
 
-  const action = async (id: number, actionName: string, extra?: any) => {
-    const token = getAdminToken();
-    const body: any = { id, action: actionName };
-    if (extra) Object.assign(body, extra);
-    const res = await fetch('/api/gallery/albums', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token ? `Bearer ${token}` : '',
-      },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      setError(err.error || 'Action failed');
-      return;
+  const action = async (id: number, actionName: string, extra?: Record<string, unknown>) => {
+    try {
+      const token = getAdminToken();
+      const body: Record<string, unknown> = { id, action: actionName, ...extra };
+      const res = await fetch('/api/gallery/albums', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token ? `Bearer ${token}` : '',
+        },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast.error(typeof err.error === 'string' ? err.error : 'Action failed');
+        return;
+      }
+
+      const labels: Record<string, string> = {
+        publish: 'Album published',
+        archive: 'Album archived',
+        restore: 'Album restored',
+        feature: 'Album featured',
+        unfeature: 'Album unfeatured',
+      };
+      const reverseActions: Record<string, string> = {
+        archive: 'restore',
+        restore: 'archive',
+        feature: 'unfeature',
+        unfeature: 'feature',
+      };
+      const reverseAction = reverseActions[actionName];
+      toast.success(labels[actionName] || 'Album updated', reverseAction ? {
+        action: { label: 'Undo', onClick: () => void action(id, reverseAction) },
+      } : undefined);
+      void fetchAlbums(page, statusFilter);
+    } catch {
+      toast.error('Action failed');
     }
-    fetchAlbums(page, statusFilter);
   };
 
   return (
@@ -133,7 +157,14 @@ export default function AdminAlbumsPage() {
                   <td className="px-4 py-3">{album.mediaCount}</td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-2">
-                      {album.status !== 'published' && (
+                      {album.status === 'archived' ? (
+                        <button
+                          onClick={() => action(album.id, 'restore')}
+                          className="rounded-md bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800 hover:bg-amber-200"
+                        >
+                          Restore
+                        </button>
+                      ) : album.status !== 'published' && (
                         <button
                           onClick={() => action(album.id, 'publish')}
                           className="rounded-md bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 hover:bg-green-200"
@@ -171,9 +202,21 @@ export default function AdminAlbumsPage() {
             </tbody>
           </table>
           {albums.length === 0 && (
-            <div className="p-8 text-center text-admin-fg-muted">
-              No albums found. <Link href="/admin/albums/new" className="text-brand-forest hover:underline">Create one</Link>.
-            </div>
+            statusFilter ? (
+              <AdminEmptyState
+                illustration="search"
+                title="No albums match this filter"
+                description="Try viewing albums with a different status."
+                secondaryAction={{ label: 'Clear filter', onClick: () => setStatusFilter('') }}
+              />
+            ) : (
+              <AdminEmptyState
+                illustration="albums"
+                title="No albums yet"
+                description="Create your first album to start organizing gallery images."
+                action={{ label: 'Create album', href: '/admin/albums/new' }}
+              />
+            )
           )}
         </div>
       )}

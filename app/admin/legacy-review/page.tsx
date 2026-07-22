@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { getAdminToken, logout } from '@/components/AdminGuard';
 import AdminShell from '@/components/admin/AdminShell';
+import { useToast } from '@/components/admin/ToastProvider';
 
 interface ReviewRecord {
   id: number;
@@ -18,6 +19,7 @@ interface ReviewRecord {
 }
 
 export default function AdminLegacyReviewPage() {
+  const { toast } = useToast();
   const [records, setRecords] = useState<ReviewRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -54,10 +56,18 @@ export default function AdminLegacyReviewPage() {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      alert(err.error || 'Action failed');
+      toast.error(err.error || 'Action failed');
       return;
     }
-    fetchRecords();
+    await fetchRecords();
+    const message = actionName === 'skip'
+      ? 'Review record skipped.'
+      : extra?.privacyReviewStatus === 'approved'
+        ? 'Privacy review approved.'
+        : extra?.privacyReviewStatus === 'restricted'
+          ? 'Record marked as restricted.'
+          : 'Review record updated.';
+    toast.success(message);
   };
 
   return (

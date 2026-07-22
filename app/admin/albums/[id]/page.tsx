@@ -6,6 +6,7 @@ import { getAdminToken, logout } from '@/components/AdminGuard';
 import AdminShell from '@/components/admin/AdminShell';
 import AdminImageField from '@/components/AdminImageField';
 import MediaManager, { type ManagedMediaItem } from '@/components/gallery/MediaManager';
+import { useToast } from '@/components/admin/ToastProvider';
 
 interface Category {
   id: number;
@@ -21,6 +22,7 @@ interface EventOption {
 export default function AdminAlbumEditPage() {
   const params = useParams();
   const router = useRouter();
+  const { toast } = useToast();
   const id = params.id as string;
   const isNew = id === 'new';
 
@@ -43,7 +45,6 @@ export default function AdminAlbumEditPage() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!isNew);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
 
   useEffect(() => {
     fetchCategories();
@@ -160,8 +161,6 @@ export default function AdminAlbumEditPage() {
   const handleSubmit = async (e: React.FormEvent, publish = false) => {
     e.preventDefault();
     setSaving(true);
-    setError('');
-    setMessage('');
 
     try {
       const uploaded = await uploadNewMedia();
@@ -211,10 +210,12 @@ export default function AdminAlbumEditPage() {
         const pubResult = await pubRes.json();
         if (!pubRes.ok) throw new Error(pubResult.error || 'Publish failed');
         setStatus('published');
-        setMessage('Album saved and published.');
-      } else {
-        setMessage('Album saved.');
       }
+
+      if (uploaded.length > 0) {
+        toast.success(`${uploaded.length} ${uploaded.length === 1 ? 'image' : 'images'} uploaded`);
+      }
+      toast.success(isNew ? 'Album created' : 'Album saved');
 
       if (isNew) router.push(`/admin/albums/${result.slug}`);
       else {
@@ -222,7 +223,13 @@ export default function AdminAlbumEditPage() {
         setMedia(allMedia);
       }
     } catch (err: any) {
-      setError(err.message || 'Save failed');
+      const message = err.message || 'Save failed';
+      const failedUploads = message.split('; ').filter(Boolean).length;
+      if (message.startsWith('Image ')) {
+        toast.error(`${failedUploads} ${failedUploads === 1 ? 'upload' : 'uploads'} failed — no changes were saved`);
+      } else {
+        toast.error(message);
+      }
     } finally {
       setSaving(false);
     }
@@ -232,7 +239,6 @@ export default function AdminAlbumEditPage() {
 
   return (
     <AdminShell pageTitle={isNew ? 'Create Album' : 'Edit Album'}>
-      {message && <p className="mb-4 rounded-md bg-green-100 p-3 text-green-800">{message}</p>}
       {error && <p className="mb-4 rounded-md bg-red-100 p-3 text-red-800">{error}</p>}
       <form onSubmit={(e) => handleSubmit(e, false)} className="max-w-3xl space-y-5">
         <div>

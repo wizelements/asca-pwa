@@ -13,6 +13,8 @@ import { getPublicAlbums, countPublicAlbums, type AlbumRecord } from '@/lib/gall
 import { getPublicCategories, type ActivityCategoryRecord } from '@/lib/gallery/services/categories';
 import { isPublicPreviewEnabled } from '@/lib/gallery/feature-state';
 import Pagination from '@/components/gallery/Pagination';
+import Breadcrumbs from '@/components/gallery/Breadcrumbs';
+import PublicEmptyState from '@/components/gallery/PublicEmptyState';
 
 export const metadata: Metadata = {
   title: { absolute: 'Photo Gallery | ASCA' },
@@ -95,6 +97,7 @@ function LegacyGallery({
 
       <section className="bg-brand-bg-subtle py-20">
         <div className="container">
+          <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Gallery' }]} />
           <div className="text-center">
             <p className="section-label">{selectedCategory ? selectedCategory : 'Gallery'}</p>
             <h2 className="section-title">
@@ -129,9 +132,11 @@ function LegacyGallery({
                   ))}
                 </div>
               ) : (
-                <div className="rounded-xl border border-brand-border-subtle bg-brand-bg-elevated p-8 text-center text-brand-fg-muted">
-                  No photos in this category yet. Visit the admin gallery to add some.
-                </div>
+                <PublicEmptyState
+                  title="No photos here yet"
+                  description="More moments from the ASCA community will be added soon."
+                  action={{ label: 'Back to home', href: '/' }}
+                />
               )}
             </div>
           ))}
@@ -145,7 +150,7 @@ function AlbumCard({ album }: { album: AlbumRecord }) {
   return (
     <Link
       href={`/gallery/${album.slug}`}
-      className="group block overflow-hidden rounded-xl bg-brand-bg-elevated shadow-sm transition hover:shadow-md"
+      className="group block overflow-hidden rounded-xl bg-brand-bg-elevated shadow-sm transition hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-forest focus-visible:ring-offset-2 motion-reduce:transition-none"
     >
       {album.coverUrl ? (
         <Image
@@ -153,7 +158,7 @@ function AlbumCard({ album }: { album: AlbumRecord }) {
           alt={album.title}
           width={600}
           height={450}
-          className="aspect-[4/3] w-full object-cover transition group-hover:scale-105"
+          className="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none"
           loading="lazy"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
@@ -191,6 +196,7 @@ async function NewGallery({ selectedCategory, page }: { selectedCategory?: strin
 
       <section className="bg-brand-bg-subtle py-20">
         <div className="container">
+          <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Gallery' }]} />
           <div className="mb-8 flex flex-wrap items-center gap-3">
             <Link
               href="/gallery"
@@ -216,9 +222,11 @@ async function NewGallery({ selectedCategory, page }: { selectedCategory?: strin
               ))}
             </div>
           ) : (
-            <div className="rounded-xl border border-brand-border-subtle bg-brand-bg-elevated p-8 text-center text-brand-fg-muted">
-              No albums yet.
-            </div>
+            <PublicEmptyState
+              title="No albums yet"
+              description="New albums from ASCA events and activities will appear here."
+              action={{ label: 'Back to home', href: '/' }}
+            />
           )}
           <Pagination
             currentPage={page}

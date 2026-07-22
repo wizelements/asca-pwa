@@ -1,0 +1,37 @@
+name: End-to-end tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  playwright:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TURSO_DATABASE_URL: file:e2e.db
+      TURSO_AUTH_TOKEN: ''
+      NEXTAUTH_URL: http://127.0.0.1:3000
+      NEXTAUTH_SECRET: e2e-only-not-a-production-secret
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+      GALLERY_FEATURE_STAGE: public-preview
+      # Repository secrets checklist: none are required for the local libSQL E2E suite.
+      # Add RESEND_API_KEY only if future E2E tests exercise real email delivery.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      # This repository's committed deterministic lockfile is pnpm-lock.yaml; npm ci
+      # cannot run without a package-lock.json. Keep CI aligned with that lockfile.
+      - run: pnpm install --frozen-lockfile
+      - name: Create and migrate local libSQL database
+        run: pnpm db:migrate
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Type-check Playwright specs separately
+        run: pnpm exec tsc --noEmit --strict --module ESNext --moduleResolution bundler --target ES2020 --lib ES2020,DOM e2e/*.ts playwright.config.ts
+      - run: pnpm test:e2e

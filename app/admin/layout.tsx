@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import AdminGuard from "@/components/AdminGuard";
 import AdminShell from "@/components/admin/AdminShell";
+import ToastProvider from "@/components/admin/ToastProvider";
 
 export default function AdminLayout({
   children,
@@ -17,7 +18,9 @@ export default function AdminLayout({
 
   return (
     <AdminGuard requiredRole="editor">
-      <AdminShell activeHref={pathname}>{children}</AdminShell>
+      <ToastProvider>
+        <AdminShell activeHref={pathname}>{children}</AdminShell>
+      </ToastProvider>
     </AdminGuard>
   );
 }

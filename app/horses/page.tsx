@@ -8,6 +8,8 @@ import Pagination from '@/components/gallery/Pagination';
 import { countPublicHorses, getPublicHorses } from '@/lib/gallery/services/horses';
 import { isPublicPreviewEnabled } from '@/lib/gallery/feature-state';
 import { notFound } from 'next/navigation';
+import Breadcrumbs from '@/components/gallery/Breadcrumbs';
+import PublicEmptyState from '@/components/gallery/PublicEmptyState';
 
 interface HorsesPageProps {
   searchParams?: Promise<{ page?: string }>;
@@ -45,13 +47,14 @@ export default async function HorsesPage({ searchParams }: HorsesPageProps) {
         />
         <section className="bg-brand-bg-subtle py-20">
           <div className="container">
+            <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Horses' }]} />
             {horses.length > 0 ? (
               <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
                 {horses.map((horse) => (
                   <Link
                     key={horse.id}
                     href={`/horses/${horse.slug}`}
-                    className="group block overflow-hidden rounded-xl bg-brand-bg-elevated shadow-sm transition hover:shadow-md"
+                    className="group block overflow-hidden rounded-xl bg-brand-bg-elevated shadow-sm transition hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-forest focus-visible:ring-offset-2 motion-reduce:transition-none"
                   >
                     {horse.primaryUrl ? (
                       <Image
@@ -59,7 +62,7 @@ export default async function HorsesPage({ searchParams }: HorsesPageProps) {
                         alt={horse.name}
                         width={600}
                         height={450}
-                        className="aspect-[4/3] w-full object-cover transition group-hover:scale-105"
+                        className="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none"
                         loading="lazy"
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
@@ -74,9 +77,11 @@ export default async function HorsesPage({ searchParams }: HorsesPageProps) {
                 ))}
               </div>
             ) : (
-              <div className="rounded-xl border border-brand-border-subtle bg-brand-bg-elevated p-8 text-center text-brand-fg-muted">
-                No horse profiles published yet.
-              </div>
+              <PublicEmptyState
+                title="No horse profiles yet"
+                description="Check back soon to meet the horses at the heart of ASCA."
+                action={{ label: 'Back to home', href: '/' }}
+              />
             )}
             <Pagination currentPage={page} totalPages={totalPages} baseUrl="/horses" />
           </div>

@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { getAdminToken, logout } from '@/components/AdminGuard';
 import AdminShell from '@/components/admin/AdminShell';
 import AdminPagination from '@/components/admin/AdminPagination';
+import AdminEmptyState from '@/components/admin/AdminEmptyState';
+import { useToast } from '@/components/admin/ToastProvider';
 
 interface Horse {
   id: number;
@@ -19,6 +21,7 @@ interface Horse {
 const PAGE_SIZE = 20;
 
 export default function AdminHorsesPage() {
+  const { toast } = useToast();
   const [horses, setHorses] = useState<Horse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -59,7 +62,7 @@ export default function AdminHorsesPage() {
     }
   };
 
-  const action = async (id: number, actionName: string) => {
+  const action = async (id: number, actionName: string, showUndo = true): Promise<void> => {
     const token = getAdminToken();
     const res = await fetch('/api/gallery/horses', {
       method: 'PUT',
@@ -71,10 +74,19 @@ export default function AdminHorsesPage() {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      setError(err.error || 'Action failed');
+      toast.error(err.error || 'Action failed');
       return;
     }
-    fetchHorses(page, statusFilter);
+    await fetchHorses(page, statusFilter);
+    const messages: Record<string, string> = {
+      publish: 'Horse profile published.',
+      archive: 'Horse profile archived.',
+      restore: 'Horse profile restored.',
+    };
+    const reverseAction = actionName === 'archive' ? 'restore' : actionName === 'restore' ? 'archive' : null;
+    toast.success(messages[actionName] || 'Horse profile updated.', reverseAction && showUndo ? {
+      action: { label: 'Undo', onClick: () => void action(id, reverseAction, false) },
+    } : undefined);
   };
 
   return (
@@ -133,6 +145,14 @@ export default function AdminHorsesPage() {
                           Archive
                         </button>
                       )}
+                      {horse.status === 'archived' && (
+                        <button
+                          onClick={() => action(horse.id, 'restore')}
+                          className="rounded-md bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-800 hover:bg-blue-200"
+                        >
+                          Restore
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -140,9 +160,21 @@ export default function AdminHorsesPage() {
             </tbody>
           </table>
           {horses.length === 0 && (
-            <div className="p-8 text-center text-admin-fg-muted">
-              No horse profiles found. <Link href="/admin/horses/new" className="text-brand-forest hover:underline">Create one</Link>.
-            </div>
+            statusFilter ? (
+              <AdminEmptyState
+                title="No horse profiles match this filter"
+                description="Try another status or clear the filter to see all horse profiles."
+                illustration="search"
+                action={{ label: 'Clear filter', onClick: () => setStatusFilter('') }}
+              />
+            ) : (
+              <AdminEmptyState
+                title="No horse profiles yet"
+                description="Create the first horse profile to get started."
+                illustration="horses"
+                action={{ label: 'Create horse profile', href: '/admin/horses/new' }}
+              />
+            )
           )}
         </div>
       )}

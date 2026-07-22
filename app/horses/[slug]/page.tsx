@@ -5,6 +5,7 @@ import Footer from '@/components/Footer';
 import { getHorseDetailBySlug, isHorsePubliclyEligible } from '@/lib/gallery/services/horses';
 import { isPublicPreviewEnabled } from '@/lib/gallery/feature-state';
 import HorseDetailClient from './HorseDetailClient';
+import Breadcrumbs from '@/components/gallery/Breadcrumbs';
 
 interface HorseDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -35,7 +36,10 @@ export default async function HorseDetailPage({ params }: HorseDetailPageProps) 
   return (
     <>
       <Header />
-      <HorseDetailClient horse={horse} />
+      <HorseDetailClient
+        horse={horse}
+        breadcrumbs={<Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Horses', href: '/horses' }, { label: horse.name }]} />}
+      />
       <Footer />
     </>
   );

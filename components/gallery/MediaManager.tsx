@@ -19,6 +19,11 @@ interface MediaManagerProps {
   maxItems?: number;
 }
 
+interface DropTarget {
+  index: number;
+  position: 'above' | 'below';
+}
+
 export default function MediaManager({
   media,
   coverId,
@@ -28,9 +33,11 @@ export default function MediaManager({
   maxItems,
 }: MediaManagerProps) {
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<DropTarget | null>(null);
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
   const liveRef = useRef<HTMLDivElement>(null);
   const focusRef = useRef<string | null>(null);
+  const dragHandleRef = useRef<string | null>(null);
 
   const announce = useCallback((message: string) => {
     if (liveRef.current) {
@@ -67,6 +74,27 @@ export default function MediaManager({
     [media, onChange, announce]
   );
 
+  const clearDragState = useCallback(() => {
+    setDraggingId(null);
+    setDropTarget(null);
+    dragHandleRef.current = null;
+  }, []);
+
+  const drop = useCallback(() => {
+    if (!draggingId || !dropTarget) {
+      clearDragState();
+      return;
+    }
+
+    const fromIndex = media.findIndex((m) => m.mediaAssetId === draggingId);
+    if (fromIndex !== -1) {
+      const insertionIndex = dropTarget.index + (dropTarget.position === 'below' ? 1 : 0);
+      const toIndex = insertionIndex - (fromIndex < insertionIndex ? 1 : 0);
+      reorder(fromIndex, toIndex);
+    }
+    clearDragState();
+  }, [draggingId, dropTarget, media, reorder, clearDragState]);
+
   const remove = useCallback(
     (id: string) => {
       const index = media.findIndex((m) => m.mediaAssetId === id);
@@ -90,38 +118,72 @@ export default function MediaManager({
       {maxItems && media.length >= maxItems && (
         <p className="text-sm text-admin-fg-muted">Maximum {maxItems} images reached.</p>
       )}
-      <ul className="divide-y divide-admin-border-subtle rounded-lg border border-admin-border-subtle bg-admin-surface">
+      <ul
+        className="divide-y divide-admin-border-subtle rounded-lg border border-admin-border-subtle bg-admin-surface"
+        onDragLeave={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) clearDragState();
+        }}
+      >
         {media.map((item, index) => (
           <li
             key={item.mediaAssetId}
             id={`media-row-${item.mediaAssetId}`}
             tabIndex={-1}
             draggable
-            onDragStart={() => setDraggingId(item.mediaAssetId)}
+            onDragStart={(e) => {
+              if (dragHandleRef.current !== item.mediaAssetId) {
+                e.preventDefault();
+                return;
+              }
+              setDraggingId(item.mediaAssetId);
+              e.dataTransfer.effectAllowed = 'move';
+              const thumbnail = e.currentTarget.querySelector('img');
+              if (thumbnail) e.dataTransfer.setDragImage(thumbnail, 40, 40);
+            }}
             onDragOver={(e) => {
               e.preventDefault();
-              if (draggingId && draggingId !== item.mediaAssetId) {
-                const dragIndex = media.findIndex((m) => m.mediaAssetId === draggingId);
-                if (dragIndex !== -1) {
-                  const next = [...media];
-                  const [moved] = next.splice(dragIndex, 1);
-                  next.splice(index, 0, moved);
-                  onChange(next.map((m, i) => ({ ...m, sortOrder: i * 10 })));
-                }
-              }
+              e.dataTransfer.dropEffect = 'move';
+              const bounds = e.currentTarget.getBoundingClientRect();
+              const position = e.clientY < bounds.top + bounds.height / 2 ? 'above' : 'below';
+              setDropTarget((current) =>
+                current?.index === index && current.position === position ? current : { index, position }
+              );
             }}
-            onDragEnd={() => {
-              setDraggingId(null);
-              announce(`Image dropped at position ${index + 1}`);
+            onDrop={(e) => {
+              e.preventDefault();
+              drop();
             }}
-            className={`flex flex-col gap-3 p-4 transition ${draggingId === item.mediaAssetId ? 'opacity-50' : 'opacity-100'}`}
+            onDragEnd={clearDragState}
+            className={`relative flex flex-col gap-3 p-4 transition hover:bg-admin-bg-subtle ${draggingId === item.mediaAssetId ? 'opacity-50 ring-2 ring-inset ring-brand-forest' : 'opacity-100'}`}
           >
+            {dropTarget?.index === index && dropTarget.position === 'above' && (
+              <span className="pointer-events-none absolute inset-x-0 top-0 z-10 h-0.5 bg-brand-forest" />
+            )}
             <div className="flex items-start gap-4">
-              <img
-                src={item.url}
-                alt={item.altText}
-                className="h-20 w-20 flex-shrink-0 rounded-md object-cover"
-              />
+              <button
+                type="button"
+                tabIndex={-1}
+                aria-hidden="true"
+                onPointerDown={() => {
+                  dragHandleRef.current = item.mediaAssetId;
+                }}
+                onPointerUp={() => {
+                  if (!draggingId) dragHandleRef.current = null;
+                }}
+                className="mt-7 cursor-grab rounded p-1 text-lg text-admin-fg-muted hover:bg-admin-border-subtle active:cursor-grabbing"
+              >
+                ⠿
+              </button>
+              <div className="relative flex-shrink-0">
+                <img
+                  src={item.url}
+                  alt={item.altText}
+                  className="h-20 w-20 rounded-md object-cover"
+                />
+                <span className="absolute bottom-1 right-1 rounded bg-brand-forest px-1.5 py-0.5 text-xs font-medium text-white">
+                  {index + 1}
+                </span>
+              </div>
               <div className="flex-1 space-y-2">
                 <input
                   type="text"
@@ -200,6 +262,9 @@ export default function MediaManager({
                 </button>
               )}
             </div>
+            {dropTarget?.index === index && dropTarget.position === 'below' && (
+              <span className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-0.5 bg-brand-forest" />
+            )}
           </li>
         ))}
       </ul>
