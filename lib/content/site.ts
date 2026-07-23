@@ -14,7 +14,7 @@ export const MEETING = {
 };
 
 export const MEMBERSHIP_APPLICATION_URL =
-  'https://form.jotform.com/TheRealASCA/MembershipApplication';
+  'https://form.jotform.com/261865998664077';
 
 export const SOCIAL_LINKS = {
   facebook: 'https://www.facebook.com/TheRealASCA',
