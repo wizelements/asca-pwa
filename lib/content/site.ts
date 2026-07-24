@@ -19,8 +19,8 @@ export const MEMBERSHIP_APPLICATION_URL =
 export const SOCIAL_LINKS = {
   facebook: 'https://www.facebook.com/TheRealASCA',
   instagram: 'https://www.instagram.com/therealasca/',
-  /** TikTok page — update to the real handle once confirmed. */
-  tiktok: 'https://www.tiktok.com/@therealasca',
+  /** TikTok page — confirmed 2026-07-24. */
+  tiktok: 'https://www.tiktok.com/@asca_2020',
   tiktokComingSoon: false,
 };
 

@@ -11,7 +11,7 @@ export const settings = sqliteTable('settings', {
   phone: text('phone').default('(404) 555-0123'),
   address: text('address').default('Atlanta, Georgia'),
   social: text('social', { mode: 'json' }).notNull().default(
-    sql`'{"facebook":"https://www.facebook.com/TheRealASCA","instagram":"https://www.instagram.com/therealasca/","tiktok":"https://www.tiktok.com/@therealasca"}'`
+    sql`'{"facebook":"https://www.facebook.com/TheRealASCA","instagram":"https://www.instagram.com/therealasca/","tiktok":"https://www.tiktok.com/@asca_2020"}'`
   ),
   venmo: text('venmo', { mode: 'json' }).notNull().default(
     sql`'{"username":"@therealasca1","presets":[10,25,50,100]}'`
