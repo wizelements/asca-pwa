@@ -99,9 +99,9 @@ export default function AdminMediaLibrary() {
     <div className="space-y-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-brand-fg-primary">Media Library</h1>
+          <h1 className="text-4xl font-bold text-brand-fg-primary">Page Images</h1>
           <p className="mt-2 max-w-3xl text-sm text-brand-fg-secondary">
-            Manage images used by page heroes, logos, home sections, member sections, and fallback gallery areas. Gallery collection photos are managed in the Gallery tab.
+            Manage images used by page heroes, home sections, member sections, support, and fallback gallery areas. Header/footer logos are managed in Theme. Gallery collection photos are managed in Gallery.
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -119,7 +119,7 @@ export default function AdminMediaLibrary() {
 
       <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
         <p className="font-semibold">Storage note</p>
-        <p className="mt-1">Uploads are optimized in the browser and saved with the site setting record. Use JPG, PNG, or WebP. For very large photo collections, keep using Gallery records or move to external storage later.</p>
+        <p className="mt-1">Uploads are optimized in the browser and stored separately from page settings so public pages stay lightweight. Use JPG, PNG, or WebP.</p>
       </div>
 
       {message && <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">{message}</div>}

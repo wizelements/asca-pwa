@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { requireAuth } from '@/lib/auth';
 import { getSettings, updateSettings, logActivity } from '@/lib/db/queries';
+import { CACHE_TAG_SETTINGS } from '@/lib/db/queries-cache';
+
+function canWrite(role: string): boolean {
+  return role === 'admin' || role === 'editor';
+}
+
+function forbidden() {
+  return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+}
 
 export async function GET() {
   try {
@@ -18,10 +28,11 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const user = await requireAuth(request);
+    if (!canWrite(user.role)) return forbidden();
     const data = await request.json();
 
     const updated = await updateSettings(data);
-
+    revalidateTag(CACHE_TAG_SETTINGS);
     await logActivity('settings', 'Updated site settings', user.name || user.email);
 
     return NextResponse.json(updated);

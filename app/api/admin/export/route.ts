@@ -10,16 +10,18 @@ import {
   getSettings,
   getTheme,
 } from '@/lib/db/queries';
+import { getMediaAssetsForExport } from '@/lib/media-storage';
 
 export async function GET(request: Request) {
   try {
     const user = await requireAuth(request);
-    const [settings, theme, events, members, galleryImages, formSubmissions, recentActivity] = await Promise.all([
+    const [settings, theme, events, members, galleryImages, mediaAssets, formSubmissions, recentActivity] = await Promise.all([
       getSettings(),
       getTheme(),
       getEvents(),
       getMembers(),
-      getGalleryImages(),
+      getGalleryImages(undefined, undefined, true),
+      getMediaAssetsForExport(),
       getFormSubmissions(),
       getRecentActivity(100),
     ]);
@@ -36,6 +38,7 @@ export async function GET(request: Request) {
         events,
         members,
         galleryImages,
+        mediaAssets,
         formSubmissions,
         recentActivity,
       },

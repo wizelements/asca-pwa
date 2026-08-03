@@ -25,12 +25,11 @@ function serverError(error: unknown) {
   return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
 }
 
-import {
-  getContacts,
-  createContact,
-  type ContactSource,
-  type ContactStatus,
-  type LifecycleStage,
+import { getContacts, createContact } from '@/lib/db/crm-queries';
+import type {
+  ContactSource,
+  ContactStatus,
+  LifecycleStage,
 } from '@/lib/crm/types';
 
 const contactSchema = z.object({
@@ -40,7 +39,7 @@ const contactSchema = z.object({
   organizationName: z.string().optional(),
   email: z.string().email().optional(),
   phone: z.string().optional(),
-  source: z.enum(['contact-form', 'event-updates', 'membership-form', 'volunteer-form', 'manual', 'member-import', 'rsvp']).default('manual'),
+  source: z.enum(['contact-form', 'event-updates', 'membership-form', 'volunteer-form', 'manual', 'member-import', 'rsvp', 'jotform']).default('manual'),
   status: z.enum(['lead', 'subscriber', 'member', 'volunteer', 'sponsor', 'alumni', 'inactive']).default('lead'),
   lifecycleStage: z.enum(['awareness', 'engaged', 'member', 'volunteer', 'advocate', 'inactive']).default('awareness'),
   interests: z.array(z.string()).default([]),

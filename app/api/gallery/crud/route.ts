@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 
 import { requireAuth } from '@/lib/auth';
 import {
@@ -10,6 +11,15 @@ import {
   updateGalleryImage,
   type GalleryImage,
 } from '@/lib/db/queries';
+import { CACHE_TAG_GALLERY } from '@/lib/db/queries-cache';
+
+function canWrite(role: string): boolean {
+  return role === 'admin' || role === 'editor';
+}
+
+function forbidden() {
+  return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -42,6 +52,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const user = await requireAuth(request);
+    if (!canWrite(user.role)) return forbidden();
     const body = await request.json();
 
     if (!body.title || !body.image || !body.alt) {
@@ -58,6 +69,7 @@ export async function POST(request: NextRequest) {
       published: body.published !== false,
     } as Omit<GalleryImage, 'id' | 'uploadedAt'>);
 
+    revalidateTag(CACHE_TAG_GALLERY);
     await logActivity('gallery', `Created gallery image "${image.title}"`, user.name || user.email);
     return NextResponse.json(image, { status: 201 });
   } catch (error: any) {
@@ -72,6 +84,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const user = await requireAuth(request);
+    if (!canWrite(user.role)) return forbidden();
     const body = await request.json();
     const { id, ...updates } = body;
 
@@ -97,6 +110,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Gallery image not found' }, { status: 404 });
     }
 
+    revalidateTag(CACHE_TAG_GALLERY);
     await logActivity('gallery', `Updated gallery image "${image.title}"`, user.name || user.email);
     return NextResponse.json(image);
   } catch (error: any) {
@@ -111,6 +125,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const user = await requireAuth(request);
+    if (!canWrite(user.role)) return forbidden();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 
@@ -124,6 +139,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await deleteGalleryImage(Number(id));
+    revalidateTag(CACHE_TAG_GALLERY);
     await logActivity('gallery', `Deleted gallery image "${image.title}"`, user.name || user.email);
     return NextResponse.json({ success: true, message: 'Gallery image deleted' });
   } catch (error: any) {

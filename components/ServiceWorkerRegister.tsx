@@ -5,13 +5,20 @@ import { useEffect } from 'react';
 export default function ServiceWorkerRegister() {
   useEffect(() => {
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
+      let refreshing = false;
+      const handleControllerChange = () => {
+        if (refreshing) return;
+        refreshing = true;
+        window.location.reload();
+      };
+
+      const registerServiceWorker = () => {
         navigator.serviceWorker
-          .register('/sw.js', { scope: '/' })
+          .register('/sw.js', { scope: '/', updateViaCache: 'none' })
           .then((registration) => {
             console.log('✓ Service Worker registered:', registration);
-            
-            // Check for updates periodically
+
+            registration.update();
             setInterval(() => {
               registration.update();
             }, 60000); // Check every minute
@@ -19,12 +26,16 @@ export default function ServiceWorkerRegister() {
           .catch((error) => {
             console.error('✗ Service Worker registration failed:', error);
           });
-      });
+      };
 
-      // Listen for controller changes
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        console.log('✓ Service Worker updated');
-      });
+      window.addEventListener('load', registerServiceWorker);
+
+      navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+
+      return () => {
+        window.removeEventListener('load', registerServiceWorker);
+        navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
+      };
     }
   }, []);
 

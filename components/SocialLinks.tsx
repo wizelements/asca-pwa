@@ -17,6 +17,12 @@ const instagramIcon = (
   </svg>
 );
 
+const tiktokIcon = (
+  <svg className={iconClass} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93v6.16c0 4.67-4.25 8.83-8.92 8.83-2.29 0-4.39-.87-5.97-2.3a8.39 8.39 0 0 1-2.48-5.93c0-4.67 3.84-8.36 8.55-8.36 1.03 0 2.02.18 2.95.51v3.75a5.74 5.74 0 0 0-3.41-1.12c-3.13 0-5.68 2.55-5.68 5.69 0 3.14 2.55 5.69 5.68 5.69 3.14 0 5.69-2.55 5.69-5.69V.02z" />
+  </svg>
+);
+
 interface SocialLinksProps {
   /** Tailwind text color utility for the icons and label. */
   className?: string;
@@ -31,6 +37,7 @@ export default function SocialLinks({
   const [links, setLinks] = useState({
     facebook: SOCIAL_LINKS.facebook,
     instagram: SOCIAL_LINKS.instagram,
+    tiktok: SOCIAL_LINKS.tiktok,
   });
 
   useEffect(() => {
@@ -42,6 +49,7 @@ export default function SocialLinks({
         setLinks({
           facebook: settings?.social?.facebook || SOCIAL_LINKS.facebook,
           instagram: settings?.social?.instagram || SOCIAL_LINKS.instagram,
+          tiktok: settings?.social?.tiktok || SOCIAL_LINKS.tiktok,
         });
       })
       .catch(() => undefined);
@@ -69,6 +77,15 @@ export default function SocialLinks({
         className="transition-colors hover:text-brand-forest"
       >
         {instagramIcon}
+      </a>
+      <a
+        href={links.tiktok}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="ASCA on TikTok (opens in a new tab)"
+        className="transition-colors hover:text-brand-forest"
+      >
+        {tiktokIcon}
       </a>
       {showTikTokNote && SOCIAL_LINKS.tiktokComingSoon && (
         <span className="text-xs uppercase tracking-[0.18em] text-brand-fg-muted">

@@ -14,13 +14,14 @@ export const MEETING = {
 };
 
 export const MEMBERSHIP_APPLICATION_URL =
-  'https://form.jotform.com/TheRealASCA/MembershipApplication';
+  'https://form.jotform.com/261865998664077';
 
 export const SOCIAL_LINKS = {
   facebook: 'https://www.facebook.com/TheRealASCA',
   instagram: 'https://www.instagram.com/therealasca/',
-  /** TikTok is not live yet — surfaced as "coming soon" text, not a link. */
-  tiktokComingSoon: true,
+  /** TikTok page — confirmed 2026-07-24. */
+  tiktok: 'https://www.tiktok.com/@asca_2020',
+  tiktokComingSoon: false,
 };
 
 export const CONTACT_EMAILS = {
@@ -39,8 +40,9 @@ export const NAV_LINKS = [
   { href: '/about', label: 'About' },
   { href: '/members', label: 'Meet ASCA' },
   { href: '/get-involved', label: 'Get Involved' },
-  { href: '/where-to-find-us', label: 'Where to Find Us' },
+  { href: '/where-to-find-us', label: 'Event Calendar' },
   { href: '/gallery', label: 'Gallery' },
+  { href: '/horses', label: 'Our Horses' },
   { href: '/support-asca', label: 'Support ASCA' },
 ];
 
@@ -50,7 +52,7 @@ export const FOOTER_LINKS = [
   { href: '/about', label: 'About' },
   { href: '/members', label: 'Meet ASCA' },
   { href: '/get-involved', label: 'Get Involved' },
-  { href: '/where-to-find-us', label: 'Where to Find Us' },
+  { href: '/where-to-find-us', label: 'Event Calendar' },
   { href: '/gallery', label: 'Club Activity / Photo Gallery' },
   { href: '/support-asca', label: 'Support ASCA' },
   { href: '/#contact', label: 'Contact' },

@@ -25,7 +25,8 @@ function serverError(error: unknown) {
   return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
 }
 
-import { getTasks, type TaskStatus, type TaskPriority } from '@/lib/db/crm-queries';
+import { getTasks } from '@/lib/db/crm-queries';
+import type { TaskStatus, TaskPriority } from '@/lib/crm/types';
 
 export async function GET(req: NextRequest) {
   try {

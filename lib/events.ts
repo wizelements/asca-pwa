@@ -11,13 +11,6 @@ function toDateOnly(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
-function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-}
-
 function formatEventDateLabel(event: DbEvent) {
   if (event.dateLabel) return event.dateLabel;
 
@@ -49,7 +42,7 @@ export function dbEventToAscaEvent(event: DbEvent): AscaEvent {
   const endDate = isTba ? undefined : toDateOnly(event.endDate);
 
   return {
-    id: `event-${event.id}-${slugify(event.title)}`,
+    id: `event-${event.id}`,
     title: event.title,
     category: isEventCategory(event.category) ? event.category : 'hosted',
     startDate,

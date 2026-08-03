@@ -142,7 +142,7 @@ export default function AdminDashboard() {
             href="/admin/events"
           />
           <AdminStatCard
-            label="Active Members"
+            label="Member Records"
             value={loading ? "—" : stats.activeMembers}
             icon="👥"
             href="/admin/members"
@@ -154,7 +154,7 @@ export default function AdminDashboard() {
             href="/admin/gallery"
           />
           <AdminStatCard
-            label="Form Submissions"
+            label="Messages"
             value={loading ? "—" : stats.totalFormSubmissions}
             icon="📬"
             href="/admin/forms"
@@ -171,7 +171,7 @@ export default function AdminDashboard() {
             href="/admin/contacts"
           />
           <AdminStatCard
-            label="Active Members"
+            label="CRM Members"
             value={loading ? "—" : crmStats.activeMembers}
             icon="👥"
             href="/admin/contacts?lifecycleStage=member"
@@ -198,11 +198,11 @@ export default function AdminDashboard() {
         <AdminCard className="lg:col-span-2">
           <h2 className="mb-4 text-lg font-bold text-admin-fg-primary">Quick Actions</h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <QuickAction href="/admin/events" icon="📅" label="Create New Event" />
-            <QuickAction href="/admin/contacts" icon="🤝" label="Add a Contact" />
-            <QuickAction href="/admin/tasks" icon="☑️" label="Create a Task" />
+            <QuickAction href="/admin/events" icon="📅" label="Manage Event Calendar" />
+            <QuickAction href="/admin/contacts" icon="🤝" label="Manage Contacts" />
+            <QuickAction href="/admin/tasks" icon="☑️" label="Manage Tasks" />
             <QuickAction href="/admin/forms" icon="📬" label="Triage Messages" />
-            <QuickAction href="/admin/members" icon="👥" label="Manage Members" />
+            <QuickAction href="/admin/members" icon="👥" label="Manage Member Records" />
             <QuickAction href="/admin/theme" icon="🎨" label="Edit Theme" />
           </div>
         </AdminCard>

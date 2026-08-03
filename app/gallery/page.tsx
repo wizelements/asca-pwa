@@ -1,12 +1,20 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import type { Metadata } from 'next';
 import Hero from '@/components/Hero';
 import GalleryCard from '@/components/Cards/GalleryCard';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { getGalleryImages } from '@/lib/db/queries';
+import type { GalleryImage } from '@/lib/db/queries';
+import { getCachedGalleryImages } from '@/lib/db/queries-cache';
 import { getManagedImage, type SiteImageSlot } from '@/lib/media';
 import { getPublicManagedImages } from '@/lib/public-content';
+import { getPublicAlbums, countPublicAlbums, type AlbumRecord } from '@/lib/gallery/services/albums';
+import { getPublicCategories, type ActivityCategoryRecord } from '@/lib/gallery/services/categories';
+import { isPublicPreviewEnabled } from '@/lib/gallery/feature-state';
+import Pagination from '@/components/gallery/Pagination';
+import Breadcrumbs from '@/components/gallery/Breadcrumbs';
+import PublicEmptyState from '@/components/gallery/PublicEmptyState';
 
 export const metadata: Metadata = {
   title: { absolute: 'Photo Gallery | ASCA' },
@@ -23,7 +31,7 @@ const FALLBACK_GALLERY_SLOTS: SiteImageSlot[] = [
 ];
 
 interface GalleryPageProps {
-  searchParams?: Promise<{ category?: string }>;
+  searchParams?: Promise<{ category?: string; page?: string }>;
 }
 
 function groupByCategory<T extends { category?: string }>(items: T[]): Record<string, T[]> {
@@ -35,90 +43,233 @@ function groupByCategory<T extends { category?: string }>(items: T[]): Record<st
   }, {} as Record<string, T[]>);
 }
 
-export default async function Gallery({ searchParams }: GalleryPageProps) {
-  const params = await searchParams ?? {};
-  const selectedCategory = params.category;
-
-  const [images, gallery] = await Promise.all([
-    getPublicManagedImages(),
-    selectedCategory
-      ? getGalleryImages(selectedCategory, true)
-      : getGalleryImages(undefined, true),
-  ]);
+function LegacyGallery({
+  selectedCategory,
+  images,
+  gallery,
+}: {
+  selectedCategory?: string;
+  images: Awaited<ReturnType<typeof getPublicManagedImages>>;
+  gallery: GalleryImage[];
+}) {
   const hero = getManagedImage(images, 'gallery.hero');
   const staticGallery = FALLBACK_GALLERY_SLOTS.map((slot) => getManagedImage(images, slot));
 
-  // For filtered view: if DB empty, fall back to static images matching the category.
-  const filteredStatic = selectedCategory
-    ? staticGallery.filter((photo) =>
-        photo.category?.toLowerCase() === selectedCategory.toLowerCase() ||
-        photo.title?.toLowerCase().includes(selectedCategory.toLowerCase())
-      )
-    : staticGallery;
+  const filteredStatic: GalleryImage[] = selectedCategory
+    ? staticGallery
+        .filter(
+          (photo) =>
+            photo.category?.toLowerCase() === selectedCategory.toLowerCase() ||
+            photo.title?.toLowerCase().includes(selectedCategory.toLowerCase())
+        )
+        .map((photo, index) => ({
+          id: index,
+          title: photo.title || photo.alt || 'Photo',
+          description: photo.caption,
+          category: photo.category || 'General',
+          image: photo.src,
+          alt: photo.alt,
+          published: true,
+        }))
+    : staticGallery.map((photo, index) => ({
+        id: index,
+        title: photo.title || photo.alt || 'Photo',
+        description: photo.caption,
+        category: photo.category || 'General',
+        image: photo.src,
+        alt: photo.alt,
+        published: true,
+      }));
 
-  const displayGallery = gallery.length > 0 ? gallery : filteredStatic;
-
-  // If a specific category was requested and nothing matches, show a clear empty state (no 404).
+  const displayGallery: GalleryImage[] = gallery.length > 0 ? gallery : filteredStatic;
   const groupedGallery = selectedCategory
     ? { [selectedCategory]: displayGallery }
     : groupByCategory(displayGallery);
 
   return (
     <>
-      <Header />
-      <main>
-        <Hero
-          image={hero.src}
-          imageAlt={hero.alt}
-          title="Photo Gallery"
-          subtitle="Moments from ASCA events and activities"
-        />
+      <Hero
+        image={hero.src}
+        imageAlt={hero.alt}
+        title="Photo Gallery"
+        subtitle="Moments from ASCA events and activities"
+      />
 
-        <section className="bg-brand-bg-subtle py-20">
-          <div className="container">
-            <div className="text-center">
-              <p className="section-label">{selectedCategory ? selectedCategory : 'Gallery'}</p>
-              <h2 className="section-title">
-                {selectedCategory ? `${selectedCategory} Photos` : 'Captured Moments'}
-              </h2>
+      <section className="bg-brand-bg-subtle py-20">
+        <div className="container">
+          <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Gallery' }]} />
+          <div className="text-center">
+            <p className="section-label">{selectedCategory ? selectedCategory : 'Gallery'}</p>
+            <h2 className="section-title">
+              {selectedCategory ? `${selectedCategory} Photos` : 'Captured Moments'}
+            </h2>
+          </div>
+
+          {Object.entries(groupedGallery).map(([category, items]) => (
+            <div key={category} className="mt-12">
+              {!selectedCategory && (
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-2xl font-bold text-brand-fg-primary">{category}</h3>
+                  <Link
+                    href={`/gallery?category=${encodeURIComponent(category)}`}
+                    className="text-sm font-semibold text-brand-forest hover:underline"
+                  >
+                    View all →
+                  </Link>
+                </div>
+              )}
+              {items.length > 0 ? (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {items.map((item: any) => (
+                    <GalleryCard
+                      key={item.id}
+                      title={item.title}
+                      image={item.image}
+                      alt={item.alt}
+                      description={item.description}
+                      category={item.category}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <PublicEmptyState
+                  title="No photos here yet"
+                  description="More moments from the ASCA community will be added soon."
+                  action={{ label: 'Back to home', href: '/' }}
+                />
+              )}
             </div>
+          ))}
+        </div>
+      </section>
+    </>
+  );
+}
 
-            {Object.entries(groupedGallery).map(([category, items]) => (
-              <div key={category} className="mt-12">
-                {!selectedCategory && (
-                  <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-2xl font-bold text-brand-fg-primary">{category}</h3>
-                    <Link
-                      href={`/gallery?category=${encodeURIComponent(category)}`}
-                      className="text-sm font-semibold text-brand-forest hover:underline"
-                    >
-                      View all →
-                    </Link>
-                  </div>
-                )}
-                {items.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {items.map((item: any) => (
-                      <GalleryCard
-                        key={item.id}
-                        title={item.title}
-                        image={item.image}
-                        alt={item.alt}
-                        description={item.description}
-                        category={item.category}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="rounded-xl border border-brand-border-subtle bg-brand-bg-elevated p-8 text-center text-brand-fg-muted">
-                    No photos in this category yet. Visit the admin gallery to add some.
-                  </div>
-                )}
-              </div>
+function AlbumCard({ album }: { album: AlbumRecord }) {
+  return (
+    <Link
+      href={`/gallery/${album.slug}`}
+      className="group block overflow-hidden rounded-xl bg-brand-bg-elevated shadow-sm transition hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-forest focus-visible:ring-offset-2 motion-reduce:transition-none"
+    >
+      <div className="relative">
+      {album.coverUrl ? (
+        <Image
+          src={album.coverUrl}
+          alt={album.title}
+          width={600}
+          height={450}
+          className="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none"
+          loading="lazy"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        />
+      ) : (
+        <div className="aspect-[4/3] w-full bg-brand-bg-subtle" />
+      )}
+        <span aria-hidden="true" className="absolute bottom-3 right-3 rounded-full bg-black/70 px-2.5 py-1 text-xs font-medium text-white">{album.mediaCount} photos</span>
+        <span className="sr-only">{album.mediaCount} photos</span>
+      </div>
+      <div className="p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-brand-forest">
+          {album.category?.name || 'Gallery'}
+        </p>
+        <h3 className="mt-1 text-lg font-bold text-brand-fg-primary">{album.title}</h3>
+        {album.summary && <p className="mt-1 line-clamp-2 text-sm text-brand-fg-secondary">{album.summary}</p>}
+        {album.activityDate && (
+          <p className="mt-1 text-xs text-brand-fg-muted">{album.activityDate.toLocaleDateString()}</p>
+        )}
+      </div>
+    </Link>
+  );
+}
+
+async function NewGallery({ selectedCategory, page }: { selectedCategory?: string; page: number }) {
+  const pageSize = 12;
+  const [images, albums, categories, total] = await Promise.all([
+    getPublicManagedImages(),
+    selectedCategory ? getPublicAlbums(selectedCategory, pageSize, (page - 1) * pageSize) : getPublicAlbums(undefined, pageSize, (page - 1) * pageSize),
+    getPublicCategories(),
+    selectedCategory ? countPublicAlbums(selectedCategory) : countPublicAlbums(),
+  ]);
+  const hero = getManagedImage(images, 'gallery.hero');
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  return (
+    <>
+      <Hero image={hero.src} imageAlt={hero.alt} title="Photo Gallery" subtitle="Albums from ASCA events and activities" />
+
+      <section className="bg-brand-bg-subtle py-20">
+        <div className="container">
+          <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Gallery' }]} />
+          <div className="mb-8 flex snap-x items-center gap-2 overflow-x-auto py-2 md:flex-wrap md:gap-3">
+            <Link
+              href="/gallery"
+              aria-current={!selectedCategory ? 'true' : undefined}
+              className={`flex min-h-[44px] shrink-0 snap-start items-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ${!selectedCategory ? 'bg-brand-forest text-white' : 'bg-brand-bg-elevated text-brand-fg-primary'}`}
+            >
+              All
+            </Link>
+            {categories.map((cat: ActivityCategoryRecord) => (
+              <Link
+                key={cat.slug}
+                href={`/gallery?category=${encodeURIComponent(cat.slug)}`}
+                aria-current={selectedCategory === cat.slug ? 'true' : undefined}
+                className={`flex min-h-[44px] shrink-0 snap-start items-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ${selectedCategory === cat.slug ? 'bg-brand-forest text-white' : 'bg-brand-bg-elevated text-brand-fg-primary'}`}
+              >
+                {cat.name}
+              </Link>
             ))}
           </div>
-        </section>
-      </main>
+
+          {albums.length > 0 ? (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {albums.map((album: AlbumRecord) => (
+                <AlbumCard key={album.id} album={album} />
+              ))}
+            </div>
+          ) : (
+            <PublicEmptyState
+              title="No albums yet"
+              description="New albums from ASCA events and activities will appear here."
+              action={{ label: 'Back to home', href: '/' }}
+            />
+          )}
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            baseUrl="/gallery"
+            query={selectedCategory ? { category: selectedCategory } : {}}
+          />
+        </div>
+      </section>
+    </>
+  );
+}
+
+export default async function Gallery({ searchParams }: GalleryPageProps) {
+  const params = await searchParams ?? {};
+  const selectedCategory = params.category;
+  const page = Math.max(1, Number(params.page || '1'));
+
+  if (isPublicPreviewEnabled()) {
+    return (
+      <>
+        <Header />
+        <NewGallery selectedCategory={selectedCategory} page={page} />
+        <Footer />
+      </>
+    );
+  }
+
+  const [images, gallery] = await Promise.all([
+    getPublicManagedImages(),
+    getCachedGalleryImages(selectedCategory),
+  ]);
+
+  return (
+    <>
+      <Header />
+      <LegacyGallery selectedCategory={selectedCategory} images={images} gallery={gallery} />
       <Footer />
     </>
   );

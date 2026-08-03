@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import AdminActionButton from "@/components/admin/AdminActionButton";
 import AdminEmptyState from "@/components/admin/AdminEmptyState";
@@ -8,8 +8,8 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminSection from "@/components/admin/AdminSection";
 import { TaskListItem } from "@/components/crm";
 import { getAdminToken, logout } from "@/components/AdminGuard";
-import type { ContactTask, TaskPriority, TaskStatus } from "@/lib/crm/types";
-import { mapTaskForComponent, priorityLabel, taskStatusLabel } from "@/lib/crm/types";
+import type { ContactSummary, ContactTask, TaskPriority, TaskStatus } from "@/lib/crm/types";
+import { contactDisplayName, mapTaskForComponent, priorityLabel, taskStatusLabel } from "@/lib/crm/types";
 
 const STATUSES: TaskStatus[] = ["open", "in_progress", "done", "cancelled"];
 const PRIORITIES: TaskPriority[] = ["low", "medium", "high"];
@@ -19,6 +19,7 @@ export default function TasksPage() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"" | TaskStatus>("");
   const [priority, setPriority] = useState<"" | TaskPriority>("");
+  const [contacts, setContacts] = useState<ContactSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [userRole, setUserRole] = useState<string>("viewer");
@@ -30,14 +31,28 @@ export default function TasksPage() {
     dueDate: "",
     priority: "medium" as TaskPriority,
     contactId: "",
-    assignedTo: "",
   });
 
-  useEffect(() => {
-    fetchTasks();
-  }, [status, priority]);
+  const fetchContacts = useCallback(async () => {
+    const token = getAdminToken();
+    try {
+      const res = await fetch("/api/admin/contacts?limit=200", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.status === 401) {
+        logout();
+        return;
+      }
+      if (res.ok) {
+        const data = await res.json();
+        setContacts(Array.isArray(data.contacts) ? data.contacts : []);
+      }
+    } catch {
+      // Task creation still shows a clear error if no contact is selected.
+    }
+  }, []);
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     const token = getAdminToken();
     setLoading(true);
     setError("");
@@ -69,7 +84,15 @@ export default function TasksPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [priority, status]);
+
+  useEffect(() => {
+    fetchContacts();
+  }, [fetchContacts]);
+
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
 
   const filtered = useMemo(() => {
     let result = [...tasks];
@@ -111,6 +134,10 @@ export default function TasksPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (userRole !== "admin" && userRole !== "editor") return;
+    if (!form.contactId) {
+      setError("Choose a contact before creating a task.");
+      return;
+    }
     setSaving(true);
     setError("");
     const token = getAdminToken();
@@ -126,7 +153,6 @@ export default function TasksPage() {
           description: form.description,
           dueDate: form.dueDate ? new Date(form.dueDate).toISOString() : undefined,
           priority: form.priority,
-          assignedTo: form.assignedTo ? Number(form.assignedTo) : undefined,
         }),
       });
       if (res.status === 401) {
@@ -139,7 +165,7 @@ export default function TasksPage() {
         return;
       }
       setModalOpen(false);
-      setForm({ title: "", description: "", dueDate: "", priority: "medium", contactId: "", assignedTo: "" });
+      setForm({ title: "", description: "", dueDate: "", priority: "medium", contactId: "" });
       await fetchTasks();
     } catch {
       setError("Unable to create task.");
@@ -256,7 +282,7 @@ export default function TasksPage() {
                   className="w-full rounded-lg border border-admin-border-subtle bg-admin-bg-body px-4 py-2 text-admin-fg-primary"
                 />
               </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-sm font-semibold text-admin-fg-primary">Due date</label>
                   <input
@@ -278,25 +304,25 @@ export default function TasksPage() {
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-admin-fg-primary">Assigned to (user ID)</label>
-                  <input
-                    type="number"
-                    value={form.assignedTo}
-                    onChange={(e) => setForm({ ...form, assignedTo: e.target.value })}
-                    className="w-full rounded-lg border border-admin-border-subtle bg-admin-bg-body px-4 py-2 text-admin-fg-primary"
-                  />
-                </div>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-semibold text-admin-fg-primary">Contact ID</label>
-                <input
-                  type="number"
+                <label className="mb-1 block text-sm font-semibold text-admin-fg-primary">Contact</label>
+                <select
                   value={form.contactId}
                   onChange={(e) => setForm({ ...form, contactId: e.target.value })}
                   className="w-full rounded-lg border border-admin-border-subtle bg-admin-bg-body px-4 py-2 text-admin-fg-primary"
                   required
-                />
+                >
+                  <option value="">Choose a contact</option>
+                  {contacts.map((contact) => (
+                    <option key={contact.id} value={contact.id}>
+                      {contactDisplayName(contact)}{contact.email ? ` — ${contact.email}` : ""}
+                    </option>
+                  ))}
+                </select>
+                {contacts.length === 0 && (
+                  <p className="mt-1 text-xs text-admin-fg-muted">Add a contact first, then create a task for that person or organization.</p>
+                )}
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setModalOpen(false)} className="rounded-lg border border-admin-border-subtle px-4 py-2 text-admin-fg-primary hover:bg-admin-bg-subtle">

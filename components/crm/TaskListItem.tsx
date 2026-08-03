@@ -8,9 +8,9 @@ export interface TaskListItemProps {
   onToggle?: () => void;
 }
 
-function formatDue(date?: string): string {
+function formatDue(date?: string | Date): string {
   if (!date) return "No due date";
-  const d = new Date(date);
+  const d = typeof date === "string" ? new Date(date) : date;
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 

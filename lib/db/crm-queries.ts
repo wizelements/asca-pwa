@@ -120,9 +120,10 @@ function rowToContactActivity(row: any): ContactActivity {
   };
 }
 
-function dateToSeconds(date?: Date): number | null {
+function dateToSeconds(date?: Date | string): number | null {
   if (!date) return null;
-  return Math.floor(date.getTime() / 1000);
+  const parsed = typeof date === 'string' ? new Date(date) : date;
+  return Math.floor(parsed.getTime() / 1000);
 }
 
 function contactSearchClause(q?: string): { sql: string; args: (string | number)[] } {
@@ -458,7 +459,7 @@ export async function createContactNote(
   const result = await db.execute({
     sql: `INSERT INTO contact_notes (contact_id, author_admin_id, note, visibility, created_at)
           VALUES (?, ?, ?, ?, unixepoch())`,
-    args: [data.contactId, data.authorAdminId, data.note, data.visibility || 'admin'],
+    args: [data.contactId, data.authorAdminId ?? null, data.note, data.visibility || 'admin'],
   });
   const id = Number(result.lastInsertRowid);
   await createContactActivity(data.contactId, 'note_added', 'Note added', undefined, { noteId: id, visibility: data.visibility });
@@ -553,7 +554,7 @@ export async function createContactTask(
       data.status || 'open',
       data.priority || 'medium',
       data.assignedTo ?? null,
-      data.createdBy,
+      data.createdBy ?? null,
     ],
   });
   const id = Number(result.lastInsertRowid);

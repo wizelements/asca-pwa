@@ -10,7 +10,6 @@ function formatDate(value: string | Date | undefined): string {
   if (!value) return "—";
   const iso = typeof value === "string" ? value : value.toISOString();
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-});
 }
 
 export default function ContactNotes({ notes, userRole = "viewer" }: ContactNotesProps) {

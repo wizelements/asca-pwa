@@ -14,3 +14,5 @@ export { default as AdminStatCard } from "./AdminStatCard";
 export { default as AdminThemePreview } from "./AdminThemePreview";
 export { default as AdminToast } from "./AdminToast";
 export { default as MobileAdminNav } from "./MobileAdminNav";
+export { default as ToastProvider, useToast } from "./ToastProvider";
+export type { ShowToastOptions, ToastApi, ToastOptions } from "./ToastProvider";

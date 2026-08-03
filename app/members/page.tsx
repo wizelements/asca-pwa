@@ -119,7 +119,7 @@ export default async function Members() {
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Link href="/where-to-find-us" className="btn-accent">
-                Where to Find Us
+                Event Calendar
               </Link>
               <a
                 href={MEMBERSHIP_APPLICATION_URL}

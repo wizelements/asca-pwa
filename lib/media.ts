@@ -1,6 +1,4 @@
 export type SiteImageSlot =
-  | 'site.logo'
-  | 'footer.logo'
   | 'home.hero'
   | 'home.activity.trailRides'
   | 'home.activity.communityOutreach'
@@ -20,7 +18,6 @@ export type SiteImageSlot =
   | 'members.community.1'
   | 'members.community.2'
   | 'getInvolved.hero'
-  | 'whereToFindUs.hero'
   | 'support.hero'
   | 'gallery.hero'
   | 'gallery.fallback.1'
@@ -48,31 +45,11 @@ export const DEFAULT_LOGO = '/images/asca/logo.png';
 
 export const DEFAULT_MANAGED_IMAGES: ManagedImage[] = [
   {
-    id: 'site-logo',
-    slot: 'site.logo',
-    src: DEFAULT_LOGO,
-    alt: 'Atlanta Saddle Club Association logo',
-    title: 'Header logo',
-    category: 'Site Chrome',
-    sortOrder: 10,
-    published: true,
-  },
-  {
-    id: 'footer-logo',
-    slot: 'footer.logo',
-    src: DEFAULT_LOGO,
-    alt: 'Atlanta Saddle Club Association logo',
-    title: 'Footer logo',
-    category: 'Site Chrome',
-    sortOrder: 20,
-    published: true,
-  },
-  {
     id: 'home-hero',
     slot: 'home.hero',
-    src: '/images/hero/home.jpg',
-    alt: 'ASCA riders and community members',
-    title: 'Home hero',
+    src: '/images/gallery/event.jpg',
+    alt: 'ASCA riders on horseback in matching club shirts',
+    title: 'Home hero group ride',
     category: 'Home',
     sortOrder: 100,
     published: true,
@@ -258,16 +235,6 @@ export const DEFAULT_MANAGED_IMAGES: ManagedImage[] = [
     published: true,
   },
   {
-    id: 'where-to-find-us-hero',
-    slot: 'whereToFindUs.hero',
-    src: '/images/hero/calendar.jpg',
-    alt: 'ASCA event calendar and rides',
-    title: 'Where to Find Us hero',
-    category: 'Where to Find Us',
-    sortOrder: 600,
-    published: true,
-  },
-  {
     id: 'support-hero',
     slot: 'support.hero',
     src: '/images/hero/donate.jpg',
@@ -330,7 +297,6 @@ export function managedImagesToRecord(images: ManagedImage[]): ManagedImageRecor
       id: image.id,
       slot: image.slot,
       src: image.src,
-      image: image.src,
       alt: image.alt,
       title: image.title,
       caption: image.caption,

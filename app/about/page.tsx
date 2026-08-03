@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import Hero from '@/components/Hero';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import OfficerList from '@/components/OfficerList';
 import ManagedImage from '@/components/media/ManagedImage';
-import { MEMBERSHIP_APPLICATION_URL } from '@/lib/content/site';
 import { getManagedImage } from '@/lib/media';
 import { getPublicManagedImages } from '@/lib/public-content';
 
@@ -90,14 +90,12 @@ export default async function About() {
               activities and events, so that you can meet our members and learn more about ASCA. The club meets
               monthly at Piccadilly Cafeteria, 2449 Godby Road, College Park 30349, on the first Wednesday at 7pm.
             </p>
-            <a
-              href={MEMBERSHIP_APPLICATION_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/get-involved"
               className="btn-accent mt-8 inline-flex"
             >
-              ASCA Membership Application
-            </a>
+              Get Involved
+            </Link>
           </div>
         </section>
       </main>

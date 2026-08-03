@@ -2,10 +2,14 @@ import type { Metadata, Viewport } from 'next'
 import { Poppins, Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
-import { getSettings, getTheme } from '@/lib/db/queries'
+import { getCachedSiteTagline, getCachedTheme } from '@/lib/db/queries-cache'
 import { ASCA_DEFAULT_THEME, resolveThemeSettings, themeSettingsToCss } from '@/lib/theme'
+import { getSiteUrl } from '@/lib/site-url'
 
-export const dynamic = 'force-dynamic'
+// Inline base64 media has been extracted to media_assets (2026-07-20), so the
+// cached settings payload is small enough for Next's data cache again.
+export const dynamic = 'force-static'
+export const revalidate = 60
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -30,7 +34,7 @@ export const metadata: Metadata = {
   },
   description: 'Atlanta Saddle Club Association promotes horsemanship, fellowship, education, community service, and equestrian experiences across metro Atlanta.',
   manifest: '/manifest.json',
-  metadataBase: new URL('https://asca-pwa.vercel.app'),
+  metadataBase: new URL(getSiteUrl()),
   openGraph: {
     type: 'website',
     siteName: 'Atlanta Saddle Club Association',
@@ -70,8 +74,8 @@ export const viewport: Viewport = {
 
 async function getRootThemeCss() {
   try {
-    const [theme, settings] = await Promise.all([getTheme(), getSettings()])
-    const resolved = resolveThemeSettings(theme, settings.tagline)
+    const [theme, tagline] = await Promise.all([getCachedTheme(), getCachedSiteTagline()])
+    const resolved = resolveThemeSettings(theme, tagline)
     return { css: themeSettingsToCss(resolved), themeColor: resolved.accentColor }
   } catch (error) {
     console.error('[ROOT THEME]', error)

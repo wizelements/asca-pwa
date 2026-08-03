@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     const user = await getUserByEmail(authUser.email);
-    if (!user?.isActive || user.role !== 'admin') {
+    if (!user?.isActive) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     if (!verifyPassword(currentPassword, user.password)) {
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     await updateUserPassword(user.id, hashPassword(newPassword));
-    await logActivity('auth', 'Changed admin password', user.email);
+    await logActivity('auth', 'Changed account password', user.email);
 
     return NextResponse.json({ success: true, message: 'Password updated. Sign in again with the new password.' });
   } catch (error: any) {

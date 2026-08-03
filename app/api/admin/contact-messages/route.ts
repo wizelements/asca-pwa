@@ -25,7 +25,8 @@ function serverError(error: unknown) {
   return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
 }
 
-import { getMessages, type MessageStatus } from '@/lib/db/crm-queries';
+import { getMessages } from '@/lib/db/crm-queries';
+import type { MessageStatus } from '@/lib/crm/types';
 
 export async function GET(req: NextRequest) {
   try {

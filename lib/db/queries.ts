@@ -1,21 +1,32 @@
-import { getDb } from '@/lib/db';
+import { getDb } from '../db.ts';
+import { createMediaAsset } from '../media-storage.ts';
 
 export type Role = 'admin' | 'editor' | 'viewer';
 
 export interface Social {
   facebook?: string;
   instagram?: string;
+  tiktok?: string;
 }
 
 export interface Venmo {
   username?: string;
   presets?: number[];
+  zelle?: string;
 }
 
 export interface Hero {
+  id?: string;
+  slot?: string;
+  src?: string;
   image?: string;
+  alt?: string;
   title?: string;
   subtitle?: string;
+  caption?: string;
+  category?: string;
+  sortOrder?: number;
+  published?: boolean;
   cta?: { text: string; link: string };
 }
 
@@ -174,6 +185,7 @@ function sanitizeSocial(value: Social | Record<string, unknown> | null | undefin
   return {
     facebook: typeof value?.facebook === 'string' ? value.facebook : undefined,
     instagram: typeof value?.instagram === 'string' ? value.instagram : undefined,
+    tiktok: typeof value?.tiktok === 'string' ? value.tiktok : undefined,
   };
 }
 
@@ -318,10 +330,33 @@ export async function getSettings(): Promise<Settings> {
   return rowToSettings(result.rows[0]);
 }
 
+export async function getSiteTagline(): Promise<string> {
+  const db = getDb();
+  const result = await db.execute('SELECT tagline FROM settings WHERE id = 1');
+  const tagline = result.rows[0]?.tagline;
+  return typeof tagline === 'string' ? tagline : '';
+}
+
+async function storeInlineImage(source: string | undefined): Promise<string | undefined> {
+  return source?.startsWith('data:image/') ? createMediaAsset(source) : source;
+}
+
+async function storeInlineHeroImages(heroes: Record<string, Hero>): Promise<Record<string, Hero>> {
+  const entries = await Promise.all(Object.entries(heroes).map(async ([slot, image]) => {
+    const source = image.src || image.image || '';
+    const src = await storeInlineImage(source);
+    const normalized = { ...image, src };
+    delete normalized.image;
+    return [slot, normalized] as const;
+  }));
+  return Object.fromEntries(entries);
+}
+
 export async function updateSettings(data: Partial<Settings>): Promise<Settings> {
   const db = getDb();
   const current = await getSettings();
-  const merged = { ...current, ...data, social: sanitizeSocial(data.social ?? current.social) };
+  const heroes = data.heroes ? await storeInlineHeroImages(data.heroes) : current.heroes;
+  const merged = { ...current, ...data, heroes, social: sanitizeSocial(data.social ?? current.social) };
 
   await db.execute({
     sql: `UPDATE settings SET
@@ -357,7 +392,15 @@ export async function getTheme(): Promise<Theme> {
   return rowToTheme(result.rows[0]);
 }
 
-export async function updateTheme(data: Partial<Theme>): Promise<Theme> {
+async function storeInlineThemeImages(theme: Partial<Theme>): Promise<Partial<Theme>> {
+  const patch: Partial<Theme> = { ...theme };
+  if (theme.logo !== undefined) patch.logo = await storeInlineImage(theme.logo);
+  if (theme.favicon !== undefined) patch.favicon = await storeInlineImage(theme.favicon);
+  return patch;
+}
+
+export async function updateTheme(raw: Partial<Theme>): Promise<Theme> {
+  const data = await storeInlineThemeImages(raw);
   const db = getDb();
   const current = await getTheme();
   const merged = { ...current, ...data };
@@ -428,6 +471,7 @@ export async function getEventById(id: number): Promise<Event | null> {
 
 export async function createEvent(data: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>): Promise<Event> {
   const db = getDb();
+  const imageUrl = await storeInlineImage(data.imageUrl);
   const result = await db.execute({
     sql: `INSERT INTO events (title, description, date, end_date, time, location, image_url, image_alt, cta_label, cta_href, is_tba, capacity, registration_deadline, rsvp_list, category, month, date_label, sort_order, registration_required, published, created_at, updated_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, unixepoch(), unixepoch())`,
@@ -438,7 +482,7 @@ export async function createEvent(data: Omit<Event, 'id' | 'createdAt' | 'update
       Math.floor(data.endDate.getTime() / 1000),
       data.time ?? '',
       data.location,
-      data.imageUrl ?? null,
+      imageUrl ?? null,
       data.imageAlt,
       data.ctaLabel ?? '',
       data.ctaHref ?? '',
@@ -463,6 +507,7 @@ export async function updateEvent(id: number, data: Partial<Event>): Promise<Eve
   const existing = await getEventById(id);
   if (!existing) return null;
   const merged = { ...existing, ...data };
+  const imageUrl = await storeInlineImage(merged.imageUrl);
 
   await db.execute({
     sql: `UPDATE events SET
@@ -477,7 +522,7 @@ export async function updateEvent(id: number, data: Partial<Event>): Promise<Eve
       Math.floor(merged.endDate.getTime() / 1000),
       merged.time ?? '',
       merged.location,
-      merged.imageUrl ?? null,
+      imageUrl ?? null,
       merged.imageAlt,
       merged.ctaLabel ?? '',
       merged.ctaHref ?? '',
@@ -532,6 +577,7 @@ export async function getMemberById(id: number): Promise<Member | null> {
 
 export async function createMember(data: Omit<Member, 'id' | 'createdAt' | 'updatedAt'>): Promise<Member> {
   const db = getDb();
+  const photo = await storeInlineImage(data.photo);
   const result = await db.execute({
     sql: `INSERT INTO members (first_name, last_name, email, bio, photo, roles, is_active, is_verified, join_date, created_at, updated_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, unixepoch(), unixepoch())`,
@@ -540,7 +586,7 @@ export async function createMember(data: Omit<Member, 'id' | 'createdAt' | 'upda
       data.lastName,
       data.email,
       data.bio ?? null,
-      data.photo ?? null,
+      photo ?? null,
       JSON.stringify(data.roles),
       Number(data.isActive),
       Number(data.isVerified),
@@ -556,6 +602,7 @@ export async function updateMember(id: number, data: Partial<Member>): Promise<M
   const existing = await getMemberById(id);
   if (!existing) return null;
   const merged = { ...existing, ...data };
+  const photo = await storeInlineImage(merged.photo);
 
   await db.execute({
     sql: `UPDATE members SET
@@ -566,7 +613,7 @@ export async function updateMember(id: number, data: Partial<Member>): Promise<M
       merged.lastName,
       merged.email,
       merged.bio ?? null,
-      merged.photo ?? null,
+      photo ?? null,
       JSON.stringify(merged.roles),
       Number(merged.isActive),
       Number(merged.isVerified),
@@ -623,6 +670,7 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> 
 export async function createBlogPost(data: Omit<BlogPost, 'id' | 'createdAt' | 'updatedAt' | 'viewCount'>): Promise<BlogPost> {
   const db = getDb();
   const publishedAt = data.published ? Math.floor(Date.now() / 1000) : null;
+  const image = await storeInlineImage(data.image);
   const result = await db.execute({
     sql: `INSERT INTO blog_posts (title, slug, excerpt, content, author, image, category, published, view_count, published_at, created_at, updated_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, unixepoch(), unixepoch())`,
@@ -632,7 +680,7 @@ export async function createBlogPost(data: Omit<BlogPost, 'id' | 'createdAt' | '
       data.excerpt ?? null,
       data.content,
       data.author,
-      data.image ?? null,
+      image ?? null,
       data.category,
       Number(data.published),
       0,
@@ -648,6 +696,7 @@ export async function updateBlogPost(id: number, data: Partial<BlogPost>): Promi
   const existing = await getBlogPostById(id);
   if (!existing) return null;
   const merged = { ...existing, ...data };
+  const image = await storeInlineImage(merged.image);
 
   let publishedAt: number | null = existing.publishedAt ? Math.floor(existing.publishedAt.getTime() / 1000) : null;
   if (data.published && !existing.published) {
@@ -664,7 +713,7 @@ export async function updateBlogPost(id: number, data: Partial<BlogPost>): Promi
       merged.excerpt ?? null,
       merged.content,
       merged.author,
-      merged.image ?? null,
+      image ?? null,
       merged.category,
       Number(merged.published),
       merged.viewCount,
@@ -685,9 +734,24 @@ export async function deleteBlogPost(id: number): Promise<boolean> {
   return Number(result.rowsAffected) > 0;
 }
 
-export async function getGalleryImages(category?: string, published?: boolean): Promise<GalleryImage[]> {
+function galleryImageSelect(includeImageData: boolean): string {
+  if (includeImageData) return 'image';
+  return `CASE
+    WHEN image LIKE 'data:image/%;base64,%' THEN
+      '/api/media/gallery/' || id || '?v=' ||
+      COALESCE(uploaded_at, 0) || '-' || length(image) || '-' || hex(substr(image, -12))
+    ELSE image
+  END AS image`;
+}
+
+export async function getGalleryImages(
+  category?: string,
+  published?: boolean,
+  includeImageData = false
+): Promise<GalleryImage[]> {
   const db = getDb();
-  let sql = 'SELECT * FROM gallery_images';
+  let sql = `SELECT id, title, description, category, ${galleryImageSelect(includeImageData)},
+    alt, sort_order, published, uploaded_at FROM gallery_images`;
   const args: any[] = [];
   const where: string[] = [];
   if (category) {
@@ -704,10 +768,11 @@ export async function getGalleryImages(category?: string, published?: boolean): 
   return result.rows.map(rowToGalleryImage);
 }
 
-export async function getGalleryImageById(id: number): Promise<GalleryImage | null> {
+export async function getGalleryImageById(id: number, includeImageData = false): Promise<GalleryImage | null> {
   const db = getDb();
   const result = await db.execute({
-    sql: 'SELECT * FROM gallery_images WHERE id = ?',
+    sql: `SELECT id, title, description, category, ${galleryImageSelect(includeImageData)},
+      alt, sort_order, published, uploaded_at FROM gallery_images WHERE id = ?`,
     args: [id],
   });
   if (result.rows.length === 0) return null;
@@ -716,6 +781,7 @@ export async function getGalleryImageById(id: number): Promise<GalleryImage | nu
 
 export async function createGalleryImage(data: Omit<GalleryImage, 'id' | 'uploadedAt'>): Promise<GalleryImage> {
   const db = getDb();
+  const image = await storeInlineImage(data.image);
   const result = await db.execute({
     sql: `INSERT INTO gallery_images (title, description, category, image, alt, sort_order, published, uploaded_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, unixepoch())`,
@@ -723,7 +789,7 @@ export async function createGalleryImage(data: Omit<GalleryImage, 'id' | 'upload
       data.title,
       data.description ?? null,
       data.category,
-      data.image,
+      image!,
       data.alt,
       data.sortOrder ?? 0,
       Number(data.published !== false),
@@ -735,9 +801,12 @@ export async function createGalleryImage(data: Omit<GalleryImage, 'id' | 'upload
 
 export async function updateGalleryImage(id: number, data: Partial<GalleryImage>): Promise<GalleryImage | null> {
   const db = getDb();
-  const existing = await getGalleryImageById(id);
+  const existing = await getGalleryImageById(id, true);
   if (!existing) return null;
-  const merged = { ...existing, ...data };
+  const legacyMediaUrl = `/api/media/gallery/${id}`;
+  const requestedImage = data.image?.startsWith(legacyMediaUrl) ? existing.image : data.image;
+  const image = await storeInlineImage(requestedImage);
+  const merged = { ...existing, ...data, image: image ?? existing.image };
 
   await db.execute({
     sql: `UPDATE gallery_images SET

@@ -3,12 +3,12 @@ import ManagedImage from '@/components/media/ManagedImage';
 import SocialLinks from '@/components/SocialLinks';
 import ContactForm from '@/components/ContactForm';
 import { FOOTER_LINKS, CONTACT_EMAILS } from '@/lib/content/site';
-import { getTheme } from '@/lib/db/queries';
+import { getCachedTheme } from '@/lib/db/queries-cache';
 import { DEFAULT_LOGO } from '@/lib/media';
 
 async function getFooterLogo() {
   try {
-    const theme = await getTheme();
+    const theme = await getCachedTheme();
     return theme.logo || DEFAULT_LOGO;
   } catch {
     return DEFAULT_LOGO;
