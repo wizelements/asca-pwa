@@ -1,4 +1,4 @@
-import { createClient, type Client } from '@libsql/client';
+import { createClient, type Client } from '@libsql/client/http';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
