@@ -26,7 +26,7 @@
 **File:** `scripts/seed.js` (280 lines)
 
 Populates 8 MongoDB collections:
-- Admin user: `admin@ascapwa.org` / `AsCA2024!Secure`
+- Admin user: `admin@ascapwa.org` / `<ROTATED_ADMIN_PASSWORD>`
 - Theme: ASCA brand colors locked
 - Settings: Contact, Venmo, social links
 - Events: 4 sample upcoming events
@@ -303,7 +303,7 @@ Phase 4 is **complete** when:
 
 **Admin User (created by seed):**
 - Email: `admin@ascapwa.org`
-- Password: `AsCA2024!Secure`
+- Password: `<ROTATED_ADMIN_PASSWORD>`
 - **ACTION:** Change immediately after first login
 
 **Resend API Key:**
