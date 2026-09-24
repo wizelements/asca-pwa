@@ -85,7 +85,7 @@ pnpm dev
 URL: http://localhost:3000/admin (dev)
      https://asca-pwa.vercel.app/admin (production)
 Email: admin@ascapwa.org
-Password: AsCA2024!Secure (CHANGE AFTER FIRST LOGIN)
+Password: <ROTATED_ADMIN_PASSWORD> (CHANGE AFTER FIRST LOGIN)
 ```
 
 ## Form Testing Endpoints
