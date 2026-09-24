@@ -45,8 +45,10 @@ export default function AdminWalkthrough({ restartNonce = 0 }: { restartNonce?: 
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    const forced = new URLSearchParams(window.location.search).get('tour') === '1';
     try {
-      if (localStorage.getItem(STORAGE_KEY) !== 'complete') {
+      if (forced || localStorage.getItem(STORAGE_KEY) !== 'complete') {
+        setStep(0);
         setOpen(true);
       }
     } catch {
