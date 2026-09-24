@@ -58,14 +58,12 @@ async function optimizeImageFile(file: File): Promise<string> {
 
 async function storeImage(dataUrl: string): Promise<string> {
   const token = getAdminToken();
-  if (!token) {
-    throw new Error('Your admin session has expired. Sign in and try again.');
-  }
 
   const response = await fetch('/api/media', {
     method: 'POST',
+    credentials: 'same-origin',
     headers: {
-      Authorization: `Bearer ${token}`,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ dataUrl }),
