@@ -10,9 +10,7 @@ export function middleware(request: NextRequest) {
   }
 
   if (!request.cookies.has('asca_admin_session')) {
-    const loginUrl = new URL('/admin/login', request.url);
-    loginUrl.searchParams.set('next', pathname);
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(new URL('/admin/login', request.url));
   }
 
   return NextResponse.next();
