@@ -30,8 +30,10 @@ export function useAuth(): { user: AuthUser | null; isLoading: boolean; logout: 
         return data.user as AuthUser;
       })
       .then((sessionUser) => setUser(sessionUser))
-      .catch((error) => {
-        if (error?.name !== 'AbortError') setUser(null);
+      .catch((error: unknown) => {
+        if (!(error instanceof Error && error.name === 'AbortError')) {
+          setUser(null);
+        }
       })
       .finally(() => {
         if (!controller.signal.aborted) setIsLoading(false);
