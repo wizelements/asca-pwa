@@ -110,7 +110,7 @@ npm run db:seed-complete
 ```
 ✅ Seed completed successfully!
 Email: admin@ascapwa.org
-Password: AsCA2024!Secure
+Password: <ROTATED_ADMIN_PASSWORD>
 ```
 **Time: 2 minutes**
 
@@ -357,7 +357,7 @@ All Pages Updated (because they all fetch same data)
 
 **Live Site:** https://asca-pwa.vercel.app  
 **Admin Email:** admin@ascapwa.org  
-**Admin Password:** AsCA2024!Secure (change after login)  
+**Admin Password:** <ROTATED_ADMIN_PASSWORD> (change after login)  
 **Database:** MongoDB (Atlas)  
 **Hosting:** Vercel  
 **Email Service:** Resend  
@@ -388,7 +388,7 @@ All pages should:
 
 ```
 Email: admin@ascapwa.org
-Password: AsCA2024!Secure
+Password: <ROTATED_ADMIN_PASSWORD>
 
 ⚠️ MUST CHANGE AFTER FIRST LOGIN!
 ```
