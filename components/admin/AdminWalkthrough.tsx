@@ -5,7 +5,15 @@ import { useEffect, useRef, useState } from 'react';
 
 const STORAGE_KEY = 'asca_admin_walkthrough_v1';
 
-const STEPS = [
+interface WalkthroughStep {
+  title: string;
+  body: string;
+  href: string;
+  action: string;
+  external?: boolean;
+}
+
+const STEPS: WalkthroughStep[] = [
   {
     title: 'Your dashboard',
     body: 'Start here to see new messages, open tasks, member activity, and quick links to the work that needs attention.',
@@ -41,7 +49,7 @@ const STEPS = [
     action: 'Preview public site',
     external: true,
   },
-] as const;
+];
 
 export default function AdminWalkthrough({ restartNonce = 0 }: { restartNonce?: number }) {
   const [open, setOpen] = useState(false);
