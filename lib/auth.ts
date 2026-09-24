@@ -133,11 +133,17 @@ function getCookie(request: Request, name: string): string | null {
 }
 
 export function getAuthToken(request: Request): string | null {
+  // Browser admin sessions use the protected cookie. Prefer it so legacy
+  // client code cannot accidentally shadow a valid session with Bearer null.
+  const sessionCookie = getCookie(request, ADMIN_SESSION_COOKIE);
+  if (sessionCookie) return sessionCookie;
+
   const header = request.headers.get('authorization');
   if (header?.startsWith('Bearer ')) {
-    return header.slice(7);
+    const token = header.slice(7).trim();
+    return token && token !== 'null' && token !== 'undefined' ? token : null;
   }
-  return getCookie(request, ADMIN_SESSION_COOKIE);
+  return null;
 }
 
 export async function requireAuth(request: Request): Promise<JWTPayload> {
