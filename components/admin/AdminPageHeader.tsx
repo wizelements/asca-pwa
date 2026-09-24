@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 export interface AdminPageHeaderProps {
   title: string;
@@ -16,18 +16,19 @@ export default function AdminPageHeader({
   secondaryAction,
 }: AdminPageHeaderProps) {
   return (
-    <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+    <div className="mb-7 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
       <div>
         {backHref && (
-          <a
+          <Link
             href={backHref}
-            className="mb-2 inline-flex items-center text-sm font-medium text-admin-fg-muted hover:text-admin-fg-primary"
+            className="mb-2 inline-flex min-h-[36px] items-center text-sm font-semibold text-admin-fg-muted hover:text-admin-fg-primary"
           >
-            ← Back
-          </a>
+            <span className="mr-1.5" aria-hidden="true">←</span>
+            Back
+          </Link>
         )}
-        <h1 className="text-3xl font-bold text-admin-fg-primary">{title}</h1>
-        {subtitle && <p className="mt-1 max-w-2xl text-sm text-admin-fg-secondary">{subtitle}</p>}
+        <h1 className="text-3xl font-bold tracking-tight text-admin-fg-primary">{title}</h1>
+        {subtitle && <p className="mt-2 max-w-2xl text-sm leading-6 text-admin-fg-secondary">{subtitle}</p>}
       </div>
       <div className="flex flex-wrap items-center gap-3">
         {secondaryAction}
