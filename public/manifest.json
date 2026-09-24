@@ -1,11 +1,11 @@
 {
+  "id": "/",
   "name": "Atlanta Saddle Club Association",
   "short_name": "ASCA",
   "description": "Atlanta Saddle Club Association promotes horsemanship, fellowship, education, community service, and equestrian experiences across metro Atlanta.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait-primary",
   "background_color": "#ffffff",
   "theme_color": "#e6d543",
   "categories": ["community", "events", "sports"],
@@ -57,63 +57,29 @@
       "short_name": "Events",
       "description": "See upcoming ASCA events",
       "url": "/where-to-find-us",
-      "icons": [
-        {
-          "src": "/icons/shortcuts/calendar-96.png",
-          "sizes": "96x96",
-          "type": "image/png"
-        }
-      ]
+      "icons": [{ "src": "/icons/shortcuts/calendar-96.png", "sizes": "96x96", "type": "image/png" }]
     },
     {
       "name": "Join ASCA",
       "short_name": "Join",
       "description": "Start your ASCA membership",
       "url": "/get-involved",
-      "icons": [
-        {
-          "src": "/icons/shortcuts/join-96.png",
-          "sizes": "96x96",
-          "type": "image/png"
-        }
-      ]
+      "icons": [{ "src": "/icons/shortcuts/join-96.png", "sizes": "96x96", "type": "image/png" }]
     },
     {
       "name": "Members Directory",
       "short_name": "Members",
       "description": "Browse ASCA members",
       "url": "/members",
-      "icons": [
-        {
-          "src": "/icons/shortcuts/members-96.png",
-          "sizes": "96x96",
-          "type": "image/png"
-        }
-      ]
+      "icons": [{ "src": "/icons/shortcuts/members-96.png", "sizes": "96x96", "type": "image/png" }]
     },
     {
-      "name": "Donate",
-      "short_name": "Donate",
+      "name": "Support ASCA",
+      "short_name": "Support",
       "description": "Support ASCA's mission",
       "url": "/support-asca",
-      "icons": [
-        {
-          "src": "/icons/shortcuts/donate-96.png",
-          "sizes": "96x96",
-          "type": "image/png"
-        }
-      ]
+      "icons": [{ "src": "/icons/shortcuts/donate-96.png", "sizes": "96x96", "type": "image/png" }]
     }
   ],
-  "share_target": {
-    "action": "/api/share",
-    "method": "POST",
-    "enctype": "multipart/form-data",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url"
-    }
-  },
   "prefer_related_applications": false
 }
