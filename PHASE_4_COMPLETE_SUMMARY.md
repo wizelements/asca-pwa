@@ -284,7 +284,7 @@ npm install resend dotenv
 ## Admin Credentials (IMPORTANT)
 
 **Email:** admin@ascapwa.org
-**Initial Password:** AsCA2024!Secure
+**Initial Password:** <ROTATED_ADMIN_PASSWORD>
 
 **Change password immediately after first login!**
 Command: `npm run db:seed` creates this admin user.
