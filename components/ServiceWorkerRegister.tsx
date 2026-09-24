@@ -4,39 +4,50 @@ import { useEffect } from 'react';
 
 export default function ServiceWorkerRegister() {
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      let refreshing = false;
-      const handleControllerChange = () => {
-        if (refreshing) return;
-        refreshing = true;
-        window.location.reload();
-      };
+    if (!('serviceWorker' in navigator)) return;
 
-      const registerServiceWorker = () => {
-        navigator.serviceWorker
-          .register('/sw.js', { scope: '/', updateViaCache: 'none' })
-          .then((registration) => {
-            console.log('✓ Service Worker registered:', registration);
+    let registration: ServiceWorkerRegistration | undefined;
+    let refreshing = false;
 
-            registration.update();
-            setInterval(() => {
-              registration.update();
-            }, 60000); // Check every minute
-          })
-          .catch((error) => {
-            console.error('✗ Service Worker registration failed:', error);
-          });
-      };
+    const handleControllerChange = () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    };
 
-      window.addEventListener('load', registerServiceWorker);
+    const checkForUpdate = () => {
+      if (document.visibilityState === 'visible') {
+        registration?.update().catch(() => undefined);
+      }
+    };
 
-      navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+    const register = async () => {
+      try {
+        registration = await navigator.serviceWorker.register('/sw.js', {
+          scope: '/',
+          updateViaCache: 'none',
+        });
+        await registration.update();
+      } catch (error) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('Service Worker registration failed:', error);
+        }
+      }
+    };
 
-      return () => {
-        window.removeEventListener('load', registerServiceWorker);
-        navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
-      };
-    }
+    if (document.readyState === 'complete') register();
+    else window.addEventListener('load', register, { once: true });
+
+    window.addEventListener('focus', checkForUpdate);
+    document.addEventListener('visibilitychange', checkForUpdate);
+    navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+
+    return () => {
+      window.removeEventListener('load', register);
+      window.removeEventListener('focus', checkForUpdate);
+      document.removeEventListener('visibilitychange', checkForUpdate);
+      navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
+    };
   }, []);
 
   return null;
