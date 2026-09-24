@@ -5,7 +5,6 @@ let client: Client | null = null;
 function createDbClient(url: string, authToken?: string): Client {
   if (url.startsWith('file:')) {
     // Local file databases are used by CI/E2E and desktop development.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { createClient: createLocalClient } = require('@libsql/client');
     return createLocalClient({ url }) as Client;
   }
