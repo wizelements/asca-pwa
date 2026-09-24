@@ -326,7 +326,7 @@ Time: 3 minutes
 
 ```
 Email: admin@ascapwa.org
-Password: AsCA2024!Secure
+Password: <ROTATED_ADMIN_PASSWORD>
 ```
 
 ⚠️ **Must change after first login!**
