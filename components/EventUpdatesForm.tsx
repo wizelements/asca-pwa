@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 export default function EventUpdatesForm() {
-  const [form, setForm] = useState({ name: '', email: '', interest: '', message: '' });
+  const [form, setForm] = useState({ name: '', email: '', interest: '', message: '', website: '' });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -17,7 +17,7 @@ export default function EventUpdatesForm() {
       });
       if (res.ok) {
         setStatus('success');
-        setForm({ name: '', email: '', interest: '', message: '' });
+        setForm({ name: '', email: '', interest: '', message: '', website: '' });
       } else {
         setStatus('error');
       }
@@ -27,7 +27,19 @@ export default function EventUpdatesForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto mt-8 max-w-2xl text-left">
+    <form onSubmit={handleSubmit} className="relative mx-auto mt-8 max-w-2xl text-left">
+      <div className="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true">
+        <label htmlFor="eu-website">Website</label>
+        <input
+          id="eu-website"
+          type="text"
+          name="website"
+          value={form.website}
+          onChange={(e) => setForm((p) => ({ ...p, website: e.target.value }))}
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="eu-name" className="input-label">Name</label>
