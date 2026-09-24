@@ -8,7 +8,6 @@ function createDbClient(url: string, authToken?: string): Client {
     // explicitly requested (CI, E2E, or desktop development). Keeping this
     // require inside the branch avoids loading native bindings on Termux when
     // the app is using remote Turso over HTTP.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { createClient: createLocalClient } = require('@libsql/client');
     return createLocalClient({ url }) as Client;
   }
