@@ -47,7 +47,7 @@ export function useAuth(): { user: AuthUser | null; isLoading: boolean; logout: 
  * Kept temporarily for existing admin fetch calls. Authentication now uses an
  * HttpOnly same-origin cookie, so callers should not attach bearer tokens.
  */
-export function getAdminToken(): null {
+export function getAdminToken(): string | null {
   return null;
 }
 
