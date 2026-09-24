@@ -52,7 +52,7 @@ RESEND_API_KEY=re_your_resend_api_key_here
 
 ### Current State
 ```env
-ADMIN_PASSWORD=AsCA2024!Secure  # Hardcoded, visible in threads
+ADMIN_PASSWORD=<ROTATED_ADMIN_PASSWORD>  # Hardcoded, visible in threads
 ```
 
 ### Issue
@@ -62,7 +62,7 @@ ADMIN_PASSWORD=AsCA2024!Secure  # Hardcoded, visible in threads
 
 ### Remediation
 1. **Change Default Password (One-time Setup):**
-   - Login to `/admin` with: `admin@ascapwa.org` / `AsCA2024!Secure`
+   - Login to `/admin` with: `admin@ascapwa.org` / `<ROTATED_ADMIN_PASSWORD>`
    - Admin Settings → Change Password
    - Generate 16-char password: `openssl rand -base64 12`
 
