@@ -1,21 +1,20 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
-import AdminCard from "@/components/admin/AdminCard";
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import AdminSection from "@/components/admin/AdminSection";
-import AdminStatCard from "@/components/admin/AdminStatCard";
-import { getAdminToken, logout } from "@/components/AdminGuard";
+import AdminCard from '@/components/admin/AdminCard';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
+import AdminSection from '@/components/admin/AdminSection';
+import AdminStatCard from '@/components/admin/AdminStatCard';
+import { logout } from '@/components/AdminGuard';
 
 interface DashboardStats {
-  totalEvents: number;
   publishedEvents: number;
-  totalMembers: number;
   activeMembers: number;
   totalGalleryImages: number;
   totalFormSubmissions: number;
+  recentActivity?: RecentActivity[];
 }
 
 interface RecentActivity {
@@ -26,78 +25,94 @@ interface RecentActivity {
   user: string;
 }
 
+interface CrmStats {
+  totalContacts: number;
+  activeMembers: number;
+  newMessages: number;
+  openTasks: number;
+}
+
+const EMPTY_CRM: CrmStats = {
+  totalContacts: 0,
+  activeMembers: 0,
+  newMessages: 0,
+  openTasks: 0,
+};
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
-    totalEvents: 0,
     publishedEvents: 0,
-    totalMembers: 0,
     activeMembers: 0,
     totalGalleryImages: 0,
     totalFormSubmissions: 0,
+    recentActivity: [],
   });
-  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
+  const [crmStats, setCrmStats] = useState<CrmStats>(EMPTY_CRM);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [exporting, setExporting] = useState(false);
-  const [crmStats, setCrmStats] = useState({
-    totalContacts: 0,
-    activeMembers: 0,
-    newMessages: 0,
-    openTasks: 0,
-  });
-  const [exportError, setExportError] = useState("");
+  const [exportError, setExportError] = useState('');
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    let active = true;
 
-  const fetchDashboardData = async () => {
-    try {
-      const token = getAdminToken();
-      const res = await fetch("/api/admin/stats", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+    const load = async () => {
+      try {
+        const [statsResponse, crmResponse] = await Promise.all([
+          fetch('/api/admin/stats', { credentials: 'same-origin', cache: 'no-store' }),
+          fetch('/api/admin/crm-stats', { credentials: 'same-origin', cache: 'no-store' }),
+        ]);
 
-      if (res.status === 401) {
-        logout();
-        return;
-      }
-
-      if (res.ok) {
-        const data = await res.json();
-        setStats(data);
-        setRecentActivity(data.recentActivity?.slice(0, 5) || []);
-        const crmRes = await fetch('/api/admin/crm-stats', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-        if (crmRes.ok) {
-          const crmData = await crmRes.json();
-          setCrmStats(crmData);
+        if (statsResponse.status === 401 || crmResponse.status === 401) {
+          await logout();
+          return;
         }
+
+        if (!statsResponse.ok || !crmResponse.ok) {
+          throw new Error('Dashboard data unavailable');
+        }
+
+        const [statsData, crmData] = await Promise.all([
+          statsResponse.json(),
+          crmResponse.json(),
+        ]);
+
+        if (!active) return;
+        setStats(statsData);
+        setCrmStats(crmData);
+      } catch (error) {
+        console.error('Failed to load dashboard:', error);
+        if (active) setLoadError('Some dashboard data could not be loaded. Your content is still safe.');
+      } finally {
+        if (active) setLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to fetch dashboard data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    load();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const downloadBackup = async () => {
     setExporting(true);
-    setExportError("");
-    const token = getAdminToken();
+    setExportError('');
+
     try {
-      const res = await fetch("/api/admin/export", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      const response = await fetch('/api/admin/export', {
+        credentials: 'same-origin',
+        cache: 'no-store',
       });
-      if (res.status === 401) {
-        logout();
+
+      if (response.status === 401) {
+        await logout();
         return;
       }
-      if (!res.ok) {
-        setExportError("Unable to download backup.");
-        return;
-      }
-      const blob = await res.blob();
+      if (!response.ok) throw new Error('Backup failed');
+
+      const blob = await response.blob();
       const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
+      const link = document.createElement('a');
       link.href = url;
       link.download = `asca-content-backup-${new Date().toISOString().slice(0, 10)}.json`;
       document.body.appendChild(link);
@@ -105,153 +120,165 @@ export default function AdminDashboard() {
       link.remove();
       URL.revokeObjectURL(url);
     } catch {
-      setExportError("Unable to download backup.");
+      setExportError('Backup could not be prepared. Please try again.');
     } finally {
       setExporting(false);
     }
   };
 
+  const recentActivity = stats.recentActivity?.slice(0, 5) ?? [];
+
   return (
     <>
       <AdminPageHeader
         title="Dashboard"
-        subtitle="Welcome back. Here’s what’s happening with ASCA."
+        subtitle="Your daily workspace for what needs attention, recent activity, and common site updates."
         primaryAction={
           <button
+            type="button"
             onClick={downloadBackup}
             disabled={exporting}
-            className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-admin-primary px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-admin-primary-dark disabled:bg-admin-primary/50"
+            className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-admin-border-subtle bg-admin-surface px-4 text-sm font-semibold text-admin-fg-primary transition hover:bg-admin-bg-subtle disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {exporting ? "Preparing Backup..." : "Download Backup"}
+            {exporting ? 'Preparing backup…' : 'Download backup'}
           </button>
         }
       />
 
-      {exportError && (
-        <div className="mb-6 rounded-lg border border-admin-danger/30 bg-red-50 p-3 text-sm text-admin-danger">
-          {exportError}
+      {(loadError || exportError) && (
+        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900" role="status">
+          {exportError || loadError}
         </div>
       )}
 
-      <AdminSection title="Site overview">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <AdminSection title="Needs attention">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <AdminStatCard
-            label="Published Events"
-            value={loading ? "—" : stats.publishedEvents}
-            icon="📅"
-            href="/admin/events"
-          />
-          <AdminStatCard
-            label="Member Records"
-            value={loading ? "—" : stats.activeMembers}
-            icon="👥"
-            href="/admin/members"
-          />
-          <AdminStatCard
-            label="Gallery Images"
-            value={loading ? "—" : stats.totalGalleryImages}
-            icon="🖼️"
-            href="/admin/gallery"
-          />
-          <AdminStatCard
-            label="Messages"
-            value={loading ? "—" : stats.totalFormSubmissions}
-            icon="📬"
-            href="/admin/forms"
-          />
-        </div>
-      </AdminSection>
-
-      <AdminSection title="CRM preview" className="mt-6">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <AdminStatCard
-            label="Total Contacts"
-            value={loading ? "—" : crmStats.totalContacts}
-            icon="🤝"
-            href="/admin/contacts"
-          />
-          <AdminStatCard
-            label="CRM Members"
-            value={loading ? "—" : crmStats.activeMembers}
-            icon="👥"
-            href="/admin/contacts?lifecycleStage=member"
-          />
-          <AdminStatCard
-            label="New Messages"
-            value={loading ? "—" : crmStats.newMessages}
-            icon="📬"
+            label="New messages"
+            value={loading ? '—' : crmStats.newMessages}
             href="/admin/forms?status=new"
           />
           <AdminStatCard
-            label="Open Tasks"
-            value={loading ? "—" : crmStats.openTasks}
-            icon="☑️"
+            label="Open tasks"
+            value={loading ? '—' : crmStats.openTasks}
             href="/admin/tasks"
           />
+          <AdminStatCard
+            label="Published events"
+            value={loading ? '—' : stats.publishedEvents}
+            href="/admin/events"
+          />
+          <AdminStatCard
+            label="Active members"
+            value={loading ? '—' : stats.activeMembers}
+            href="/admin/members"
+          />
         </div>
-        <p className="mt-4 text-xs text-admin-fg-muted">
-          CRM stats update as contacts, messages, and tasks are created.
-        </p>
       </AdminSection>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <AdminCard className="lg:col-span-2">
-          <h2 className="mb-4 text-lg font-bold text-admin-fg-primary">Quick Actions</h2>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <QuickAction href="/admin/events" icon="📅" label="Manage Event Calendar" />
-            <QuickAction href="/admin/contacts" icon="🤝" label="Manage Contacts" />
-            <QuickAction href="/admin/tasks" icon="☑️" label="Manage Tasks" />
-            <QuickAction href="/admin/forms" icon="📬" label="Triage Messages" />
-            <QuickAction href="/admin/members" icon="👥" label="Manage Member Records" />
-            <QuickAction href="/admin/theme" icon="🎨" label="Edit Theme" />
+      <div className="mt-6 grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
+        <AdminCard>
+          <div className="mb-5">
+            <h2 className="text-lg font-bold text-admin-fg-primary">Common updates</h2>
+            <p className="mt-1 text-sm text-admin-fg-secondary">Go directly to the work you do most often.</p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <QuickAction
+              href="/admin/events"
+              label="Update events"
+              description="Publish meetings, rides, and community events."
+            />
+            <QuickAction
+              href="/admin/forms"
+              label="Review messages"
+              description="Reply to inquiries and close resolved conversations."
+            />
+            <QuickAction
+              href="/admin/albums"
+              label="Update gallery"
+              description="Create albums and manage recent activity photos."
+            />
+            <QuickAction
+              href="/admin/media"
+              label="Update page images"
+              description="Change key website photography without touching code."
+            />
           </div>
         </AdminCard>
 
         <AdminCard>
-          <h2 className="mb-4 text-lg font-bold text-admin-fg-primary">Recent Activity</h2>
-          {recentActivity.length > 0 ? (
-            <div className="space-y-3">
-              {recentActivity.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="flex items-start gap-3 rounded-lg border border-admin-border-subtle bg-admin-bg-body p-3"
-                >
-                  <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-admin-primary" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-admin-fg-primary">{activity.title}</p>
-                    <p className="text-xs text-admin-fg-muted">
-                      {activity.type} • {activity.user}
-                    </p>
-                  </div>
-                  <time className="text-xs text-admin-fg-muted">{activity.timestamp}</time>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-admin-fg-muted">No recent activity yet.</p>
-          )}
+          <h2 className="text-lg font-bold text-admin-fg-primary">At a glance</h2>
+          <dl className="mt-5 divide-y divide-admin-border-subtle">
+            <SummaryRow label="Contacts" value={loading ? '—' : crmStats.totalContacts} />
+            <SummaryRow label="Gallery images" value={loading ? '—' : stats.totalGalleryImages} />
+            <SummaryRow label="All form submissions" value={loading ? '—' : stats.totalFormSubmissions} />
+          </dl>
         </AdminCard>
       </div>
+
+      <AdminCard className="mt-6">
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-bold text-admin-fg-primary">Recent activity</h2>
+            <p className="mt-1 text-sm text-admin-fg-secondary">A quick record of recent changes in the workspace.</p>
+          </div>
+          <Link href="/admin/help" className="text-sm font-semibold text-admin-primary hover:underline">
+            Need help?
+          </Link>
+        </div>
+
+        {recentActivity.length > 0 ? (
+          <div className="divide-y divide-admin-border-subtle">
+            {recentActivity.map((activity) => (
+              <div key={activity.id} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-admin-fg-primary">{activity.title}</p>
+                  <p className="text-xs text-admin-fg-muted">
+                    {activity.type} · {activity.user}
+                  </p>
+                </div>
+                <time className="text-xs text-admin-fg-muted">{activity.timestamp}</time>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="rounded-xl bg-admin-bg-body p-4 text-sm text-admin-fg-muted">
+            No recent activity yet. New edits will appear here.
+          </p>
+        )}
+      </AdminCard>
     </>
   );
 }
 
 function QuickAction({
   href,
-  icon,
   label,
+  description,
 }: {
   href: string;
-  icon: string;
   label: string;
+  description: string;
 }) {
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 rounded-lg border border-admin-border-subtle bg-admin-bg-body p-4 transition-colors hover:bg-admin-bg-subtle"
+      className="group rounded-xl border border-admin-border-subtle bg-admin-bg-body p-4 transition hover:border-admin-primary/30 hover:bg-admin-bg-subtle"
     >
-      <span className="text-xl">{icon}</span>
-      <span className="font-medium text-admin-fg-primary">{label}</span>
+      <div className="flex items-center justify-between gap-3">
+        <span className="font-semibold text-admin-fg-primary">{label}</span>
+        <span className="text-admin-fg-muted transition group-hover:translate-x-0.5 group-hover:text-admin-primary" aria-hidden="true">→</span>
+      </div>
+      <p className="mt-2 text-sm leading-5 text-admin-fg-secondary">{description}</p>
     </Link>
+  );
+}
+
+function SummaryRow({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-3">
+      <dt className="text-sm text-admin-fg-secondary">{label}</dt>
+      <dd className="text-sm font-bold text-admin-fg-primary">{value}</dd>
+    </div>
   );
 }
