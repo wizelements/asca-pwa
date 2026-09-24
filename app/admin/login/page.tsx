@@ -103,7 +103,7 @@ export default function AdminLogin() {
               disabled={loading}
               className="inline-flex min-h-[48px] w-full items-center justify-center rounded-xl bg-admin-primary px-5 font-semibold text-white transition hover:bg-admin-primary-dark focus:outline-none focus:ring-4 focus:ring-admin-primary/20 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading ? 'Signing in…' : 'Sign in securely'}
+              {loading ? 'Signing in…' : 'Sign In'}
             </button>
           </form>
 
