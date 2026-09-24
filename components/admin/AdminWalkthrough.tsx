@@ -11,24 +11,28 @@ const STEPS = [
     body: 'Start here to see new messages, open tasks, member activity, and quick links to the work that needs attention.',
     href: '/admin',
     action: 'Open dashboard',
+    external: false,
   },
   {
     title: 'Events and messages',
     body: 'Use Events to publish calendar updates. Use Messages to review website inquiries and mark each one replied or resolved.',
     href: '/admin/events',
     action: 'Manage events',
+    external: false,
   },
   {
     title: 'People and follow-up',
     body: 'Contacts and Members keep relationship details organized. Tasks give the team a clear next action instead of relying on memory.',
     href: '/admin/contacts',
     action: 'View contacts',
+    external: false,
   },
   {
     title: 'Website content',
     body: 'Gallery albums, horses, page images, appearance, and donation settings are grouped under Website so routine edits stay easy to find.',
     href: '/admin/albums',
     action: 'Manage gallery',
+    external: false,
   },
   {
     title: 'Preview, verify, and back up',
