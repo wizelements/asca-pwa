@@ -43,7 +43,7 @@ Write-Host $secret
 openssl rand -base64 32
 
 # Example output:
-# 4gF9jK2mL5pQ8wX3bZ7cN9rV1mE6tY0aB5sD8fH2jK4=
+# <EXAMPLE_RANDOM_SECRET>
 ```
 
 ---
@@ -54,8 +54,8 @@ openssl rand -base64 32
 
 | Variable | Value | Location | Example |
 |----------|-------|----------|---------|
-| `MONGODB_URI` | MongoDB connection string | `.env.local` + Vercel | `mongodb+srv://asca-admin:AsCA2024@asca-cluster.mongodb.net/asca-pwa?retryWrites=true&w=majority` |
-| `NEXTAUTH_SECRET` | Random 32-byte secret | `.env.local` + Vercel | `4gF9jK2mL5pQ8wX3bZ7cN9rV1mE6tY0aB5sD8fH2jK4=` |
+| `MONGODB_URI` | MongoDB connection string | `.env.local` + Vercel | `mongodb+srv://<user>:<password>@<cluster>/<database>?retryWrites=true&w=majority` |
+| `NEXTAUTH_SECRET` | Random 32-byte secret | `.env.local` + Vercel | `<EXAMPLE_RANDOM_SECRET>` |
 | `NEXTAUTH_URL` | Deployment URL | `.env.local` + Vercel | `https://asca-pwa.vercel.app` |
 | `RESEND_API_KEY` | Resend email service key | Vercel only | `re_xxxxxxxxxx...` |
 
@@ -97,7 +97,7 @@ openssl rand -base64 32
 
 **Current .env.local** (already configured):
 ```
-MONGODB_URI=mongodb+srv://asca-admin:AsCA2024@asca-cluster.mongodb.net/asca-pwa?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/<database>?retryWrites=true&w=majority
 NEXTAUTH_SECRET=your-secret-key-here  # UPDATE THIS
 NEXTAUTH_URL=https://asca-pwa.vercel.app
 RESEND_API_KEY=re_your_resend_api_key_here  # UPDATE THIS
@@ -174,7 +174,7 @@ curl -X POST http://localhost:3000/api/auth/[...nextauth] \
   -H "Content-Type: application/json" \
   -d '{
     "email": "admin@ascapwa.org",
-    "password": "AsCA2024!Secure",
+    "password": "<ROTATED_ADMIN_PASSWORD>",
     "action": "login"
   }'
 ```
@@ -197,7 +197,7 @@ curl -X POST http://localhost:3000/api/auth/[...nextauth] \
 
 ```
 Email: admin@ascapwa.org
-Password: AsCA2024!Secure
+Password: <ROTATED_ADMIN_PASSWORD>
 Role: admin
 ```
 
@@ -224,7 +224,7 @@ Role: editor
 
 **Connection String**:
 ```
-mongodb+srv://asca-admin:AsCA2024@asca-cluster.mongodb.net/asca-pwa?retryWrites=true&w=majority
+mongodb+srv://<user>:<password>@<cluster>/<database>?retryWrites=true&w=majority
 ```
 
 ### Collections (Created Automatically)
@@ -311,19 +311,19 @@ For Vercel serverless, MongoDB Atlas automatically:
 ### Development
 ```bash
 NEXTAUTH_URL=http://localhost:3000
-MONGODB_URI=mongodb+srv://asca-admin:AsCA2024@asca-cluster.mongodb.net/asca-pwa-dev
+MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/<database>-dev
 ```
 
 ### Staging (if needed)
 ```bash
 NEXTAUTH_URL=https://staging.asca-pwa.vercel.app
-MONGODB_URI=mongodb+srv://asca-admin:AsCA2024@asca-cluster.mongodb.net/asca-pwa-staging
+MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/<database>-staging
 ```
 
 ### Production
 ```bash
 NEXTAUTH_URL=https://asca-pwa.vercel.app
-MONGODB_URI=mongodb+srv://asca-admin:AsCA2024@asca-cluster.mongodb.net/asca-pwa
+MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/<database>
 ```
 
 ---
@@ -356,7 +356,7 @@ MONGODB_URI=mongodb+srv://asca-admin:AsCA2024@asca-cluster.mongodb.net/asca-pwa
 
 ### Test MongoDB Connection
 ```bash
-mongosh "mongodb+srv://asca-admin:AsCA2024@asca-cluster.mongodb.net/asca-pwa"
+mongosh "mongodb+srv://<user>:<password>@<cluster>/<database>"
 ```
 
 ### Test Resend Email
