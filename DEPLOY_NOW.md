@@ -55,7 +55,7 @@ Expected output:
 ```
 ✅ Seed completed successfully!
 Email: admin@ascapwa.org
-Password: AsCA2024!Secure
+Password: <ROTATED_ADMIN_PASSWORD>
 ```
 
 ### Terminal 2: Verify
@@ -417,7 +417,7 @@ After deploying to production:
 
 **Admin Credentials:**
 - Email: admin@ascapwa.org
-- Password: AsCA2024!Secure (change immediately)
+- Password: <ROTATED_ADMIN_PASSWORD> (change immediately)
 
 **Live URL:**
 - https://asca-pwa.vercel.app
