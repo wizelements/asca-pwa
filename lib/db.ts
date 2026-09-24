@@ -1,15 +1,21 @@
-import { createClient, type Client } from '@libsql/client/http';
+import { createClient as createHttpClient, type Client } from '@libsql/client/http';
 
 let client: Client | null = null;
 
 function createDbClient(url: string, authToken?: string): Client {
-  // Termux arm64 has no native @libsql/android-arm64 binary. The HTTP-only
-  // client avoids loading libsql native bindings entirely and uses the remote
-  // Turso HTTP API. This works for https:// and http:// URLs during builds
-  // and on-device commands.
-  return createClient({
+  if (url.startsWith('file:')) {
+    // Load the native-capable client only when a local SQLite/libSQL file is
+    // explicitly requested (CI, E2E, or desktop development). Keeping this
+    // require inside the branch avoids loading native bindings on Termux when
+    // the app is using remote Turso over HTTP.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { createClient: createLocalClient } = require('@libsql/client');
+    return createLocalClient({ url }) as Client;
+  }
+
+  return createHttpClient({
     url,
-    authToken,
+    ...(authToken ? { authToken } : {}),
   });
 }
 
@@ -25,6 +31,5 @@ export function getDb(): Client {
   }
 
   client = createDbClient(url, authToken);
-
   return client;
 }
