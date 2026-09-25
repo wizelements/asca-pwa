@@ -1,81 +1,81 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
-import { NAV_GROUPS } from "./AdminSidebar";
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
+import { NAV_GROUPS } from './AdminSidebar';
 
 export interface MobileAdminNavProps {
   activeHref?: string;
+  open: boolean;
+  onClose: () => void;
 }
 
-export default function MobileAdminNav({ activeHref }: MobileAdminNavProps) {
-  const [open, setOpen] = useState(false);
+function isCurrent(activeHref: string | undefined, href: string) {
+  if (!activeHref) return false;
+  if (href === '/admin') return activeHref === href;
+  return activeHref === href || activeHref.startsWith(`${href}/`);
+}
 
-  useEffect(() => {
-    const toggle = () => setOpen((prev) => !prev);
-    const button = document.querySelector("[data-mobile-menu-toggle]");
-    button?.addEventListener("click", toggle);
-    return () => button?.removeEventListener("click", toggle);
-  }, []);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    if (open) window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
-
+export default function MobileAdminNav({ activeHref, open, onClose }: MobileAdminNavProps) {
   return (
     <>
       {open && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-          onClick={() => setOpen(false)}
-          aria-hidden="true"
+        <button
+          type="button"
+          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+          onClick={onClose}
+          aria-label="Close navigation"
         />
       )}
-      <div
+
+      <aside
         className={cn(
-          "fixed left-0 top-0 z-50 h-full w-64 transform bg-admin-surface shadow-xl transition-transform duration-200 ease-in-out lg:hidden",
-          open ? "translate-x-0" : "-translate-x-full"
+          'fixed inset-y-0 left-0 z-50 w-[min(82vw,19rem)] transform bg-admin-surface shadow-2xl transition-transform duration-200 lg:hidden',
+          open ? 'translate-x-0' : '-translate-x-full'
         )}
+        aria-hidden={!open}
       >
         <div className="flex h-16 items-center justify-between border-b border-admin-border-subtle px-4">
-          <span className="text-lg font-bold text-admin-fg-primary">ASCA Admin</span>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-admin-primary">ASCA</p>
+            <p className="text-sm font-bold text-admin-fg-primary">Client Workspace</p>
+          </div>
           <button
             type="button"
-            onClick={() => setOpen(false)}
-            className="rounded-lg p-2 text-admin-fg-primary hover:bg-admin-bg-subtle"
-            aria-label="Close menu"
+            onClick={onClose}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-admin-fg-primary hover:bg-admin-bg-subtle"
+            aria-label="Close navigation"
           >
-            ✕
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+              <path d="m6 6 12 12M18 6 6 18" strokeLinecap="round" />
+            </svg>
           </button>
         </div>
-        <nav className="h-[calc(100%-4rem)] overflow-y-auto p-4">
+
+        <nav className="h-[calc(100dvh-4rem)] overflow-y-auto px-3 py-5" aria-label="Admin">
           {NAV_GROUPS.map((group) => (
-            <div key={group.label} className="mb-6">
-              <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-admin-fg-muted">
+            <div key={group.label} className="mb-5">
+              <p className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-admin-fg-muted">
                 {group.label}
               </p>
               <ul className="space-y-1">
                 {group.items.map((item) => {
-                  const isActive = activeHref === item.href;
+                  const active = isCurrent(activeHref, item.href);
                   return (
                     <li key={item.href}>
-                      <a
+                      <Link
                         href={item.href}
-                        onClick={() => setOpen(false)}
+                        onClick={onClose}
+                        aria-current={active ? 'page' : undefined}
                         className={cn(
-                          "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors",
-                          isActive
-                            ? "bg-admin-bg-subtle text-admin-fg-primary"
-                            : "text-admin-fg-secondary hover:bg-admin-bg-subtle hover:text-admin-fg-primary"
+                          'flex min-h-[44px] items-center rounded-lg px-3 py-2 text-sm font-medium transition',
+                          active
+                            ? 'bg-admin-bg-subtle text-admin-primary'
+                            : 'text-admin-fg-secondary hover:bg-admin-bg-subtle hover:text-admin-fg-primary'
                         )}
                       >
-                        <span className="text-base">{item.icon}</span>
                         {item.label}
-                      </a>
+                      </Link>
                     </li>
                   );
                 })}
@@ -83,7 +83,7 @@ export default function MobileAdminNav({ activeHref }: MobileAdminNavProps) {
             </div>
           ))}
         </nav>
-      </div>
+      </aside>
     </>
   );
 }

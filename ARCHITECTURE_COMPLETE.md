@@ -1,3 +1,5 @@
+> **HISTORICAL ARCHITECTURE — NOT CURRENT PRODUCTION SOURCE OF TRUTH (September 2026).** This document describes the original January 2026 design. The implemented app now uses the architecture documented in README.md and the live codebase. Do not use credentials, deployment steps, database choices, or dependency versions from this document for production.
+
 # ASCA PWA + Admin System — Complete Architecture
 
 **Project:** Atlanta Saddle Club Association  

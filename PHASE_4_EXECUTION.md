@@ -93,7 +93,7 @@ npm run db:seed
 ```
 
 **Creates:**
-- ✓ Admin user (admin@ascapwa.org / AsCA2024!Secure)
+- ✓ Admin user (admin@ascapwa.org / <ROTATED_ADMIN_PASSWORD>)
 - ✓ Theme (ASCA brand colors)
 - ✓ Settings (contact, social, Venmo)
 - ✓ 4 sample events

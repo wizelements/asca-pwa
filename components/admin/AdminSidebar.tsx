@@ -1,59 +1,46 @@
-import { cn } from "@/lib/utils";
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 export interface NavGroup {
   label: string;
-  items: { label: string; href: string; icon: string }[];
+  items: { label: string; href: string }[];
 }
 
 export const NAV_GROUPS: NavGroup[] = [
   {
-    label: "Overview",
-    items: [{ label: "Dashboard", href: "/admin", icon: "📊" }],
+    label: 'Workspace',
+    items: [{ label: 'Dashboard', href: '/admin' }],
   },
   {
-    label: "Relationships",
+    label: 'People',
     items: [
-      { label: "Contacts", href: "/admin/contacts", icon: "🤝" },
-      { label: "Member Records", href: "/admin/members", icon: "👥" },
+      { label: 'Contacts', href: '/admin/contacts' },
+      { label: 'Members', href: '/admin/members' },
     ],
   },
   {
-    label: "Communications",
+    label: 'Operations',
     items: [
-      { label: "Messages", href: "/admin/forms", icon: "📬" },
+      { label: 'Events', href: '/admin/events' },
+      { label: 'Messages', href: '/admin/forms' },
+      { label: 'Tasks', href: '/admin/tasks' },
     ],
   },
   {
-    label: "Calendar",
+    label: 'Website',
     items: [
-      { label: "Event Calendar", href: "/admin/events", icon: "📅" },
+      { label: 'Gallery albums', href: '/admin/albums' },
+      { label: 'Horses', href: '/admin/horses' },
+      { label: 'Page images', href: '/admin/media' },
+      { label: 'Appearance', href: '/admin/theme' },
+      { label: 'Social & donations', href: '/admin/settings' },
     ],
   },
   {
-    label: "Tasks",
+    label: 'Support',
     items: [
-      { label: "Tasks", href: "/admin/tasks", icon: "☑️" },
-    ],
-  },
-  {
-    label: "Site",
-    items: [
-      { label: "Page Images", href: "/admin/media", icon: "📁" },
-      { label: "Gallery Albums", href: "/admin/albums", icon: "🎞️" },
-      { label: "Horses", href: "/admin/horses", icon: "🐴" },
-      { label: "Categories", href: "/admin/categories", icon: "🏷️" },
-      { label: "Legacy Review", href: "/admin/legacy-review", icon: "🔍" },
-      { label: "Media Integrity", href: "/admin/media-integrity", icon: "🧩" },
-      { label: "Legacy Gallery", href: "/admin/gallery", icon: "🖼️" },
-      { label: "Theme", href: "/admin/theme", icon: "🎨" },
-      { label: "Social & Donations", href: "/admin/settings", icon: "💝" },
-    ],
-  },
-  {
-    label: "Account",
-    items: [
-      { label: "Account", href: "/admin/account", icon: "🔐" },
-      { label: "Help", href: "/admin/help", icon: "❔" },
+      { label: 'Help & walkthrough', href: '/admin/help' },
+      { label: 'Account', href: '/admin/account' },
     ],
   },
 ];
@@ -62,35 +49,45 @@ export interface AdminSidebarProps {
   activeHref?: string;
 }
 
+function isCurrent(activeHref: string | undefined, href: string) {
+  if (!activeHref) return false;
+  if (href === '/admin') return activeHref === href;
+  return activeHref === href || activeHref.startsWith(`${href}/`);
+}
+
 export default function AdminSidebar({ activeHref }: AdminSidebarProps) {
   return (
-    <aside className="hidden w-64 flex-col border-r border-admin-border-subtle bg-admin-surface lg:flex">
+    <aside className="hidden w-64 shrink-0 flex-col border-r border-admin-border-subtle bg-admin-surface lg:flex">
       <div className="flex h-16 items-center border-b border-admin-border-subtle px-6">
-        <span className="text-lg font-bold text-admin-fg-primary">ASCA Admin</span>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-admin-primary">ASCA</p>
+          <p className="text-sm font-bold text-admin-fg-primary">Client Workspace</p>
+        </div>
       </div>
-      <nav className="flex-1 overflow-y-auto p-4">
+
+      <nav className="flex-1 overflow-y-auto px-3 py-5" aria-label="Admin">
         {NAV_GROUPS.map((group) => (
-          <div key={group.label} className="mb-6">
-            <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-admin-fg-muted">
+          <div key={group.label} className="mb-5">
+            <p className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-admin-fg-muted">
               {group.label}
             </p>
             <ul className="space-y-1">
               {group.items.map((item) => {
-                const isActive = activeHref === item.href;
+                const active = isCurrent(activeHref, item.href);
                 return (
                   <li key={item.href}>
-                    <a
+                    <Link
                       href={item.href}
+                      aria-current={active ? 'page' : undefined}
                       className={cn(
-                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                        isActive
-                          ? "bg-admin-bg-subtle text-admin-fg-primary"
-                          : "text-admin-fg-secondary hover:bg-admin-bg-subtle hover:text-admin-fg-primary"
+                        'flex min-h-[40px] items-center rounded-lg px-3 py-2 text-sm font-medium transition',
+                        active
+                          ? 'bg-admin-bg-subtle text-admin-primary'
+                          : 'text-admin-fg-secondary hover:bg-admin-bg-subtle hover:text-admin-fg-primary'
                       )}
                     >
-                      <span className="text-base">{item.icon}</span>
                       {item.label}
-                    </a>
+                    </Link>
                   </li>
                 );
               })}

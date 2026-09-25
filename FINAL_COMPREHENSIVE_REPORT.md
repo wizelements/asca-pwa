@@ -25,7 +25,7 @@ Error: querySrv ENOTFOUND _mongodb._tcp.asca-cluster.mongodb.net
 - Dynamic content storage (members, blog posts, events)
 
 **Configuration Verified:**
-- ✅ `MONGODB_URI` set in `.env.local`: `mongodb+srv://asca-admin:AsCA2024@asca-cluster.mongodb.net/asca-pwa`
+- ✅ `MONGODB_URI` set in `.env.local`: `mongodb+srv://<user>:<password>@<cluster>/<database>`
 - ✅ Username: `asca-admin`
 - ✅ Database: `asca-pwa`
 - ❌ DNS resolution: FAILED (network connectivity issue)
@@ -258,7 +258,7 @@ Error: querySrv ENOTFOUND _mongodb._tcp.asca-cluster.mongodb.net
 
 **Local `.env.local`:**
 ```
-MONGODB_URI=mongodb+srv://asca-admin:AsCA2024@asca-cluster.mongodb.net/asca-pwa?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/<database>?retryWrites=true&w=majority
 RESEND_API_KEY=re_your_resend_api_key_here
 NEXTAUTH_SECRET=your-secret-key-here
 NEXTAUTH_URL=https://asca-pwa.vercel.app
@@ -356,7 +356,7 @@ Priority: **🔴 CRITICAL**
    nslookup _mongodb._tcp.asca-cluster.mongodb.net
    
    # Test connection with MongoDB shell
-   mongosh mongodb+srv://asca-admin:AsCA2024@asca-cluster.mongodb.net/asca-pwa
+   mongosh mongodb+srv://<user>:<password>@<cluster>/<database>
    ```
    
 2. **Verify MongoDB Atlas Settings**

@@ -101,7 +101,7 @@ components/
 
 **Users Collection:**
 - Email: admin@ascapwa.org
-- Password: AsCA2024!Secure (hashed with bcrypt)
+- Password: <ROTATED_ADMIN_PASSWORD> (hashed with bcrypt)
 
 ---
 
@@ -173,7 +173,7 @@ npm run db:seed-complete
 # ✅ Seed completed successfully!
 # 📋 Credentials:
 # Email: admin@ascapwa.org
-# Password: AsCA2024!Secure
+# Password: <ROTATED_ADMIN_PASSWORD>
 ```
 
 ### Step 4: Test Locally

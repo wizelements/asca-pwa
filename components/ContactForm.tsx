@@ -9,6 +9,7 @@ export default function ContactForm() {
     email: '',
     subject: '',
     message: '',
+    website: '',
   });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
@@ -23,7 +24,7 @@ export default function ContactForm() {
       });
       if (res.ok) {
         setStatus('success');
-        setForm({ firstName: '', lastName: '', email: '', subject: '', message: '' });
+        setForm({ firstName: '', lastName: '', email: '', subject: '', message: '', website: '' });
       } else {
         setStatus('error');
       }
@@ -34,6 +35,18 @@ export default function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true">
+        <label htmlFor="c-website">Website</label>
+        <input
+          id="c-website"
+          type="text"
+          name="website"
+          value={form.website}
+          onChange={(e) => setForm((p) => ({ ...p, website: e.target.value }))}
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      </div>
       <div>
         <label htmlFor="c-first" className="input-label">First Name</label>
         <input

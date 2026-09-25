@@ -75,7 +75,7 @@ npm run db:seed-complete
 
 📋 Credentials:
 Email: admin@ascapwa.org
-Password: AsCA2024!Secure
+Password: <ROTATED_ADMIN_PASSWORD>
 
 ⚠️  Change password immediately after first login!
 ```

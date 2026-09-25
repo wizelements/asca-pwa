@@ -1,4 +1,6 @@
+import { timingSafeEqual } from 'crypto';
 import { NextResponse } from 'next/server';
+
 import { EVENTS } from '@/lib/content/events';
 import { createEvent, createGalleryImage, getEvents, getGalleryImages } from '@/lib/db/queries';
 
@@ -17,12 +19,21 @@ function parseSeedDate(value: string | undefined, fallback: string | undefined) 
   return date;
 }
 
+function matchesSecret(provided: string, expected: string): boolean {
+  const a = Buffer.from(provided);
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
 export async function POST(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const key = searchParams.get('key');
+  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_PRODUCTION_SEED !== 'true') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
 
   const validKey = process.env.SEED_KEY;
-  if (!validKey || key !== validKey) {
+  const providedKey = request.headers.get('x-seed-key') || '';
+
+  if (!validKey || !providedKey || !matchesSecret(providedKey, validKey)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -73,9 +84,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, results });
   } catch (error) {
     console.error('[SEED]', error);
-    return NextResponse.json(
-      { error: 'Failed to seed database', details: String(error) },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to seed database' }, { status: 500 });
   }
 }

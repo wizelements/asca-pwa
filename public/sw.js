@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'asca-pwa';
-const CACHE_VERSION = '20260720-speed-optimization';
+const CACHE_VERSION = '20260924-hardening';
 const STATIC_CACHE = `${CACHE_PREFIX}-${CACHE_VERSION}-static`;
 const IMMUTABLE_CACHE = `${CACHE_PREFIX}-${CACHE_VERSION}-immutable`;
 const STATIC_ASSETS = ['/offline.html', '/icons/icon-192.png', '/icons/icon-512.png'];
@@ -13,8 +13,8 @@ function isImmutableAsset(request) {
   return pathname.startsWith('/_next/static/') || pathname.startsWith('/icons/');
 }
 
-async function fetchFresh(request) {
-  return fetch(request, { cache: 'reload' });
+async function networkOnly(request) {
+  return fetch(request, { cache: 'no-store' });
 }
 
 async function cacheFirst(request) {
@@ -31,44 +31,40 @@ async function cacheFirst(request) {
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(STATIC_CACHE).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
-    }).then(() => self.skipWaiting())
+    caches
+      .open(STATIC_CACHE)
+      .then((cache) => cache.addAll(STATIC_ASSETS))
+      .then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
-          .filter((name) => name.startsWith(CACHE_PREFIX) && ![STATIC_CACHE, IMMUTABLE_CACHE].includes(name))
-          .map((name) => caches.delete(name))
-      );
-    })
+    caches
+      .keys()
+      .then((cacheNames) =>
+        Promise.all(
+          cacheNames
+            .filter(
+              (name) =>
+                name.startsWith(CACHE_PREFIX) &&
+                ![STATIC_CACHE, IMMUTABLE_CACHE].includes(name)
+            )
+            .map((name) => caches.delete(name))
+        )
+      )
       .then(() => self.clients.claim())
-      .then(() => self.clients.matchAll({ type: 'window' }))
-      .then((clients) => {
-        clients.forEach((client) => {
-          const url = new URL(client.url);
-          if (url.origin === self.location.origin) {
-            client.navigate(client.url);
-          }
-        });
-      })
   );
 });
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
-  const isNav = event.request.mode === 'navigate';
+  const isNavigation = event.request.mode === 'navigate';
   const { pathname } = new URL(event.request.url);
 
-  // Always fetch pages, admin screens, APIs, Next data, manifests, and content images fresh.
-  // The previous cache-first strategy stored HTML and made users open Incognito to see updates.
   if (
-    isNav ||
+    isNavigation ||
     pathname.startsWith('/api/') ||
     pathname.startsWith('/admin') ||
     pathname.startsWith('/_next/data/') ||
@@ -78,8 +74,10 @@ self.addEventListener('fetch', (event) => {
     pathname.startsWith('/_next/image')
   ) {
     event.respondWith(
-      fetchFresh(event.request).catch(() => {
-        if (isNav) return caches.match('/offline.html');
+      networkOnly(event.request).catch(async () => {
+        if (isNavigation) {
+          return (await caches.match('/offline.html')) || new Response('Offline', { status: 503 });
+        }
         return new Response('Offline', { status: 503 });
       })
     );
@@ -91,7 +89,5 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  event.respondWith(
-    fetch(event.request).catch(() => new Response('Offline', { status: 503 }))
-  );
+  event.respondWith(fetch(event.request).catch(() => new Response('Offline', { status: 503 })));
 });

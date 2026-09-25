@@ -38,10 +38,10 @@
 
 ```bash
 # Database
-MONGODB_URI=mongodb+srv://asca-admin:AsCA2024@asca-cluster.mongodb.net/asca-pwa?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/<database>?retryWrites=true&w=majority
 
 # NextAuth (Authentication)
-NEXTAUTH_SECRET=FrRj1ewPpAiB1TIKdOVORdEVdWFdTDo2nmaiOG9t0ds=
+NEXTAUTH_SECRET=<ROTATED_NEXTAUTH_SECRET>
 NEXTAUTH_URL=https://asca-pwa.vercel.app
 
 # Email (Resend)
@@ -57,7 +57,7 @@ NEXT_PUBLIC_BUILD_DATE=2026-02-22
 
 # Admin Credentials (⚠️ CHANGE AFTER FIRST LOGIN)
 ADMIN_EMAIL=admin@ascapwa.org
-ADMIN_PASSWORD=AsCA2024!Secure
+ADMIN_PASSWORD=<ROTATED_ADMIN_PASSWORD>
 
 # Firebase (Phase 5+, Optional)
 NEXT_PUBLIC_FIREBASE_API_KEY=
@@ -131,7 +131,7 @@ asca-pwa/
 ### Connection String
 
 ```
-mongodb+srv://asca-admin:AsCA2024@asca-cluster.mongodb.net/asca-pwa?retryWrites=true&w=majority
+mongodb+srv://<user>:<password>@<cluster>/<database>?retryWrites=true&w=majority
 ```
 
 **Components**:
@@ -313,7 +313,7 @@ vercel env add NEXTAUTH_SECRET
 
 ```
 Email: admin@ascapwa.org
-Password: AsCA2024!Secure
+Password: <ROTATED_ADMIN_PASSWORD>
 ```
 
 ⚠️ **SECURITY WARNING**: Change this password immediately after first login!
@@ -378,7 +378,7 @@ Password: [Will be generated during Phase 3 setup]
    ```bash
    pnpm dev
    # Navigate to http://localhost:3000
-   # Try login with admin@ascapwa.org / AsCA2024!Secure
+   # Try login with admin@ascapwa.org / <ROTATED_ADMIN_PASSWORD>
    # Check /api/events/crud returns data
    ```
 
@@ -441,7 +441,7 @@ vercel env ls
 
 ### Verify MongoDB Connection
 ```bash
-mongosh "mongodb+srv://asca-admin:AsCA2024@asca-cluster.mongodb.net/asca-pwa"
+mongosh "mongodb+srv://<user>:<password>@<cluster>/<database>"
 ```
 
 ### Test API Endpoint

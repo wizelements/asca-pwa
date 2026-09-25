@@ -8,51 +8,60 @@ export interface AuthUser {
   email: string;
   name: string;
   role: 'admin' | 'editor' | 'viewer';
-  token: string;
 }
 
-const ROLES = ['viewer', 'editor', 'admin'];
+const ROLES = ['viewer', 'editor', 'admin'] as const;
 
-export function useAuth(): { user: AuthUser | null; isLoading: boolean; logout: () => void } {
+export function useAuth(): { user: AuthUser | null; isLoading: boolean; logout: () => Promise<void> } {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('asca_admin_user');
-      if (stored) {
-        setUser(JSON.parse(stored));
-      }
-    } catch {
-      // ignore
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    const controller = new AbortController();
 
-  const logout = () => {
-    localStorage.removeItem('asca_admin_user');
-    window.location.href = '/admin/login';
-  };
+    fetch('/api/auth', {
+      cache: 'no-store',
+      credentials: 'same-origin',
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) return null;
+        const data = await response.json();
+        return data.user as AuthUser;
+      })
+      .then((sessionUser) => setUser(sessionUser))
+      .catch((error: unknown) => {
+        if (!(error instanceof Error && error.name === 'AbortError')) {
+          setUser(null);
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoading(false);
+      });
+
+    return () => controller.abort();
+  }, []);
 
   return { user, isLoading, logout };
 }
 
+/**
+ * Kept temporarily for existing admin fetch calls. Authentication now uses an
+ * HttpOnly same-origin cookie, so callers should not attach bearer tokens.
+ */
 export function getAdminToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const stored = localStorage.getItem('asca_admin_user');
-    if (!stored) return null;
-    const user = JSON.parse(stored) as AuthUser;
-    return user.token || null;
-  } catch {
-    return null;
-  }
+  return null;
 }
 
-export function logout(): void {
-  localStorage.removeItem('asca_admin_user');
-  window.location.href = '/admin/login';
+export async function logout(): Promise<void> {
+  try {
+    await fetch('/api/auth', {
+      method: 'DELETE',
+      credentials: 'same-origin',
+    });
+  } finally {
+    window.location.assign('/admin/login');
+  }
 }
 
 interface AdminGuardProps {
@@ -70,19 +79,18 @@ export default function AdminGuard({ children, requiredRole = 'admin' }: AdminGu
       router.replace('/admin/login');
       return;
     }
+
     const userIndex = ROLES.indexOf(user.role);
     const requiredIndex = ROLES.indexOf(requiredRole);
-    if (userIndex < requiredIndex) {
-      router.replace('/unauthorized');
-    }
+    if (userIndex < requiredIndex) router.replace('/unauthorized');
   }, [isLoading, user, router, requiredRole]);
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-brand-bg-body">
-        <div className="text-center">
-          <div className="animate-spin inline-block w-12 h-12 border-4 border-brand-forest border-t-brand-accent rounded-full"></div>
-          <p className="mt-4 text-brand-fg-primary font-semibold">Loading...</p>
+      <div className="flex min-h-screen items-center justify-center bg-admin-bg-body">
+        <div className="text-center" role="status" aria-live="polite">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-admin-border-subtle border-t-admin-primary" />
+          <p className="mt-4 text-sm font-medium text-admin-fg-secondary">Opening your workspace…</p>
         </div>
       </div>
     );

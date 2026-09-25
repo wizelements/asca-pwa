@@ -1,3 +1,5 @@
+> **HISTORICAL HANDOFF — NOT CURRENT OPERATIONS GUIDANCE (September 2026).** This January 2026 document is retained for project history. Use README.md, START_HERE.md, package.json, .env.example, and the live codebase for current development and deployment.
+
 # ASCA PWA Project — Handoff & Build Initialization
 
 **Handoff Date:** January 26, 2026 | 22:15 UTC  

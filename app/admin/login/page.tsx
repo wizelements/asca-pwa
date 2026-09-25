@@ -11,97 +11,107 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      const res = await fetch('/api/auth', {
+      const response = await fetch('/api/auth', {
         method: 'POST',
+        credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'login', email, password }),
+        body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || 'Login failed');
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error || 'Sign in failed. Check your email and password.');
         return;
       }
 
-      localStorage.setItem('asca_admin_user', JSON.stringify({
-        id: data.user.id,
-        email: data.user.email,
-        name: data.user.name,
-        role: data.user.role,
-        token: data.token,
-      }));
-
-      router.push('/admin');
-    } catch (err) {
-      setError('An error occurred. Please try again.');
+      router.replace('/admin');
+      router.refresh();
+    } catch {
+      setError('We could not sign you in. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-brand-bg-body px-4">
-      <div className="max-w-md w-full bg-brand-bg-elevated rounded-xl shadow-lg border border-brand-border-subtle p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-brand-fg-primary">ASCA Admin</h1>
-          <p className="mt-2 text-brand-fg-secondary">Sign in to manage your site</p>
+    <main className="flex min-h-screen items-center justify-center bg-admin-bg-body px-4 py-10">
+      <section className="w-full max-w-md overflow-hidden rounded-2xl border border-admin-border-subtle bg-admin-surface shadow-xl">
+        <div className="border-b border-admin-border-subtle bg-admin-primary px-8 py-7 text-white">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">Atlanta Saddle Club</p>
+          <h1 className="mt-2 text-3xl font-bold">ASCA Admin</h1>
+          <p className="mt-2 text-sm leading-6 text-white/80">
+            Manage events, members, messages, photos, and site content from one workspace.
+          </p>
         </div>
 
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
-            {error}
-          </div>
-        )}
+        <div className="p-8">
+          {error && (
+            <div
+              className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+              role="alert"
+            >
+              {error}
+            </div>
+          )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label htmlFor="admin-email" className="block text-sm font-medium text-brand-fg-primary mb-1">Email</label>
-            <input
-              id="admin-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-brand-border-subtle rounded-lg bg-brand-bg-body text-brand-fg-primary focus:outline-none focus:ring-2 focus:ring-brand-forest"
-              placeholder="admin@atlantasaddleclub.com"
-              required
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label htmlFor="admin-email" className="mb-2 block text-sm font-semibold text-admin-fg-primary">
+                Email
+              </label>
+              <input
+                id="admin-email"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                autoComplete="username"
+                inputMode="email"
+                className="min-h-[48px] w-full rounded-xl border border-admin-border-subtle bg-white px-4 text-admin-fg-primary outline-none transition focus:border-admin-primary focus:ring-4 focus:ring-admin-primary/10"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
 
-          <div>
-            <label htmlFor="admin-password" className="block text-sm font-medium text-brand-fg-primary mb-1">Password</label>
-            <input
-              id="admin-password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-brand-border-subtle rounded-lg bg-brand-bg-body text-brand-fg-primary focus:outline-none focus:ring-2 focus:ring-brand-forest"
-              placeholder="••••••••"
-              required
-            />
-          </div>
+            <div>
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <label htmlFor="admin-password" className="text-sm font-semibold text-admin-fg-primary">
+                  Password
+                </label>
+                <Link href="/admin/reset-password" className="text-sm font-medium text-admin-primary hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
+              <input
+                id="admin-password"
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete="current-password"
+                className="min-h-[48px] w-full rounded-xl border border-admin-border-subtle bg-white px-4 text-admin-fg-primary outline-none transition focus:border-admin-primary focus:ring-4 focus:ring-admin-primary/10"
+                required
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 px-4 rounded-lg bg-brand-forest text-white font-semibold hover:bg-brand-forest-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={loading}
+              className="inline-flex min-h-[48px] w-full items-center justify-center rounded-xl bg-admin-primary px-5 font-semibold text-white transition hover:bg-admin-primary-dark focus:outline-none focus:ring-4 focus:ring-admin-primary/20 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading ? 'Signing in…' : 'Sign In'}
+            </button>
+          </form>
 
-        <div className="mt-6 text-center">
-          <Link href="/admin/reset-password" className="text-sm font-medium text-brand-forest hover:underline">
-            Forgot your password?
-          </Link>
+          <p className="mt-6 text-center text-xs leading-5 text-admin-fg-muted">
+            Your session is stored securely in this browser and is not exposed to page scripts.
+          </p>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
