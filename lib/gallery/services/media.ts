@@ -1,4 +1,4 @@
-import { getDbClient, type DbClient } from './db.ts';
+import { getDbClient } from './db.ts';
 import {
   createMediaAsset as createStoredAsset,
   mediaAssetUrl,
@@ -13,6 +13,11 @@ export interface MediaAssetRecord {
   dataUrl: string;
   createdAt: Date | null;
   updatedAt: Date | null;
+}
+
+export interface MediaAssetUsage {
+  total: number;
+  locations: string[];
 }
 
 export async function createMediaAssetFromDataUrl(dataUrl: string): Promise<{ id: string; url: string }> {
@@ -43,11 +48,48 @@ export async function getMediaAssetById(id: string): Promise<MediaAssetRecord | 
 }
 
 export function getMediaAssetPublicUrl(id: string, updatedAt?: Date | null): string {
-  const version = updatedAt ? Math.floor(updatedAt.getTime() / 1000) : Date.now();
+  const version = updatedAt ? Math.floor(updatedAt.getTime() / 1000) : id.replace(/^asset-/, '');
   return mediaAssetUrl(id, version);
 }
 
+export async function getMediaAssetUsage(id: string): Promise<MediaAssetUsage> {
+  const db = getDbClient();
+  const publicUrlPrefix = '/api/media/asset/' + id;
+  const results = await Promise.all([
+    db.execute({ sql: 'SELECT COUNT(*) as c FROM activity_albums WHERE cover_media_asset_id = ?', args: [id] }),
+    db.execute({ sql: 'SELECT COUNT(*) as c FROM album_media_assets WHERE media_asset_id = ?', args: [id] }),
+    db.execute({ sql: 'SELECT COUNT(*) as c FROM horse_profiles WHERE primary_media_asset_id = ?', args: [id] }),
+    db.execute({ sql: 'SELECT COUNT(*) as c FROM horse_profile_media WHERE media_asset_id = ?', args: [id] }),
+    db.execute({ sql: 'SELECT COUNT(*) as c FROM gallery_images WHERE image LIKE ?', args: [publicUrlPrefix + '%'] }),
+    db.execute({ sql: 'SELECT COUNT(*) as c FROM settings WHERE heroes LIKE ?', args: ['%' + publicUrlPrefix + '%'] }),
+  ]);
+
+  const labels = [
+    'album cover',
+    'album photo',
+    'horse primary photo',
+    'horse photo',
+    'legacy gallery',
+    'page image',
+  ];
+  const locations: string[] = [];
+  let total = 0;
+
+  results.forEach((result, index) => {
+    const count = Number(result.rows[0]?.c ?? 0);
+    total += count;
+    if (count > 0) locations.push(labels[index] + (count > 1 ? 's' : ''));
+  });
+
+  return { total, locations };
+}
+
 export async function deleteMediaAsset(id: string): Promise<void> {
+  const usage = await getMediaAssetUsage(id);
+  if (usage.total > 0) {
+    throw new Error('Media asset is still in use by: ' + usage.locations.join(', '));
+  }
+
   const db = getDbClient();
   await db.execute({
     sql: 'DELETE FROM media_assets WHERE id = ?',
