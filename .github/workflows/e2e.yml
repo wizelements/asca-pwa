@@ -31,6 +31,12 @@ jobs:
         run: pnpm db:migrate
       - name: Seed deterministic gallery fixtures
         run: node scripts/seed-e2e-gallery.mjs
+      - name: Verify gallery backup dry run
+        run: node scripts/restore-gallery-backup.mjs tests/fixtures/gallery-backup-v2.json
+      - name: Verify gallery backup restore on disposable database
+        run: |
+          cp e2e.db gallery-restore-test.db
+          TURSO_DATABASE_URL=file:gallery-restore-test.db TURSO_AUTH_TOKEN='' node scripts/restore-gallery-backup.mjs tests/fixtures/gallery-backup-v2.json --apply
       - name: Run gallery API authorization and integrity tests
         run: pnpm test:api
       - name: Run gallery service and migration tests
