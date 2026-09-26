@@ -61,6 +61,9 @@ export async function DELETE(request: NextRequest) {
     if (error.message === 'Unauthorized') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    if (String(error.message || '').startsWith('Media asset is still in use')) {
+      return NextResponse.json({ error: error.message }, { status: 409 });
+    }
     return NextResponse.json({ error: error.message || 'Failed to delete media asset' }, { status: 500 });
   }
 }
