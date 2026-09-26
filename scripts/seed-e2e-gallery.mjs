@@ -8,6 +8,8 @@ const dataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfF
 const assetId = 'asset-e2e-gallery-fixture';
 
 try {
+  await db.execute({ sql: 'INSERT OR IGNORE INTO settings (id) VALUES (1)', args: [] });
+  await db.execute({ sql: 'INSERT OR IGNORE INTO theme (id) VALUES (1)', args: [] });
   await db.execute({
     sql: 'INSERT INTO media_assets (id, data_url, created_at, updated_at) VALUES (?, ?, unixepoch(), unixepoch()) ON CONFLICT(id) DO UPDATE SET data_url = excluded.data_url, updated_at = unixepoch()',
     args: [assetId, dataUrl],
