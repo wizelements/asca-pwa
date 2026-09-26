@@ -20,6 +20,7 @@ import {
   deleteAlbum,
   countPublicAlbums,
   countAdminAlbums,
+  isAlbumPubliclyEligible,
 } from '@/lib/gallery/services/albums';
 import { getCategoryBySlug, getCategoryById } from '@/lib/gallery/services/categories';
 import { invalidateAlbumPublicSurfaces, invalidateAlbums } from '@/lib/gallery/services/cache';
@@ -61,14 +62,8 @@ const mediaUpdatesSchema = z.object({
   })).max(500).optional(),
 }).optional();
 
-function publicEnough(album: NonNullable<Awaited<ReturnType<typeof getAlbumDetailBySlug>>>): boolean {
-  return (
-    album.status === 'published' &&
-    (album.privacyReviewStatus === 'not_required' || album.privacyReviewStatus === 'approved') &&
-    album.category?.active === true &&
-    album.mediaCount > 0 &&
-    Boolean(album.coverMediaAssetId)
-  );
+function publicEnough(album: Parameters<typeof isAlbumPubliclyEligible>[0]): boolean {
+  return isAlbumPubliclyEligible(album).eligible;
 }
 
 export async function GET(request: NextRequest) {
