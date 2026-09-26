@@ -554,7 +554,7 @@ export async function updateAlbum(
   });
 }
 
-export function isAlbumPubliclyEligible(album: AlbumRecord): { eligible: boolean; reasons: string[] } {
+export function isAlbumPubliclyEligible(album: AlbumRecord | AlbumDetail): { eligible: boolean; reasons: string[] } {
   const reasons: string[] = [];
   if (album.deletedAt) reasons.push('Album is in trash.');
   if (album.status !== 'published') reasons.push('Album is not published.');
@@ -562,6 +562,13 @@ export function isAlbumPubliclyEligible(album: AlbumRecord): { eligible: boolean
   if (!album.categoryId || !album.category?.active) reasons.push('Category is missing or inactive.');
   if (album.mediaCount === 0) reasons.push('Album has no media.');
   if (!album.coverMediaAssetId) reasons.push('Album has no cover image.');
+  if (
+    album.coverMediaAssetId &&
+    'media' in album &&
+    !album.media.some((item) => item.mediaAssetId === album.coverMediaAssetId)
+  ) {
+    reasons.push('Album cover is not attached to the album.');
+  }
   return { eligible: reasons.length === 0, reasons };
 }
 
