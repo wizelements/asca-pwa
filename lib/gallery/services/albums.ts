@@ -594,6 +594,13 @@ export async function setAlbumPrivacyStatus(
   id: number,
   privacyReviewStatus: PrivacyReviewStatus
 ): Promise<AlbumRecord | null> {
+  if (privacyReviewStatus === 'pending' || privacyReviewStatus === 'restricted') {
+    return updateAlbum(id, {
+      privacyReviewStatus,
+      status: 'draft',
+      featured: false,
+    });
+  }
   return updateAlbum(id, { privacyReviewStatus });
 }
 
