@@ -105,8 +105,8 @@ export default function AdminMediaLibrary() {
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Link href="/admin/gallery" className="rounded-lg border border-brand-border-subtle px-4 py-2 text-sm font-semibold text-brand-fg-primary hover:bg-brand-bg-subtle">
-            Manage Gallery Images
+          <Link href="/admin/albums" className="rounded-lg border border-brand-border-subtle px-4 py-2 text-sm font-semibold text-brand-fg-primary hover:bg-brand-bg-subtle">
+            Manage Gallery Albums
           </Link>
           <button type="button" onClick={resetDefaults} className="rounded-lg border border-brand-border-subtle px-4 py-2 text-sm font-semibold text-brand-fg-primary hover:bg-brand-bg-subtle">
             Reset to Defaults

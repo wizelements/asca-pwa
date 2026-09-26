@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import Hero from '@/components/Hero';
 import GalleryCard from '@/components/Cards/GalleryCard';
 import Header from '@/components/Header';
@@ -185,14 +186,24 @@ function AlbumCard({ album }: { album: AlbumRecord }) {
 
 async function NewGallery({ selectedCategory, page }: { selectedCategory?: string; page: number }) {
   const pageSize = 12;
-  const [images, albums, categories, total] = await Promise.all([
+  const [images, categories, total] = await Promise.all([
     getPublicManagedImages(),
-    selectedCategory ? getPublicAlbums(selectedCategory, pageSize, (page - 1) * pageSize) : getPublicAlbums(undefined, pageSize, (page - 1) * pageSize),
     getPublicCategories(),
     selectedCategory ? countPublicAlbums(selectedCategory) : countPublicAlbums(),
   ]);
-  const hero = getManagedImage(images, 'gallery.hero');
+
+  if (selectedCategory && !categories.some((category) => category.slug === selectedCategory)) {
+    notFound();
+  }
+
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const safePage = Math.min(Math.max(page, 1), totalPages);
+  const albums = await getPublicAlbums(
+    selectedCategory,
+    pageSize,
+    (safePage - 1) * pageSize
+  );
+  const hero = getManagedImage(images, 'gallery.hero');
 
   return (
     <>
@@ -235,7 +246,7 @@ async function NewGallery({ selectedCategory, page }: { selectedCategory?: strin
             />
           )}
           <Pagination
-            currentPage={page}
+            currentPage={safePage}
             totalPages={totalPages}
             baseUrl="/gallery"
             query={selectedCategory ? { category: selectedCategory } : {}}
@@ -249,7 +260,8 @@ async function NewGallery({ selectedCategory, page }: { selectedCategory?: strin
 export default async function Gallery({ searchParams }: GalleryPageProps) {
   const params = await searchParams ?? {};
   const selectedCategory = params.category;
-  const page = Math.max(1, Number(params.page || '1'));
+  const requestedPage = Number(params.page || '1');
+  const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 
   if (isPublicPreviewEnabled()) {
     return (

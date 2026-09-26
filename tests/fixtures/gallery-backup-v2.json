@@ -1,0 +1,58 @@
+{
+  "version": 2,
+  "data": {
+    "mediaAssets": [
+      {
+        "id": "asset-backup-fixture",
+        "data_url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+        "created_at": 1,
+        "updated_at": 1
+      }
+    ],
+    "gallery": {
+      "categories": [
+        {
+          "id": 91001,
+          "name": "Recovery Test",
+          "slug": "recovery-test",
+          "description": "Disposable recovery fixture",
+          "sort_order": 0,
+          "active": 1,
+          "created_at": 1,
+          "updated_at": 1
+        }
+      ],
+      "albums": [
+        {
+          "id": 92001,
+          "title": "Recovery Test Album",
+          "slug": "recovery-test-album",
+          "category_id": 91001,
+          "event_id": null,
+          "activity_date": null,
+          "location": "Atlanta, GA",
+          "summary": "Disposable recovery fixture",
+          "cover_media_asset_id": "asset-backup-fixture",
+          "featured": 0,
+          "status": "published",
+          "privacy_review_status": "approved",
+          "sort_order": 0,
+          "created_at": 1,
+          "updated_at": 1,
+          "deleted_at": null
+        }
+      ],
+      "albumMedia": [
+        {
+          "album_id": 92001,
+          "media_asset_id": "asset-backup-fixture",
+          "sort_order": 0,
+          "caption": "Recovery fixture photo",
+          "alt_text": "ASCA recovery verification fixture",
+          "created_at": 1,
+          "updated_at": 1
+        }
+      ]
+    }
+  }
+}
