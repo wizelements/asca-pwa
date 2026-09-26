@@ -29,6 +29,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Create and migrate local libSQL database
         run: pnpm db:migrate
+      - name: Seed deterministic gallery fixtures
+        run: node scripts/seed-e2e-gallery.mjs
+      - name: Run gallery API authorization and integrity tests
+        run: pnpm test:api
       - run: pnpm exec playwright install --with-deps chromium
       - name: Type-check Playwright specs separately
         run: pnpm exec tsc --noEmit --strict --module ESNext --moduleResolution bundler --target ES2020 --lib ES2020,DOM e2e/*.ts playwright.config.ts
