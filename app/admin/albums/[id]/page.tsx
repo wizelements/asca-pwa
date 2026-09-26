@@ -41,8 +41,8 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 }
 
 async function optimizeImage(file: File): Promise<string> {
-  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-    throw new Error(file.name + ': unsupported format. Use JPG, PNG, or WebP.');
+  if (!['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'].includes(file.type)) {
+    throw new Error(file.name + ': unsupported image format.');
   }
   if (file.size > MAX_UPLOAD_SIZE_BYTES) {
     throw new Error(file.name + ': image is larger than 8 MB.');
@@ -501,7 +501,7 @@ export default function AdminAlbumEditPage() {
                 <input
                   type="file"
                   multiple
-                  accept="image/jpeg,image/png,image/webp"
+                  accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
                   className="sr-only"
                   disabled={preparingImages || saving}
                   onChange={(event) => {
