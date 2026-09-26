@@ -85,7 +85,7 @@ export async function DELETE(request: NextRequest) {
     if (!id) return invalidPayload('Media asset ID required');
 
     await deleteMediaAsset(id);
-    await logActivity('gallery_upload', 'Deleted unused gallery media asset ' + id, user.email);
+    await logActivity('gallery_media_delete', 'Deleted unused gallery media asset ' + id, user.email);
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('[GALLERY MEDIA DELETE]', error);
