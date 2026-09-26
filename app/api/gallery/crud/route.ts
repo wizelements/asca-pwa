@@ -12,6 +12,7 @@ import {
   type GalleryImage,
 } from '@/lib/db/queries';
 import { CACHE_TAG_GALLERY } from '@/lib/db/queries-cache';
+import { isPublicPreviewEnabled } from '@/lib/gallery/feature-state';
 
 function canWrite(role: string): boolean {
   return role === 'admin' || role === 'editor';
@@ -19,6 +20,12 @@ function canWrite(role: string): boolean {
 
 function forbidden() {
   return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+}
+
+function legacyWriteBlocked() {
+  return isPublicPreviewEnabled()
+    ? NextResponse.json({ error: 'Legacy gallery is read-only. Manage public photos in Gallery albums.' }, { status: 409 })
+    : null;
 }
 
 export async function GET(request: NextRequest) {
@@ -39,7 +46,7 @@ export async function GET(request: NextRequest) {
 
     const published = publishedParam !== null ? publishedParam === 'true' : undefined;
     const images = await getGalleryImages(category, published);
-    return NextResponse.json(images);
+    return NextResponse.json(images, { headers: { 'X-Legacy-Gallery-Readonly': isPublicPreviewEnabled() ? 'true' : 'false' } });
   } catch (error: any) {
     console.error('[GALLERY GET]', error);
     if (error.message === 'Unauthorized') {
@@ -51,6 +58,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const blocked = legacyWriteBlocked();
+    if (blocked) return blocked;
     const user = await requireAuth(request);
     if (!canWrite(user.role)) return forbidden();
     const body = await request.json();
@@ -83,6 +92,8 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const blocked = legacyWriteBlocked();
+    if (blocked) return blocked;
     const user = await requireAuth(request);
     if (!canWrite(user.role)) return forbidden();
     const body = await request.json();
@@ -124,6 +135,8 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const blocked = legacyWriteBlocked();
+    if (blocked) return blocked;
     const user = await requireAuth(request);
     if (!canWrite(user.role)) return forbidden();
     const { searchParams } = new URL(request.url);
