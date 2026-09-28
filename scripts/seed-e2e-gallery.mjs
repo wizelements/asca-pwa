@@ -11,7 +11,7 @@ const adminEmail = 'e2e-admin@example.com';
 const adminPassword = 'E2E-Admin-Only!2026';
 const adminSalt = 'e2e-admin-fixed-salt';
 const adminHash = pbkdf2Sync(adminPassword, adminSalt, 100000, 64, 'sha512').toString('hex');
-const adminPasswordHash = ['pbkdf2_sha512', adminSalt, adminHash].join('
+const adminPasswordHash = ['pbkdf2_sha512', adminSalt, adminHash].join(String.fromCharCode(36));
 try {
   await db.execute({ sql: 'INSERT OR IGNORE INTO settings (id) VALUES (1)', args: [] });
   await db.execute({ sql: 'INSERT OR IGNORE INTO theme (id) VALUES (1)', args: [] });
