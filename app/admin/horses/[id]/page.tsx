@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getAdminToken, logout } from '@/components/AdminGuard';
-import AdminShell from '@/components/admin/AdminShell';
 import AdminImageField from '@/components/AdminImageField';
 import MediaManager, { type ManagedMediaItem } from '@/components/gallery/MediaManager';
 import { useToast } from '@/components/admin/ToastProvider';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 
 export default function AdminHorseEditPage() {
   const { toast } = useToast();
@@ -182,10 +182,24 @@ export default function AdminHorseEditPage() {
     }
   };
 
-  if (loading) return <AdminShell pageTitle="Edit Horse"><p>Loading...</p></AdminShell>;
+  if (loading) {
+    return (
+      <>
+        <AdminPageHeader
+          title={isNew ? 'Create horse profile' : 'Edit horse profile'}
+          subtitle="Loading horse profile…"
+        />
+        <p className="text-admin-fg-muted">Loading...</p>
+      </>
+    );
+  }
 
   return (
-    <AdminShell pageTitle={isNew ? 'Create Horse Profile' : 'Edit Horse Profile'}>
+    <>
+      <AdminPageHeader
+        title={isNew ? 'Create horse profile' : 'Edit horse profile'}
+        subtitle="Manage the horse information and photography shown on the public ASCA website."
+      />
       {error && <p className="mb-4 rounded-md bg-red-100 p-3 text-red-800">{error}</p>}
       <form onSubmit={(e) => handleSubmit(e, false)} className="max-w-3xl space-y-5">
         <div>
@@ -245,6 +259,6 @@ export default function AdminHorseEditPage() {
           )}
         </div>
       </form>
-    </AdminShell>
+    </>
   );
 }

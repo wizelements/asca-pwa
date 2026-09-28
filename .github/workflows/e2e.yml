@@ -31,6 +31,8 @@ jobs:
         run: pnpm db:migrate
       - name: Seed deterministic gallery fixtures
         run: node scripts/seed-e2e-gallery.mjs
+      - name: Seed disposable authenticated admin fixture
+        run: node scripts/seed-e2e-admin.mjs
       - name: Verify gallery backup dry run
         run: node scripts/restore-gallery-backup.mjs tests/fixtures/gallery-backup-v2.json
       - name: Verify gallery backup restore on disposable database

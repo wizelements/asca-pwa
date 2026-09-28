@@ -11,9 +11,12 @@ import {
 import { getUserByEmail, updateUserLogin } from '@/lib/db/queries';
 
 function sessionCookieOptions() {
+  const authUrl = process.env.NEXTAUTH_URL || '';
+  const localHttp = /^http:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?\/?$/i.test(authUrl);
+
   return {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV === 'production' && !localHttp,
     sameSite: 'lax' as const,
     path: '/',
     maxAge: ADMIN_SESSION_MAX_AGE,

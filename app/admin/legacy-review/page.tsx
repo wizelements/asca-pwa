@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { getAdminToken, logout } from '@/components/AdminGuard';
-import AdminShell from '@/components/admin/AdminShell';
 import { useToast } from '@/components/admin/ToastProvider';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 
 interface ReviewRecord {
   id: number;
@@ -71,7 +71,11 @@ export default function AdminLegacyReviewPage() {
   };
 
   return (
-    <AdminShell pageTitle="Legacy Review Queue">
+    <>
+      <AdminPageHeader
+        title="Legacy review queue"
+        subtitle="Advanced migration review for historical gallery records that need classification or privacy decisions."
+      />
       {loading && <p className="text-admin-fg-muted">Loading...</p>}
       {error && <p className="text-red-600">{error}</p>}
       {!loading && !error && (
@@ -97,6 +101,6 @@ export default function AdminLegacyReviewPage() {
           ))}
         </div>
       )}
-    </AdminShell>
+    </>
   );
 }
