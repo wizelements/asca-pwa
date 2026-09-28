@@ -7,7 +7,21 @@ async function signIn(page: Page) {
   await page.goto('/admin/login');
   await page.getByLabel('Email').fill(ADMIN_EMAIL);
   await page.getByLabel('Password').fill(ADMIN_PASSWORD);
+
+  const responsePromise = page.waitForResponse(
+    (response) => response.url().endsWith('/api/auth') && response.request().method() === 'POST'
+  );
   await page.getByRole('button', { name: 'Sign In' }).click();
+  const response = await responsePromise;
+  const responseText = await response.text();
+
+  if (response.status() !== 200) {
+    throw new Error('Admin auth failed with HTTP ' + response.status() + ': ' + responseText);
+  }
+
+  const cookies = await page.context().cookies();
+  expect(cookies.some((cookie) => cookie.name === 'asca_admin_session')).toBeTruthy();
+
   await expect(page).toHaveURL(/\/admin$/);
   await expect(page.getByRole('heading', { name: 'Dashboard', level: 1 })).toBeVisible();
 }
