@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { getAdminToken, logout } from '@/components/AdminGuard';
-import AdminShell from '@/components/admin/AdminShell';
 import AdminEmptyState from '@/components/admin/AdminEmptyState';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { useToast } from '@/components/admin/ToastProvider';
 
 interface Category {
@@ -61,7 +61,11 @@ export default function AdminCategoriesPage() {
   };
 
   return (
-    <AdminShell pageTitle="Categories">
+    <>
+      <AdminPageHeader
+        title="Gallery categories"
+        subtitle="Advanced maintenance for the category labels used to organize public gallery albums."
+      />
       {loading && <p className="text-admin-fg-muted">Loading...</p>}
       {error && <p className="text-red-600">{error}</p>}
       {!loading && !error && (
@@ -104,6 +108,6 @@ export default function AdminCategoriesPage() {
           )}
         </div>
       )}
-    </AdminShell>
+    </>
   );
 }
