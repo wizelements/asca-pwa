@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getAdminToken, logout } from '@/components/AdminGuard';
-import AdminShell from '@/components/admin/AdminShell';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 
 interface Report {
   totalAssets: number;
@@ -50,7 +50,11 @@ export default function MediaIntegrityPage() {
   };
 
   return (
-    <AdminShell pageTitle="Media Integrity">
+    <>
+      <AdminPageHeader
+        title="Media integrity"
+        subtitle="Advanced diagnostics for missing, orphaned, or multiply referenced media assets."
+      />
       {loading && <p className="text-admin-fg-muted">Loading...</p>}
       {error && <p className="text-red-600">{error}</p>}
       {report && (
@@ -110,6 +114,6 @@ export default function MediaIntegrityPage() {
           )}
         </div>
       )}
-    </AdminShell>
+    </>
   );
 }
