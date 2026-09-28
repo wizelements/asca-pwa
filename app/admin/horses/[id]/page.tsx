@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getAdminToken, logout } from '@/components/AdminGuard';
-import AdminShell from '@/components/admin/AdminShell';
 import AdminImageField from '@/components/AdminImageField';
 import MediaManager, { type ManagedMediaItem } from '@/components/gallery/MediaManager';
 import { useToast } from '@/components/admin/ToastProvider';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 
 export default function AdminHorseEditPage() {
   const { toast } = useToast();
@@ -245,6 +245,6 @@ export default function AdminHorseEditPage() {
           )}
         </div>
       </form>
-    </AdminShell>
+    </>
   );
 }
