@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Poppins, Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
+import PwaInstallPrompt from '@/components/PwaInstallPrompt'
 import { getCachedSiteTagline, getCachedTheme } from '@/lib/db/queries-cache'
 import { ASCA_DEFAULT_THEME, resolveThemeSettings, themeSettingsToCss } from '@/lib/theme'
 import { getSiteUrl } from '@/lib/site-url'
@@ -111,6 +112,7 @@ export default async function RootLayout({
       </head>
       <body className="bg-brand-bg-body text-brand-fg-primary font-sans">
         <ServiceWorkerRegister />
+        <PwaInstallPrompt />
         <div id="app">{children}</div>
       </body>
     </html>
