@@ -182,10 +182,24 @@ export default function AdminHorseEditPage() {
     }
   };
 
-  if (loading) return <AdminShell pageTitle="Edit Horse"><p>Loading...</p></AdminShell>;
+  if (loading) {
+    return (
+      <>
+        <AdminPageHeader
+          title={isNew ? 'Create horse profile' : 'Edit horse profile'}
+          subtitle="Loading horse profile…"
+        />
+        <p className="text-admin-fg-muted">Loading...</p>
+      </>
+    );
+  }
 
   return (
-    <AdminShell pageTitle={isNew ? 'Create Horse Profile' : 'Edit Horse Profile'}>
+    <>
+      <AdminPageHeader
+        title={isNew ? 'Create horse profile' : 'Edit horse profile'}
+        subtitle="Manage the horse information and photography shown on the public ASCA website."
+      />
       {error && <p className="mb-4 rounded-md bg-red-100 p-3 text-red-800">{error}</p>}
       <form onSubmit={(e) => handleSubmit(e, false)} className="max-w-3xl space-y-5">
         <div>
