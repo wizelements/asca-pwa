@@ -12,6 +12,12 @@ async function signIn(page: Page) {
   await expect(page.getByRole('heading', { name: 'Dashboard', level: 1 })).toBeVisible();
 }
 
+async function markTourCompleteAndClose(page: Page) {
+  await page.evaluate(() => localStorage.setItem('asca_admin_walkthrough_v2', 'complete'));
+  const close = page.getByRole('button', { name: 'Close walkthrough' });
+  if (await close.count()) await close.click();
+}
+
 test.describe('authenticated admin client workspace', () => {
   test('full walkthrough covers the complete workspace and can finish', async ({ page }) => {
     await signIn(page);
@@ -53,7 +59,7 @@ test.describe('authenticated admin client workspace', () => {
 
   test('help page is a complete client operating guide', async ({ page }) => {
     await signIn(page);
-    await page.getByRole('button', { name: 'Close walkthrough' }).click();
+    await markTourCompleteAndClose(page);
 
     await page.goto('/admin/help');
     await expect(page.getByRole('heading', { name: 'Client guide & walkthrough' })).toBeVisible();
@@ -84,7 +90,7 @@ test.describe('authenticated admin client workspace', () => {
 
   test('admin pages render one global workspace shell', async ({ page }) => {
     await signIn(page);
-    await page.getByRole('button', { name: 'Close walkthrough' }).click();
+    await markTourCompleteAndClose(page);
 
     for (const route of ['/admin/albums', '/admin/horses', '/admin/categories', '/admin/media-integrity']) {
       await page.goto(route);
@@ -95,17 +101,12 @@ test.describe('authenticated admin client workspace', () => {
 
   test('walkthrough can be restarted from the admin header', async ({ page }) => {
     await signIn(page);
-
-    const initialDialog = page.getByRole('dialog');
-    if (await initialDialog.count()) {
-      await page.getByRole('button', { name: 'Finish tour' }).click().catch(async () => {
-        await page.getByRole('button', { name: 'Close walkthrough' }).click();
-      });
-    }
+    await markTourCompleteAndClose(page);
 
     await page.goto('/admin/help');
     await page.getByRole('button', { name: 'Walkthrough' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Welcome to the ASCA Client Workspace' })).toBeVisible();
+    await expect(page.getByRole('dialog')).toContainText('1 of 15');
   });
 });
