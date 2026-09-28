@@ -1,4 +1,7 @@
 import { createClient as createHttpClient, type Client } from '@libsql/client/http';
+import { createRequire } from 'node:module';
+
+const nodeRequire = createRequire(import.meta.url);
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
@@ -29,7 +32,7 @@ export interface MigrationOptions {
 
 function createMigrationClient(url: string, authToken?: string): Client {
   if (url.startsWith('file:')) {
-    const { createClient: createLocalClient } = require('@libsql/client');
+    const { createClient: createLocalClient } = nodeRequire('@libsql/client');
     return createLocalClient({ url }) as Client;
   }
 
