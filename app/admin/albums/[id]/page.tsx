@@ -3,9 +3,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { logout, useAuth } from '@/components/AdminGuard';
-import AdminShell from '@/components/admin/AdminShell';
 import MediaManager, { type ManagedMediaItem } from '@/components/gallery/MediaManager';
 import { useToast } from '@/components/admin/ToastProvider';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { slugify } from '@/lib/gallery/slug';
 
 interface Category {
@@ -394,11 +394,20 @@ export default function AdminAlbumEditPage() {
   };
 
   if (loading) {
-    return <AdminShell pageTitle={pageTitle}><p className="text-admin-fg-muted">Loading album…</p></AdminShell>;
+    return (
+      <>
+        <AdminPageHeader title={pageTitle} subtitle="Loading the album editor…" />
+        <p className="text-admin-fg-muted">Loading album…</p>
+      </>
+    );
   }
 
   return (
-    <AdminShell pageTitle={pageTitle}>
+    <>
+      <AdminPageHeader
+        title={pageTitle}
+        subtitle={isNew ? 'Create a draft album, add photos, then review and publish when it is ready.' : 'Edit album details and photos. Publication and privacy controls remain separate from content editing.'}
+      />
       <div className="max-w-4xl space-y-6">
         {error && (
           <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-800">
@@ -606,6 +615,6 @@ export default function AdminAlbumEditPage() {
           </section>
         )}
       </div>
-    </AdminShell>
+    </>
   );
 }
