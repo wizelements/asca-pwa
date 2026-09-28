@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { logout, useAuth } from '@/components/AdminGuard';
-import AdminShell from '@/components/admin/AdminShell';
 import AdminPagination from '@/components/admin/AdminPagination';
 import AdminEmptyState from '@/components/admin/AdminEmptyState';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { useToast } from '@/components/admin/ToastProvider';
 
 interface Album {
@@ -128,10 +128,12 @@ export default function AdminAlbumsPage() {
   const viewingTrash = statusFilter === 'trash';
 
   return (
-    <AdminShell
-      pageTitle="Gallery albums"
-      primaryAction={<Link href="/admin/albums/new" className="btn-admin-primary">Create album</Link>}
-    >
+    <>
+      <AdminPageHeader
+        title="Gallery albums"
+        subtitle="Organize activity photos into albums. Editors prepare content; administrators review privacy and publication."
+        primaryAction={<Link href="/admin/albums/new" className="btn-admin-primary">Create album</Link>}
+      />
       <div className="mb-5 max-w-3xl">
         <p className="text-sm leading-6 text-admin-fg-secondary">
           Organize activity photos into albums. Editors can prepare content; administrators review privacy, publish, feature, archive, and restore.
@@ -262,6 +264,6 @@ export default function AdminAlbumsPage() {
       )}
 
       <AdminPagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
-    </AdminShell>
+    </>
   );
 }
