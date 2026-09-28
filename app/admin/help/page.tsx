@@ -30,7 +30,7 @@ const advancedTools = [
   { label: 'Categories', href: '/admin/categories', body: 'Manage gallery classification.' },
   { label: 'Media integrity', href: '/admin/media-integrity', body: 'Diagnose missing or inconsistent media references.' },
   { label: 'Legacy review', href: '/admin/legacy-review', body: 'Review older gallery migration records.' },
-  { label: 'Legacy gallery', href: '/admin/gallery', body: 'Access the previous gallery manager when maintenance requires it.' },
+  { label: 'Legacy gallery archive', href: '/admin/gallery', body: 'Read-only historical gallery records preserved for migration and troubleshooting.' },
 ];
 
 export default function AdminHelp() {

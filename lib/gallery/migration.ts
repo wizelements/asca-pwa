@@ -1,4 +1,4 @@
-import { createClient, type Client } from '@libsql/client/http';
+import { createClient as createHttpClient, type Client } from '@libsql/client/http';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
@@ -25,6 +25,18 @@ export interface MigrationOptions {
   authToken?: string;
   apply: boolean;
   migrationSqlPath?: string;
+}
+
+function createMigrationClient(url: string, authToken?: string): Client {
+  if (url.startsWith('file:')) {
+    const { createClient: createLocalClient } = require('@libsql/client');
+    return createLocalClient({ url }) as Client;
+  }
+
+  return createHttpClient({
+    url,
+    ...(authToken ? { authToken } : {}),
+  });
 }
 
 export interface MigrationReport {
@@ -61,7 +73,7 @@ export async function runLegacyMigration(opts: MigrationOptions): Promise<Migrat
     );
   }
 
-  const db = createClient({ url: opts.url, authToken: opts.authToken });
+  const db = createMigrationClient(opts.url, opts.authToken);
   try {
     await db.execute('PRAGMA foreign_keys = ON');
   } catch {

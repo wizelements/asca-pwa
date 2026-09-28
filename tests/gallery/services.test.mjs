@@ -158,8 +158,8 @@ describe('album services', () => {
     await seedCanonicalCategories();
     const cat = await getCategoryBySlug('fellowship');
     const asset = await createMediaAssetFromDataUrl(DATA_URL);
-    const album = await createAlbum({ title: 'Member Gathering', slug: 'member-gathering', categoryId: cat.id, coverMediaAssetId: asset.id, status: 'published', privacyReviewStatus: 'pending' }, [{ mediaAssetId: asset.id, altText: 'Member gathering' }]);
-    await featureAlbum(album.id, true);
+    const album = await createAlbum({ title: 'Member Gathering', slug: 'member-gathering', categoryId: cat.id, coverMediaAssetId: asset.id, status: 'draft', privacyReviewStatus: 'pending' }, [{ mediaAssetId: asset.id, altText: 'Member gathering' }]);
+    await assert.rejects(() => featureAlbum(album.id, true), /Cannot feature/);
     const featured = await getFeaturedAlbums();
     assert.equal(featured.some((a) => a.id === album.id), false);
     const publicList = await getPublicAlbums();

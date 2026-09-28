@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 import AdminImageField from '@/components/AdminImageField';
 import { getAdminToken, logout } from '@/components/AdminGuard';
@@ -46,6 +47,7 @@ export default function AdminGallery() {
   const [form, setForm] = useState<GalleryFormState>(emptyGalleryItem);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [readOnly, setReadOnly] = useState(false);
 
   useEffect(() => {
     fetchGallery();
@@ -65,6 +67,7 @@ export default function AdminGallery() {
         setError('Unable to load gallery images.');
         return;
       }
+      setReadOnly(res.headers.get('X-Legacy-Gallery-Readonly') === 'true');
       const data = await res.json();
       setItems(Array.isArray(data) ? data : []);
     } catch {
@@ -75,6 +78,7 @@ export default function AdminGallery() {
   };
 
   const openCreate = () => {
+    if (readOnly) return;
     setEditing(null);
     setForm(emptyGalleryItem);
     setMessage('');
@@ -83,6 +87,7 @@ export default function AdminGallery() {
   };
 
   const openEdit = (item: GalleryItem) => {
+    if (readOnly) return;
     setEditing(item);
     setForm({
       title: item.title || '',
@@ -100,6 +105,7 @@ export default function AdminGallery() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (readOnly) return;
     setSaving(true);
     setMessage('');
     setError('');
@@ -143,6 +149,7 @@ export default function AdminGallery() {
   };
 
   const handleDelete = async (item: GalleryItem) => {
+    if (readOnly) return;
     if (!confirm(`Delete ${item.title}?`)) return;
     const token = getAdminToken();
     setMessage('');
@@ -173,14 +180,25 @@ export default function AdminGallery() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-brand-fg-primary">Gallery</h1>
-          <p className="mt-1 text-sm text-brand-fg-secondary">Manage public gallery images by path, URL, or upload. Published images appear before the default ASCA gallery photos; draft images stay out of the public gallery.</p>
+          <h1 className="text-4xl font-bold text-brand-fg-primary">{readOnly ? 'Legacy Gallery' : 'Gallery'}</h1>
+          <p className="mt-1 text-sm text-brand-fg-secondary">{readOnly ? 'Historical flat-gallery records are preserved here for reference. Public gallery content is now managed through Gallery albums.' : 'Manage public gallery images by path, URL, or upload.'}</p>
         </div>
-        <button onClick={openCreate} className="rounded-lg bg-brand-forest px-6 py-2 font-semibold text-white hover:bg-brand-forest-muted">
-          + Add Image
-        </button>
+        {readOnly ? (
+          <Link href="/admin/albums" className="rounded-lg bg-brand-forest px-6 py-2 font-semibold text-white hover:bg-brand-forest-muted">
+            Manage Gallery Albums
+          </Link>
+        ) : (
+          <button onClick={openCreate} className="rounded-lg bg-brand-forest px-6 py-2 font-semibold text-white hover:bg-brand-forest-muted">
+            + Add Image
+          </button>
+        )}
       </div>
 
+      {readOnly && (
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+          This legacy gallery is read-only after the album-gallery cutover. Use <Link href="/admin/albums" className="font-semibold underline">Gallery albums</Link> for all current public photo work.
+        </div>
+      )}
       {message && <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">{message}</div>}
       {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>}
 
@@ -207,17 +225,19 @@ export default function AdminGallery() {
                   </span>
                   <span className="rounded-full bg-brand-bg-subtle px-2 py-1 text-brand-fg-muted">Order {item.sortOrder ?? 0}</span>
                 </div>
-                <div className="mt-5 flex gap-2">
-                  <button onClick={() => openEdit(item)} className="rounded-lg bg-brand-forest px-3 py-1 text-sm text-white hover:bg-brand-forest-muted">Edit</button>
-                  <button onClick={() => handleDelete(item)} className="rounded-lg bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700">Delete</button>
-                </div>
+                {!readOnly && (
+                  <div className="mt-5 flex gap-2">
+                    <button onClick={() => openEdit(item)} className="rounded-lg bg-brand-forest px-3 py-1 text-sm text-white hover:bg-brand-forest-muted">Edit</button>
+                    <button onClick={() => handleDelete(item)} className="rounded-lg bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700">Delete</button>
+                  </div>
+                )}
               </div>
             </article>
           ))}
         </div>
       )}
 
-      {modalOpen && (
+      {modalOpen && !readOnly && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-brand-bg-elevated p-6 shadow-xl">
             <h2 className="mb-6 text-2xl font-bold text-brand-fg-primary">{editing ? 'Edit Gallery Image' : 'Add Gallery Image'}</h2>

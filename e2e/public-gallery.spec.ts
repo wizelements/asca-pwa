@@ -1,30 +1,28 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('public gallery', () => {
-  test('grid, album journey, lightbox, breadcrumb, and pagination', async ({ page }) => {
-    await page.goto('/gallery');
+  test('deterministic grid, album journey, lightbox, breadcrumb, and filtering', async ({ page }) => {
+    const response = await page.goto('/gallery');
+    expect(response?.status()).toBe(200);
     await expect(page.getByRole('heading', { name: 'Photo Gallery', level: 1 })).toBeVisible();
 
-    const albumCards = page.locator('a[href^="/gallery/"]');
-    if ((await albumCards.count()) === 0) {
-      test.skip(true, 'Public-preview is disabled or there are no published albums');
-    }
+    const fixtureCard = page.locator('a[href="/gallery/e2e-trail-ride"]');
+    await expect(fixtureCard).toBeVisible();
+    await expect(fixtureCard).toContainText('E2E Trail Ride');
 
-    const pagination = page.getByRole('navigation', { name: 'Pagination' });
-    if (await pagination.count()) {
-      await expect(pagination.getByLabel('Go to page 1')).toHaveAttribute('aria-current', 'page');
-    }
+    await page.goto('/gallery?category=trail-rides');
+    await expect(page.locator('a[href="/gallery/e2e-trail-ride"]')).toBeVisible();
 
-    await albumCards.first().click();
+    await page.locator('a[href="/gallery/e2e-trail-ride"]').click();
+    await expect(page).toHaveURL(/\/gallery\/e2e-trail-ride$/);
     await expect(page.getByRole('link', { name: /Back to Gallery/ })).toBeVisible();
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'E2E Trail Ride', level: 1 })).toBeVisible();
 
-    const imageButtons = page.getByRole('button', { name: /^Open image/ });
-    if ((await imageButtons.count()) > 0) {
-      await imageButtons.first().click();
-      await expect(page.getByRole('dialog', { name: 'Image viewer' })).toBeVisible();
-      await page.keyboard.press('Escape');
-      await expect(page.getByRole('dialog', { name: 'Image viewer' })).toBeHidden();
-    }
+    const imageButton = page.getByRole('button', { name: /^Open photo:/ }).first();
+    await expect(imageButton).toBeVisible();
+    await imageButton.click();
+    await expect(page.getByRole('dialog', { name: 'Image viewer' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog', { name: 'Image viewer' })).toBeHidden();
   });
 });

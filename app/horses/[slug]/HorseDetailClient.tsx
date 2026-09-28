@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { ReactNode, UIEvent } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import AccessibleImageViewer from '@/components/gallery/AccessibleImageViewer';
 import { useViewerHistory } from '@/components/gallery/useViewerHistory';
 import type { HorseProfileDetail } from '@/lib/gallery/services/horses';
@@ -29,7 +30,13 @@ export default function HorseDetailClient({ horse, breadcrumbs, initialPhotoInde
         <div className="container">
           <div className="mb-8">
             {breadcrumbs}
-            <p className="section-label mt-4">Meet the Horses</p>
+            <Link
+              href="/horses"
+              className="mb-5 inline-flex min-h-[44px] items-center rounded-lg px-3 text-sm font-semibold text-brand-forest hover:bg-brand-bg-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-forest"
+            >
+              ← Back to Our Horses
+            </Link>
+            <p className="section-label">Meet the Horses</p>
             <h1 className="section-title">{horse.name}</h1>
             {horse.description && <p className="mt-4 max-w-2xl text-brand-fg-secondary">{horse.description}</p>}
           </div>
