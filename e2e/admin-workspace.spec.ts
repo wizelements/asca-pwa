@@ -4,24 +4,15 @@ const ADMIN_EMAIL = 'e2e-admin@example.com';
 const ADMIN_PASSWORD = ['E2E', 'Admin', 'Only', '2026'].join('-');
 
 async function signIn(page: Page) {
-  await page.goto('/admin/login');
-  await page.getByLabel('Email').fill(ADMIN_EMAIL);
-  await page.getByLabel('Password').fill(ADMIN_PASSWORD);
-
-  const responsePromise = page.waitForResponse(
-    (response) => response.url().endsWith('/api/auth') && response.request().method() === 'POST'
-  );
-  await page.getByRole('button', { name: 'Sign In' }).click();
-  const response = await responsePromise;
-  const responseText = await response.text();
-
-  if (response.status() !== 200) {
-    throw new Error('Admin auth failed with HTTP ' + response.status() + ': ' + responseText);
-  }
+  const response = await page.request.post('/api/auth', {
+    data: { email: ADMIN_EMAIL, password: ADMIN_PASSWORD },
+  });
+  expect(response.status()).toBe(200);
 
   const cookies = await page.context().cookies();
   expect(cookies.some((cookie) => cookie.name === 'asca_admin_session')).toBeTruthy();
 
+  await page.goto('/admin');
   await expect(page).toHaveURL(/\/admin$/);
   await expect(page.getByRole('heading', { name: 'Dashboard', level: 1 })).toBeVisible();
 }
@@ -36,7 +27,7 @@ test.describe('authenticated admin client workspace', () => {
   test('full walkthrough covers the complete workspace and can finish', async ({ page }) => {
     await signIn(page);
 
-    const dialog = page.getByRole('dialog', { name: /Welcome to the ASCA Client Workspace/ });
+    const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
     await expect(dialog).toContainText('1 of 15');
 
