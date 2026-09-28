@@ -1,4 +1,7 @@
 import { createClient as createHttpClient, type Client } from '@libsql/client/http';
+import { createRequire } from 'node:module';
+
+const nodeRequire = createRequire(import.meta.url);
 
 let client: Client | null = null;
 
@@ -8,7 +11,7 @@ function createDbClient(url: string, authToken?: string): Client {
     // explicitly requested (CI, E2E, or desktop development). Keeping this
     // require inside the branch avoids loading native bindings on Termux when
     // the app is using remote Turso over HTTP.
-    const { createClient: createLocalClient } = require('@libsql/client');
+    const { createClient: createLocalClient } = nodeRequire('@libsql/client');
     return createLocalClient({ url }) as Client;
   }
 
