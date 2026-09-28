@@ -109,4 +109,23 @@ test.describe('authenticated admin client workspace', () => {
     await expect(page.getByRole('heading', { name: 'Welcome to the ASCA Client Workspace' })).toBeVisible();
     await expect(page.getByRole('dialog')).toContainText('1 of 15');
   });
+  test('mobile client can open navigation and restart the guide', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await signIn(page);
+    await markTourCompleteAndClose(page);
+
+    await page.goto('/admin');
+    await expect(page.getByRole('button', { name: 'Open navigation' })).toBeVisible();
+    await page.getByRole('button', { name: 'Open navigation' }).click();
+    await expect(page.getByRole('navigation', { name: 'Admin' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Gallery albums' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Help & walkthrough' })).toBeVisible();
+    await page.getByRole('button', { name: 'Close navigation' }).click();
+
+    await expect(page.getByRole('button', { name: 'Start admin walkthrough' })).toBeVisible();
+    await page.getByRole('button', { name: 'Start admin walkthrough' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Welcome to the ASCA Client Workspace' })).toBeVisible();
+  });
+
 });
