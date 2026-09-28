@@ -8,7 +8,10 @@ test.describe('public horses', () => {
 
     const fixtureCard = page.locator('a[href="/horses/e2e-horse"]');
     await expect(fixtureCard).toBeVisible();
-    await fixtureCard.click();
+    await Promise.all([
+      page.waitForURL(/\/horses\/e2e-horse$/),
+      fixtureCard.click(),
+    ]);
 
     await expect(page).toHaveURL(/\/horses\/e2e-horse$/);
     await expect(page.getByRole('link', { name: /Back to Our Horses/ })).toBeVisible();
