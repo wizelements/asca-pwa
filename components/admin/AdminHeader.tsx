@@ -37,9 +37,11 @@ export default function AdminHeader({
         <button
           type="button"
           onClick={onStartTour}
-          className="hidden min-h-[40px] rounded-lg px-3 text-sm font-semibold text-admin-fg-secondary transition hover:bg-admin-bg-subtle hover:text-admin-fg-primary sm:inline-flex sm:items-center"
+          className="inline-flex min-h-[40px] items-center rounded-lg px-3 text-sm font-semibold text-admin-fg-secondary transition hover:bg-admin-bg-subtle hover:text-admin-fg-primary"
+          aria-label="Start admin walkthrough"
         >
-          Walkthrough
+          <span className="sm:hidden">Guide</span>
+          <span className="hidden sm:inline">Walkthrough</span>
         </button>
         <a
           href="/"
