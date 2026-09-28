@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getAdminToken, logout } from '@/components/AdminGuard';
-import AdminShell from '@/components/admin/AdminShell';
 import AdminPagination from '@/components/admin/AdminPagination';
 import AdminEmptyState from '@/components/admin/AdminEmptyState';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { useToast } from '@/components/admin/ToastProvider';
 
 interface Horse {
@@ -90,7 +90,12 @@ export default function AdminHorsesPage() {
   };
 
   return (
-    <AdminShell pageTitle="Horses" primaryAction={<Link href="/admin/horses/new" className="btn-admin-primary">Create horse profile</Link>}>
+    <>
+      <AdminPageHeader
+        title="Horses"
+        subtitle="Create and maintain the horse profiles shown on the public ASCA website."
+        primaryAction={<Link href="/admin/horses/new" className="btn-admin-primary">Create horse profile</Link>}
+      />
       <div className="mb-4 flex items-center gap-4">
         <label className="text-sm font-medium text-admin-fg-secondary">Status:</label>
         <select
@@ -180,6 +185,6 @@ export default function AdminHorsesPage() {
       )}
 
       <AdminPagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
-    </AdminShell>
+    </>
   );
 }
