@@ -1,45 +1,79 @@
 # Atlanta Saddle Club Association — PWA + Admin
 
-ASCA's active web application and non-technical administration workspace.
+A client-facing Progressive Web App and non-technical administration workspace for the **Atlanta Saddle Club Association (ASCA)**.
 
-> **Current architecture is the code in this repository.** Older phase, handoff, MongoDB, Supabase, Strapi, and early Next.js documents are historical references unless explicitly marked current.
+**Live deployment:** https://asca-pwa.vercel.app
+
+![ASCA application preview](public/screenshots/wide-1280x720.png)
+
+> **Status:** Active client system. The public deployment returned HTTP 200 on **October 7, 2026**. A recent GitHub Actions end-to-end run passed on the `opee/admin-client-training` branch on September 28, 2026. Production behavior must still be reverified after consequential merges.
+
+## Outcome
+
+ASCA replaces scattered website maintenance and operational updates with one controlled system for public information and routine administration.
+
+The product currently separates two concerns:
+
+- **Public PWA** — Home, About, Meet ASCA, Get Involved, Event Calendar, Gallery, Horses, support/donation-oriented content.
+- **Admin workspace** — people, events, messages, tasks, gallery/media, horse records, page images, appearance/settings, and guided support.
+
+The current architecture is the code in this repository. Older phase, Supabase, MongoDB, Strapi, or earlier Next.js documents are historical unless explicitly marked current.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    V[Visitor] --> P[Public Next.js PWA]
+    A[Authorized admin] --> S[Signed HttpOnly session]
+    S --> W[Admin workspace]
+    P --> API[Server routes/services]
+    W --> API
+    API --> DB[(Turso / libSQL)]
+    API --> R[Resend]
+    DB --> D[Drizzle ORM / migrations]
+    P --> SW[Service worker / offline fallback]
+    P --> H[Vercel]
+    W --> H
+```
 
 ## Current stack
 
-- **Framework:** Next.js 15 App Router + React 18 + TypeScript
-- **Styling:** Tailwind CSS with ASCA design tokens
-- **Database:** Turso/libSQL with Drizzle ORM
-- **Authentication:** signed admin sessions using HttpOnly cookies and role checks
-- **Email:** Resend
-- **PWA:** web app manifest + first-party service worker + offline fallback
-- **Hosting:** Vercel
-- **Testing:** Node service tests + Playwright end-to-end tests in pull requests
-- **Package manager:** pnpm 11.8.0
+| Layer | Technology |
+| --- | --- |
+| Application | Next.js 15 App Router + React 18 + TypeScript |
+| Styling | Tailwind CSS + ASCA design tokens |
+| Data | Turso/libSQL + Drizzle ORM |
+| Authentication | Signed admin sessions using HttpOnly cookies + server-side role checks |
+| Email | Resend |
+| PWA | Manifest + first-party service worker + offline fallback |
+| Hosting | Vercel |
+| Verification | Node service tests + Playwright E2E |
+| Package manager | pnpm 11.8.0 |
 
 ## Product surfaces
 
-### Public site
+### Public experience
 
-The public experience includes Home, About, Meet ASCA, Get Involved, Event Calendar, Gallery, Our Horses, and Support ASCA. Content that changes routinely is managed through the admin workspace rather than code.
+The public application provides the member/visitor-facing experience and installable PWA shell.
 
-### Admin workspace
+### Admin experience
 
-The primary client workflow is intentionally small:
+Primary client workflow:
 
 - **Dashboard** — messages, tasks, events, members, recent activity
 - **People** — contacts and member records
 - **Operations** — events, messages, tasks
-- **Website** — gallery albums, horses, page images, appearance, social/donation settings
-- **Support** — guided walkthrough, help, and account settings
+- **Website** — gallery albums, horses, images, appearance, social/donation settings
+- **Support** — guided help and account settings
 
-Migration/integrity tools exist but are intentionally excluded from primary navigation.
+Migration/integrity tools are intentionally excluded from the primary navigation.
 
-## Local setup
+## Clean setup
 
 1. Install Node.js 22 and pnpm 11.8.0.
 2. Copy `.env.example` to `.env.local`.
 3. Configure a development Turso/libSQL database and a strong `NEXTAUTH_SECRET`.
-4. Install dependencies and run the app:
+4. Install, migrate, and start:
 
 ```bash
 pnpm install --frozen-lockfile
@@ -47,24 +81,9 @@ pnpm db:migrate
 pnpm dev
 ```
 
-Default development URL: `http://localhost:3000`.
-
-## Required environment variables
-
-See `.env.example`. Production requires, at minimum:
-
-- `TURSO_DATABASE_URL`
-- `TURSO_AUTH_TOKEN` for remote Turso databases
-- `NEXTAUTH_SECRET` — at least 32 random characters; never commit it
-- `NEXT_PUBLIC_SITE_URL`
-- `ADMIN_EMAIL`
-- Resend variables when email delivery/password reset is enabled
-
-Never commit database credentials, admin passwords, API keys, or authentication secrets.
-
 ## Quality gates
 
-Before merging a production change:
+Before a consequential production merge:
 
 ```bash
 pnpm type-check
@@ -73,47 +92,53 @@ pnpm test
 pnpm build
 ```
 
-Pull requests also run the Playwright end-to-end workflow in `.github/workflows/e2e.yml`.
+Pull requests can also run the Playwright workflow in `.github/workflows/e2e.yml`, which provisions a disposable local libSQL database and exercises authorization, integrity, migration/restore, service, and browser paths.
 
-A deployment is not considered healthy only because Vercel reports READY. Verify the intended public route, admin authentication boundary, core admin workflow, and relevant write path.
+A deployment is **not** considered healthy only because Vercel reports READY. Verify the intended public route, admin authentication boundary, core admin workflow, and the relevant write path.
 
-## PWA rules
+## Security
+
+See [SECURITY.md](SECURITY.md).
+
+Core rules:
+
+- admin session tokens remain HttpOnly and are not stored in `localStorage`;
+- server-side APIs enforce authorization; UI guards are not authorization;
+- production auth fails closed when required signing configuration is absent/weak;
+- public input is bounded and sanitized before persistence or email rendering;
+- credentials and customer data do not belong in git history;
+- destructive or state-changing admin work requires a live server response.
+
+## PWA boundaries
 
 - HTML, admin pages, APIs, and mutable content are network-first/no-store.
-- Only truly immutable Next/static/icon assets use cache-first behavior.
+- Only truly immutable assets should use cache-first behavior.
+- Admin routes are not offline-authoritative.
 - Service-worker activation must not force-navigate every open client.
-- `manifest.json` must advertise only implemented capabilities.
-- Admin routes are not offline-authoritative; destructive or state-changing work requires a live server response.
+- The manifest should advertise only implemented capabilities.
 
-## Security rules
+## Deployment path
 
-- Admin session tokens must remain HttpOnly and must not be stored in `localStorage`.
-- Production startup/auth must fail closed when the signing secret is missing or weak.
-- All admin APIs enforce server-side authentication; UI guards are not authorization.
-- Public form input is bounded and sanitized before persistence/email rendering.
-- Any credential ever committed to git must be treated as exposed and rotated outside the repository.
+The repository is connected to the Vercel project `asca-pwa`.
 
-## Repository documentation
+Preferred release flow:
 
-Use this README and the live code as the source of truth. Documents named `PHASE_*`, `*_COMPLETE*`, older deployment guides, and the original architecture/handoff documents describe earlier project stages and may contain retired design decisions.
+**branch → preview → CI/E2E → review → merge → production verification → evidence**
 
-Current operational references include:
+Client-facing or security-sensitive changes should not bypass these gates.
 
-- `.env.example`
-- `.github/workflows/e2e.yml`
-- `drizzle/` and `drizzle.config.ts`
-- `PWA_CONFIGURATION.md` (validate examples against current `public/sw.js`)
-- `ADMIN_TRAINING_QUICK_GUIDE.md` (client usage; current UI remains authoritative)
-- `docs/audits/` for implementation-specific audits
+## Known limitations / boundaries
 
-## Deployment
+- Historical documents in the repository may describe retired architectures; README + executable code are authoritative.
+- Email delivery requires valid external Resend configuration.
+- A passing branch E2E run does not prove a later production deployment without post-merge verification.
+- This is a client system, not a general-purpose open-source package. No open-source license is granted unless an explicit license file says otherwise.
 
-The repository is connected to the Vercel project `asca-pwa`. Normal production changes should go through a branch/preview/PR flow:
+## Business value
 
-1. Build a preview from a branch.
-2. Verify preview behavior.
-3. Require CI/E2E to pass.
-4. Merge with a clean production commit.
-5. Verify the production deployment and runtime error state.
+ASCA demonstrates delivery beyond a public website: **content operations, authenticated administration, persistent data, PWA behavior, recovery/migration tooling, and client-operable workflows** are integrated into one system.
 
-Do not bypass these gates for client-facing or security-sensitive changes.
+---
+
+**Maintained by Cod3Black Agency / wizelements**  
+**Last portfolio verification:** October 7, 2026
