@@ -8,6 +8,8 @@ import Pagination from '@/components/gallery/Pagination';
 import { countPublicHorses, getPublicHorses } from '@/lib/gallery/services/horses';
 import { isPublicPreviewEnabled } from '@/lib/gallery/feature-state';
 import { notFound } from 'next/navigation';
+import { getPublicManagedImages } from '@/lib/public-content';
+import { getManagedImage } from '@/lib/media';
 import Breadcrumbs from '@/components/gallery/Breadcrumbs';
 import PublicEmptyState from '@/components/gallery/PublicEmptyState';
 
@@ -16,7 +18,7 @@ interface HorsesPageProps {
 }
 
 export const metadata: Metadata = {
-  title: 'Our Horses | ASCA',
+  title: { absolute: 'Our Horses | ASCA' },
   description: 'Meet the horses of the Atlanta Saddle Club Association.',
 };
 
@@ -29,10 +31,12 @@ export default async function HorsesPage({ searchParams }: HorsesPageProps) {
   const page = Math.max(1, Number(params.page || '1'));
   const pageSize = 12;
 
-  const [horses, total] = await Promise.all([
+  const [horses, total, images] = await Promise.all([
     getPublicHorses(pageSize, (page - 1) * pageSize),
     countPublicHorses(),
+    getPublicManagedImages(),
   ]);
+  const hero = getManagedImage(images, 'horses.hero');
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
@@ -40,8 +44,8 @@ export default async function HorsesPage({ searchParams }: HorsesPageProps) {
       <Header />
       <main>
         <Hero
-          image="/api/media/site/gallery.hero"
-          imageAlt="ASCA horses"
+          image={hero.src}
+          imageAlt={hero.alt}
           title="Our Horses"
           subtitle="Meet the heart of ASCA"
         />
