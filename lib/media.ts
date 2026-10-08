@@ -19,6 +19,7 @@ export type SiteImageSlot =
   | 'members.community.2'
   | 'getInvolved.hero'
   | 'support.hero'
+  | 'horses.hero'
   | 'gallery.hero'
   | 'gallery.fallback.1'
   | 'gallery.fallback.2'
@@ -242,6 +243,16 @@ export const DEFAULT_MANAGED_IMAGES: ManagedImage[] = [
     title: 'Support ASCA hero',
     category: 'Support ASCA',
     sortOrder: 700,
+    published: true,
+  },
+  {
+    id: 'horses-hero',
+    slot: 'horses.hero',
+    src: '/images/gallery/horse-closeup.jpg',
+    alt: 'ASCA horses',
+    title: 'Our Horses page hero',
+    category: 'Our Horses',
+    sortOrder: 750,
     published: true,
   },
   {
