@@ -160,9 +160,12 @@ export default function ShareAscaCard({ siteUrl }: { siteUrl: string }) {
             </h2>
 
             <div className="mx-auto mt-7 w-full max-w-[19rem] rounded-[1.75rem] bg-white p-4 shadow-2xl">
-              <img
+              <Image
                 src="/qr/asca-site.svg"
                 alt="QR code for the Atlanta Saddle Club Association website"
+                width={304}
+                height={304}
+                unoptimized
                 className="aspect-square w-full"
               />
             </div>
