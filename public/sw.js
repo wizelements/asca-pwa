@@ -1,8 +1,16 @@
 const CACHE_PREFIX = 'asca-pwa';
-const CACHE_VERSION = '20260924-hardening';
+const CACHE_VERSION = '20261009-pwa-splash';
 const STATIC_CACHE = `${CACHE_PREFIX}-${CACHE_VERSION}-static`;
 const IMMUTABLE_CACHE = `${CACHE_PREFIX}-${CACHE_VERSION}-immutable`;
-const STATIC_ASSETS = ['/offline.html', '/icons/icon-192.png', '/icons/icon-512.png'];
+const STATIC_ASSETS = [
+  '/offline.html',
+  '/favicon.ico',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/icons/icon-192-maskable.png',
+  '/icons/icon-512-maskable.png',
+  '/icons/apple-touch-icon.png',
+];
 
 function isSameOrigin(request) {
   return new URL(request.url).origin === self.location.origin;
@@ -31,8 +39,7 @@ async function cacheFirst(request) {
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches
-      .open(STATIC_CACHE)
+    caches.open(STATIC_CACHE)
       .then((cache) => cache.addAll(STATIC_ASSETS))
       .then(() => self.skipWaiting())
   );
@@ -40,15 +47,13 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches
-      .keys()
+    caches.keys()
       .then((cacheNames) =>
         Promise.all(
           cacheNames
-            .filter(
-              (name) =>
-                name.startsWith(CACHE_PREFIX) &&
-                ![STATIC_CACHE, IMMUTABLE_CACHE].includes(name)
+            .filter((name) =>
+              name.startsWith(CACHE_PREFIX) &&
+              ![STATIC_CACHE, IMMUTABLE_CACHE].includes(name)
             )
             .map((name) => caches.delete(name))
         )
