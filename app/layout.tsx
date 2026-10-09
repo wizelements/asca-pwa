@@ -3,32 +3,20 @@ import { Poppins, Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
 import PwaInstallPrompt from '@/components/PwaInstallPrompt'
+import PwaLaunchSplash from '@/components/PwaLaunchSplash'
 import { getCachedSiteTagline, getCachedTheme } from '@/lib/db/queries-cache'
 import { ASCA_DEFAULT_THEME, resolveThemeSettings, themeSettingsToCss } from '@/lib/theme'
 import { getSiteUrl } from '@/lib/site-url'
 
-// Inline base64 media has been extracted to media_assets (2026-07-20), so the
-// cached settings payload is small enough for Next's data cache again.
 export const dynamic = 'force-static'
 export const revalidate = 60
 
-const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['400', '600', '700', '800'],
-  variable: '--font-poppins',
-})
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-})
-
-const jetbrains = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-jetbrains',
-})
+const poppins = Poppins({ subsets: ['latin'], weight: ['400', '600', '700', '800'], variable: '--font-poppins' })
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const jetbrains = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains' })
 
 export const metadata: Metadata = {
+  applicationName: 'ASCA',
   title: {
     default: 'Atlanta Saddle Club Association | We Ride To Inspire',
     template: '%s | ASCA',
@@ -70,25 +58,21 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   viewportFit: 'cover',
-  themeColor: '#e6d543',
+  themeColor: '#1f6b3a',
 }
 
 async function getRootThemeCss() {
   try {
     const [theme, tagline] = await Promise.all([getCachedTheme(), getCachedSiteTagline()])
     const resolved = resolveThemeSettings(theme, tagline)
-    return { css: themeSettingsToCss(resolved), themeColor: resolved.accentColor }
+    return { css: themeSettingsToCss(resolved), themeColor: resolved.primaryColor }
   } catch (error) {
     console.error('[ROOT THEME]', error)
-    return { css: themeSettingsToCss(ASCA_DEFAULT_THEME), themeColor: ASCA_DEFAULT_THEME.accentColor }
+    return { css: themeSettingsToCss(ASCA_DEFAULT_THEME), themeColor: ASCA_DEFAULT_THEME.primaryColor }
   }
 }
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const rootTheme = await getRootThemeCss()
 
   return (
@@ -111,6 +95,7 @@ export default async function RootLayout({
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="bg-brand-bg-body text-brand-fg-primary font-sans">
+        <PwaLaunchSplash />
         <ServiceWorkerRegister />
         <PwaInstallPrompt />
         <div id="app">{children}</div>
