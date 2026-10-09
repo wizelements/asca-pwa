@@ -53,6 +53,13 @@
   ],
   "shortcuts": [
     {
+      "name": "Share ASCA",
+      "short_name": "Share",
+      "description": "Open the ASCA member share center and QR code",
+      "url": "/share",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
       "name": "View Events",
       "short_name": "Events",
       "description": "See upcoming ASCA events",

@@ -41,7 +41,7 @@ export default function PwaInstallPrompt() {
   const primaryActionRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
-    if (pathname?.startsWith('/admin')) return
+    if (pathname?.startsWith('/admin') || pathname === '/share') return
     if (isRunningStandalone()) return
     if (window.sessionStorage.getItem(SESSION_PROMPT_KEY) === '1') return
 

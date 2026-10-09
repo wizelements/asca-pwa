@@ -121,6 +121,9 @@ export default async function Members() {
               <Link href="/where-to-find-us" className="btn-accent">
                 Event Calendar
               </Link>
+              <Link href="/share" className="btn-secondary border-white text-white hover:bg-white/10">
+                Share ASCA
+              </Link>
               <a
                 href={MEMBERSHIP_APPLICATION_URL}
                 target="_blank"
