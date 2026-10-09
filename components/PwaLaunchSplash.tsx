@@ -21,7 +21,7 @@ export default function PwaLaunchSplash() {
         </div>
 
         <p className="pwa-launch-splash__eyebrow">Atlanta Saddle Club Association</p>
-        <h1 className="pwa-launch-splash__title">ASCA</h1>
+        <div className="pwa-launch-splash__title">ASCA</div>
         <p className="pwa-launch-splash__tagline">We Ride To Inspire</p>
 
         <div className="pwa-launch-splash__rule" />
