@@ -369,6 +369,43 @@ export const SITE_CONTENT_PAGES: SiteContentPageDefinition[] = [
     ],
   },
   {
+    id: 'share',
+    label: 'Share ASCA',
+    publicPath: '/share',
+    description: 'Member-facing wording around the QR/share experience. Functional Share, Copy, Install, and Open controls remain protected.',
+    sections: [
+      {
+        label: 'Introduction',
+        fields: [
+          text('share.hero.label', 'Eyebrow', 'ASCA Member Share Center', 80),
+          text('share.hero.title', 'Heading', 'Share the ride. Grow the community.', 120),
+          area('share.hero.body', 'Supporting text', 'Keep this page on your phone and use it whenever someone asks about ASCA. They can scan the code, open the site, or you can send the link in seconds.', 500),
+        ],
+      },
+      {
+        label: 'Share card',
+        fields: [
+          text('share.card.label', 'Eyebrow', 'Member-ready sharing', 80),
+          text('share.card.title', 'Heading', "Put ASCA in someone's hand in seconds.", 120),
+          area('share.card.body', 'Supporting text', 'Share the official ASCA website from your phone, copy the link for a message, or install ASCA for fast home-screen access. Share ASCA also stays available from the mobile menu and footer.', 600),
+          text('share.card.scanLabel', 'QR caption', 'Scan to visit ASCA', 80),
+          text('share.card.downloadLabel', 'Download link', 'Download QR for print or flyers', 80),
+        ],
+      },
+      {
+        label: 'Three-step guidance',
+        fields: [
+          text('share.step1.title', 'Step 1 title', '1 · Show', 60),
+          area('share.step1.body', 'Step 1 body', 'Open this page and let someone scan the large ASCA QR code.', 240),
+          text('share.step2.title', 'Step 2 title', '2 · Share', 60),
+          area('share.step2.body', 'Send the official website through your phone’s normal share menu.', 240),
+          text('share.step3.title', 'Step 3 title', '3 · Install', 60),
+          area('share.step3.body', 'Add ASCA to your home screen so the share center is always close by.', 240),
+        ],
+      },
+    ],
+  },
+  {
     id: 'shared',
     label: 'Shared Site Copy',
     publicPath: '/',
