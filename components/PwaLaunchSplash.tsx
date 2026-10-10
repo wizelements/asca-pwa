@@ -1,6 +1,12 @@
 import Image from 'next/image';
+import { getCachedSiteIdentity } from '@/lib/db/queries-cache';
 
-export default function PwaLaunchSplash() {
+export default async function PwaLaunchSplash() {
+  const identity = await getCachedSiteIdentity().catch(() => ({
+    siteName: 'Atlanta Saddle Club Association',
+    motto: 'We Ride To Inspire',
+  }));
+
   return (
     <div
       className="pwa-launch-splash"
@@ -20,9 +26,9 @@ export default function PwaLaunchSplash() {
           />
         </div>
 
-        <p className="pwa-launch-splash__eyebrow">Atlanta Saddle Club Association</p>
+        <p className="pwa-launch-splash__eyebrow">{identity.siteName}</p>
         <div className="pwa-launch-splash__title">ASCA</div>
-        <p className="pwa-launch-splash__tagline">We Ride To Inspire</p>
+        <p className="pwa-launch-splash__tagline">{identity.motto}</p>
 
         <div className="pwa-launch-splash__rule" />
         <p className="pwa-launch-splash__location">Atlanta · Georgia</p>
