@@ -30,13 +30,28 @@ export function extractAssetIdFromUrl(url: string): string | null {
 
 export async function getMediaIntegrityReport(): Promise<MediaIntegrityReport> {
   const db = getDbClient();
-  const [assets, galleryRows, albumCoverRows, albumMediaRows, horsePrimaryRows, horseMediaRows, settingsRow, themeRow] = await Promise.all([
+  const [
+    assets,
+    galleryRows,
+    albumCoverRows,
+    albumMediaRows,
+    horsePrimaryRows,
+    horseMediaRows,
+    eventRows,
+    memberRows,
+    blogRows,
+    settingsRow,
+    themeRow,
+  ] = await Promise.all([
     db.execute('SELECT id, length(data_url) as bytes, created_at, updated_at FROM media_assets'),
     db.execute('SELECT id, image FROM gallery_images WHERE image LIKE \'/api/media/asset/%\''),
     db.execute('SELECT id, cover_media_asset_id FROM activity_albums WHERE cover_media_asset_id IS NOT NULL'),
     db.execute('SELECT album_id, media_asset_id FROM album_media_assets'),
     db.execute('SELECT id, primary_media_asset_id FROM horse_profiles WHERE primary_media_asset_id IS NOT NULL'),
     db.execute('SELECT horse_profile_id, media_asset_id FROM horse_profile_media'),
+    db.execute('SELECT id, image_url FROM events WHERE image_url LIKE \'/api/media/asset/%\''),
+    db.execute('SELECT id, photo FROM members WHERE photo LIKE \'/api/media/asset/%\''),
+    db.execute('SELECT id, image FROM blog_posts WHERE image LIKE \'/api/media/asset/%\''),
     getSettings().catch(() => null),
     getTheme().catch(() => null),
   ]);
@@ -67,6 +82,20 @@ export async function getMediaIntegrityReport(): Promise<MediaIntegrityReport> {
   // Horse additional media
   for (const row of horseMediaRows.rows) {
     references.push({ mediaAssetId: String(row.media_asset_id), location: 'horse_media', contextId: Number(row.horse_profile_id) });
+  }
+
+  // Other image-bearing records.
+  for (const row of eventRows.rows) {
+    const id = extractAssetIdFromUrl(String(row.image_url || ''));
+    if (id) references.push({ mediaAssetId: id, location: 'event_image', contextId: Number(row.id), url: String(row.image_url) });
+  }
+  for (const row of memberRows.rows) {
+    const id = extractAssetIdFromUrl(String(row.photo || ''));
+    if (id) references.push({ mediaAssetId: id, location: 'member_photo', contextId: Number(row.id), url: String(row.photo) });
+  }
+  for (const row of blogRows.rows) {
+    const id = extractAssetIdFromUrl(String(row.image || ''));
+    if (id) references.push({ mediaAssetId: id, location: 'blog_image', contextId: Number(row.id), url: String(row.image) });
   }
 
   // Managed page images (settings.heroes)
