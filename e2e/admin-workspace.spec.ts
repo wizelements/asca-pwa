@@ -43,7 +43,7 @@ test.describe('authenticated admin client workspace', () => {
       'Horses — public horse profiles',
       'Page images — photography used around the site',
       'Appearance — brand settings',
-      'Social & donations — public links and payment handles',
+      'Public site settings — homepage identity, contact, social & giving',
       'Account — protect admin access',
       'Preview — verify what visitors actually see',
       'Backups and Help — finish safely',
@@ -81,7 +81,7 @@ test.describe('authenticated admin client workspace', () => {
       'Horses',
       'Page images',
       'Appearance',
-      'Social & donations',
+      'Public site settings',
       'Account',
     ]) {
       await expect(page.getByRole('heading', { name: section, exact: true })).toBeVisible();
@@ -125,7 +125,8 @@ test.describe('authenticated admin client workspace', () => {
     await expect(page.getByRole('navigation', { name: 'Admin' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Gallery albums' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Help & walkthrough' })).toBeVisible();
-    await page.locator('aside[aria-hidden="false"]').getByRole('button', { name: 'Close navigation' }).click();
+    await page.getByRole('dialog', { name: 'Admin navigation' }).getByRole('button', { name: 'Close navigation' }).click();
+    await expect(page.getByRole('dialog', { name: 'Admin navigation' })).toHaveCount(0);
 
     await expect(page.getByRole('button', { name: 'Start admin walkthrough' })).toBeVisible();
     await page.getByRole('button', { name: 'Start admin walkthrough' }).click();
