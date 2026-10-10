@@ -144,6 +144,13 @@ export default function Header() {
                 );
               })}
             </ul>
+            <Link
+              href="/share"
+              className="mt-3 flex min-h-[48px] items-center justify-between rounded-xl border border-brand-forest/20 bg-brand-bg-soft px-4 text-sm font-bold text-brand-forest"
+            >
+              <span>Share ASCA</span>
+              <span aria-hidden="true">QR · Share →</span>
+            </Link>
             <div className="mt-4 flex items-center justify-between border-t border-brand-border-subtle pt-4">
               <p className="text-xs font-medium uppercase tracking-[0.14em] text-brand-fg-muted">Follow ASCA</p>
               <SocialLinks showTikTokNote={false} />
