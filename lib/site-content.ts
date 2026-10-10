@@ -71,6 +71,14 @@ function validateValue(field: SiteContentFieldDefinition, value: unknown): strin
     if (cleaned.some((item) => item.length > field.maxLength)) {
       throw new Error(`${field.label} items must be ${field.maxLength} characters or fewer.`);
     }
+    if (field.key === 'about.officers.items') {
+      for (const item of cleaned) {
+        const [role = '', name = '', flag = ''] = item.split('|').map((part) => part.trim());
+        if (!role || !name || (flag && !/^(founding|founder|yes)$/i.test(flag))) {
+          throw new Error('Each officer must use: Role | Name | founding. The founding marker is optional.');
+        }
+      }
+    }
     return cleaned;
   }
 
