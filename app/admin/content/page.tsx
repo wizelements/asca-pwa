@@ -138,7 +138,7 @@ export default function AdminPageText() {
         {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>}
 
         {SITE_CONTENT_PAGES.map((page) => (
-          <section key={page.id} className="rounded-2xl border border-admin-border-subtle bg-admin-surface shadow-sm">
+          <section key={page.id} data-page-id={page.id} className="rounded-2xl border border-admin-border-subtle bg-admin-surface shadow-sm">
             <div className="flex flex-col gap-3 border-b border-admin-border-subtle p-5 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <h2 className="text-xl font-bold text-admin-fg-primary">{page.label}</h2>
