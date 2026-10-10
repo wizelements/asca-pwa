@@ -46,6 +46,20 @@ export async function POST(request: NextRequest) {
     if (!canWrite(user.role)) return forbidden();
     const data = await request.json();
 
+    if (data.siteDescription !== undefined) {
+      if (typeof data.siteDescription !== 'string' || !data.siteDescription.trim() || data.siteDescription.trim().length > 80) {
+        return NextResponse.json({ error: 'Public motto must be between 1 and 80 characters.' }, { status: 400 });
+      }
+      data.siteDescription = data.siteDescription.trim();
+    }
+
+    if (data.tagline !== undefined) {
+      if (typeof data.tagline !== 'string' || !data.tagline.trim() || data.tagline.trim().length > 240) {
+        return NextResponse.json({ error: 'Homepage hero description must be between 1 and 240 characters.' }, { status: 400 });
+      }
+      data.tagline = data.tagline.trim();
+    }
+
     if (data.contactEmail !== undefined && !isValidEmail(data.contactEmail)) {
       return NextResponse.json({ error: 'Enter a valid public contact email address.' }, { status: 400 });
     }
