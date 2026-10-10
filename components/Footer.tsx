@@ -3,7 +3,7 @@ import ManagedImage from '@/components/media/ManagedImage';
 import SocialLinks from '@/components/SocialLinks';
 import ContactForm from '@/components/ContactForm';
 import { FOOTER_LINKS } from '@/lib/content/site';
-import { getCachedContactEmail, getCachedTheme } from '@/lib/db/queries-cache';
+import { getCachedContactEmail, getCachedSiteIdentity, getCachedTheme } from '@/lib/db/queries-cache';
 import { DEFAULT_LOGO } from '@/lib/media';
 
 async function getFooterLogo() {
@@ -16,9 +16,13 @@ async function getFooterLogo() {
 }
 
 export default async function Footer() {
-  const [logoSrc, contactEmail] = await Promise.all([
+  const [logoSrc, contactEmail, identity] = await Promise.all([
     getFooterLogo(),
     getCachedContactEmail().catch(() => 'info@atlantasaddleclub.com'),
+    getCachedSiteIdentity().catch(() => ({
+      siteName: 'Atlanta Saddle Club Association',
+      motto: 'We Ride To Inspire',
+    })),
   ]);
 
   return (
@@ -63,7 +67,7 @@ export default async function Footer() {
               <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-brand-forest p-2 shadow-sm">
                 <ManagedImage
                   src={logoSrc}
-                  alt="Atlanta Saddle Club Association logo"
+                  alt={`${identity.siteName} logo`}
                   width={80}
                   height={66}
                   className="h-full w-auto"
@@ -75,7 +79,7 @@ export default async function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-10 flex flex-col gap-4 border-t border-brand-border-subtle pt-6 text-sm text-brand-fg-muted md:flex-row md:items-center md:justify-between">
-          <p className="uppercase tracking-[0.24em]">© {new Date().getFullYear()} Atlanta Saddle Club Association</p>
+          <p className="uppercase tracking-[0.24em]">© {new Date().getFullYear()} {identity.siteName}</p>
           <p className="text-xs uppercase tracking-[0.24em] text-brand-fg-secondary">
             Built by{' '}
             <a
