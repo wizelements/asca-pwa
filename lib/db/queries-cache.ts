@@ -39,6 +39,18 @@ export const getCachedTheme = unstable_cache(
   { revalidate: 60, tags: [CACHE_TAG_THEME] }
 );
 
+export const getCachedSiteIdentity = unstable_cache(
+  async (): Promise<{ siteName: string; motto: string }> => {
+    const settings = await getSettingsRaw();
+    return {
+      siteName: settings.siteName || 'Atlanta Saddle Club Association',
+      motto: settings.siteDescription || 'We Ride To Inspire',
+    };
+  },
+  ['site-identity-public'],
+  { revalidate: 60, tags: [CACHE_TAG_SETTINGS] }
+);
+
 export const getCachedContactEmail = unstable_cache(
   async (): Promise<string> => {
     const settings = await getSettingsRaw();
