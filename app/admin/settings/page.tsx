@@ -11,6 +11,7 @@ function sanitizeSocial(social: any) {
   return {
     facebook: typeof social?.facebook === 'string' ? social.facebook : '',
     instagram: typeof social?.instagram === 'string' ? social.instagram : '',
+    tiktok: typeof social?.tiktok === 'string' ? social.tiktok : '',
   };
 }
 
@@ -154,6 +155,7 @@ export default function AdminSettings() {
             {[
               { label: 'Facebook', key: 'social.facebook' },
               { label: 'Instagram', key: 'social.instagram' },
+              { label: 'TikTok', key: 'social.tiktok' },
             ].map((field) => (
               <div key={field.key}>
                 <label className="block text-sm font-semibold text-brand-fg-primary mb-1">{field.label}</label>
@@ -165,9 +167,8 @@ export default function AdminSettings() {
                 />
               </div>
             ))}
-            <div className="rounded-lg border border-brand-border-subtle bg-brand-bg-subtle p-4">
-              <p className="text-sm font-semibold text-brand-fg-primary">TikTok</p>
-              <p className="mt-1 text-sm text-brand-fg-secondary">Coming soon — shown as text on the public footer, not a link.</p>
+            <div className="rounded-lg border border-brand-border-subtle bg-brand-bg-subtle p-4 text-sm text-brand-fg-secondary">
+              Facebook, Instagram, and TikTok are used by the public social icons in the header/mobile menu and footer. Saving here changes those links without a code deployment.
             </div>
             <button
               onClick={() => handleSave('social')}
