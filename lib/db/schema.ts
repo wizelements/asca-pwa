@@ -7,7 +7,7 @@ export const settings = sqliteTable('settings', {
   siteName: text('site_name').notNull().default('Atlanta Saddle Club Association'),
   siteDescription: text('site_description').notNull().default('We Ride To Inspire'),
   tagline: text('tagline').notNull().default('Promoting horsemanship, sportsmanship, and community'),
-  contactEmail: text('contact_email').notNull().default('info@atlantasaddleclub.org'),
+  contactEmail: text('contact_email').notNull().default('info@atlantasaddleclub.com'),
   phone: text('phone').default('(404) 555-0123'),
   address: text('address').default('Atlanta, Georgia'),
   social: text('social', { mode: 'json' }).notNull().default(
