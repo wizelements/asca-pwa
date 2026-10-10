@@ -39,6 +39,15 @@ export const getCachedTheme = unstable_cache(
   { revalidate: 60, tags: [CACHE_TAG_THEME] }
 );
 
+export const getCachedContactEmail = unstable_cache(
+  async (): Promise<string> => {
+    const settings = await getSettingsRaw();
+    return settings.contactEmail || 'info@atlantasaddleclub.com';
+  },
+  ['contact-email-public'],
+  { revalidate: 60, tags: [CACHE_TAG_SETTINGS] }
+);
+
 export const getCachedSiteTagline = unstable_cache(
   async (): Promise<string> => getSiteTaglineRaw(),
   ['site-tagline-public'],
