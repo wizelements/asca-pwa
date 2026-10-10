@@ -10,6 +10,7 @@ import { isPublicPreviewEnabled } from '@/lib/gallery/feature-state';
 import { notFound } from 'next/navigation';
 import Breadcrumbs from '@/components/gallery/Breadcrumbs';
 import PublicEmptyState from '@/components/gallery/PublicEmptyState';
+import { getCachedSiteContent, siteText } from '@/lib/site-content';
 
 interface HorsesPageProps {
   searchParams?: Promise<{ page?: string }>;
@@ -29,9 +30,10 @@ export default async function HorsesPage({ searchParams }: HorsesPageProps) {
   const page = Math.max(1, Number(params.page || '1'));
   const pageSize = 12;
 
-  const [horses, total] = await Promise.all([
+  const [horses, total, copy] = await Promise.all([
     getPublicHorses(pageSize, (page - 1) * pageSize),
     countPublicHorses(),
+    getCachedSiteContent(),
   ]);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
@@ -42,8 +44,8 @@ export default async function HorsesPage({ searchParams }: HorsesPageProps) {
         <Hero
           image="/api/media/site/gallery.hero"
           imageAlt="ASCA horses"
-          title="Our Horses"
-          subtitle="Meet the heart of ASCA"
+          title={siteText(copy, 'horses.hero.title')}
+          subtitle={siteText(copy, 'horses.hero.subtitle')}
         />
         <section className="bg-brand-bg-subtle py-20">
           <div className="container">
@@ -78,8 +80,8 @@ export default async function HorsesPage({ searchParams }: HorsesPageProps) {
               </div>
             ) : (
               <PublicEmptyState
-                title="No horse profiles yet"
-                description="Check back soon to meet the horses at the heart of ASCA."
+                title={siteText(copy, 'horses.empty.title')}
+                description={siteText(copy, 'horses.empty.body')}
                 action={{ label: 'Back to home', href: '/' }}
               />
             )}
