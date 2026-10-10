@@ -122,3 +122,18 @@ export async function updateSiteContent(
 
   return getSiteContent();
 }
+
+
+export function siteText(values: SiteContentValues, key: string): string {
+  const field = SITE_CONTENT_FIELD_MAP.get(key);
+  const fallback = field && typeof field.defaultValue === 'string' ? field.defaultValue : '';
+  const value = values[key];
+  return typeof value === 'string' && value.trim() ? value : fallback;
+}
+
+export function siteList(values: SiteContentValues, key: string): string[] {
+  const field = SITE_CONTENT_FIELD_MAP.get(key);
+  const fallback = field && Array.isArray(field.defaultValue) ? field.defaultValue : [];
+  const value = values[key];
+  return Array.isArray(value) && value.length > 0 ? value : [...fallback];
+}
