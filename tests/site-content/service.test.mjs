@@ -73,6 +73,10 @@ describe('client-editable site content', () => {
       () => updateSiteContent({ 'members.reasons.items': 'not-a-list' }, 1),
       /must be a list/
     );
+    await assert.rejects(
+      () => updateSiteContent({ 'about.officers.items': ['President only, missing delimiter'] }, 1),
+      /Each officer must use/
+    );
   });
 
   it('does not persist valid fields when the same request contains an invalid field', async () => {
