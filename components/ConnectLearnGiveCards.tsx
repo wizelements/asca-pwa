@@ -1,29 +1,32 @@
 import Link from 'next/link';
 
-const CARDS = [
-  {
-    title: 'Connect',
-    label: 'We are a community of horsemen',
-    body: 'Connection is at the heart of everything we do. Through shared experiences with horses, our members build friendships, develop trust, and become part of a supportive community. The unique bond between horse and rider encourages personal growth, confidence, and a deeper understanding of oneself and others.',
-  },
-  {
-    title: 'Learn',
-    label: 'Horsemanship for every level',
-    body: "Learning never stops when horses are involved. Members gain hands-on knowledge in horsemanship, riding, horse care, safety, trail etiquette, and leadership. Whether you're new to horses or have years of experience, our club provides opportunities to expand your skills, share knowledge, and grow your confidence through education and experience. Every ride, event, and activity offers an opportunity to learn something new.",
-  },
-  {
-    title: 'Give',
-    label: 'Serving our community',
-    body: 'Our club believes in giving back to the community. Funds raised through our events help us provide educational opportunities, support local initiatives, and create meaningful experiences for both the young and the young at heart. Together, we strive to make a positive impact. We welcome your donations to support our efforts.',
-    href: '/support-asca',
-    cta: 'Donate',
-  },
-];
+import { getCachedSiteContent, siteText } from '@/lib/site-content';
 
-export default function ConnectLearnGiveCards() {
+export default async function ConnectLearnGiveCards() {
+  const copy = await getCachedSiteContent();
+  const cards = [
+    {
+      title: siteText(copy, 'home.connect.title'),
+      label: siteText(copy, 'home.connect.label'),
+      body: siteText(copy, 'home.connect.body'),
+    },
+    {
+      title: siteText(copy, 'home.learn.title'),
+      label: siteText(copy, 'home.learn.label'),
+      body: siteText(copy, 'home.learn.body'),
+    },
+    {
+      title: siteText(copy, 'home.give.title'),
+      label: siteText(copy, 'home.give.label'),
+      body: siteText(copy, 'home.give.body'),
+      href: '/support-asca',
+      cta: siteText(copy, 'home.give.cta'),
+    },
+  ];
+
   return (
     <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3">
-      {CARDS.map((card) => (
+      {cards.map((card) => (
         <div key={card.title} className="card flex flex-col">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-accent">
             {card.label}
