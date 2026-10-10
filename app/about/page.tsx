@@ -7,6 +7,7 @@ import OfficerList from '@/components/OfficerList';
 import ManagedImage from '@/components/media/ManagedImage';
 import { getManagedImage } from '@/lib/media';
 import { getPublicManagedImages } from '@/lib/public-content';
+import { getCachedSiteContent, siteText } from '@/lib/site-content';
 
 export const metadata: Metadata = {
   title: { absolute: 'About ASCA | Atlanta Saddle Club Association' },
@@ -15,7 +16,10 @@ export const metadata: Metadata = {
 };
 
 export default async function About() {
-  const images = await getPublicManagedImages();
+  const [images, copy] = await Promise.all([
+    getPublicManagedImages(),
+    getCachedSiteContent(),
+  ]);
   const hero = getManagedImage(images, 'about.hero');
   const historyImage = getManagedImage(images, 'about.history');
 
@@ -26,18 +30,17 @@ export default async function About() {
         <Hero
           image={hero.src}
           imageAlt={hero.alt}
-          title="About ASCA"
-          subtitle="Atlanta's premiere saddle club, promoting positive horsemanship within the community."
+          title={siteText(copy, 'about.hero.title')}
+          subtitle={siteText(copy, 'about.hero.subtitle')}
         />
 
         {/* Opening */}
         <section className="py-16">
           <div className="container max-w-3xl text-center">
-            <p className="section-label">Who We Are</p>
-            <h2 className="section-title">Atlanta Saddle Club Association</h2>
+            <p className="section-label">{siteText(copy, 'about.intro.label')}</p>
+            <h2 className="section-title">{siteText(copy, 'about.intro.title')}</h2>
             <p className="text-lg leading-relaxed text-brand-fg-secondary">
-              Atlanta Saddle Club Association (ASCA) — Atlanta&apos;s premiere saddle club. ASCA sponsors and
-              promotes horse trail rides, horseback riding lessons, camp outs, and other activities.
+              {siteText(copy, 'about.intro.body')}
             </p>
           </div>
         </section>
@@ -47,13 +50,9 @@ export default async function About() {
           <div className="container max-w-4xl">
             <div className="grid items-center gap-10 md:grid-cols-2">
               <div>
-                <h2 className="section-title">How ASCA Began</h2>
+                <h2 className="section-title">{siteText(copy, 'about.history.title')}</h2>
                 <p className="leading-relaxed text-brand-fg-secondary">
-                  The Atlanta Saddle Club Association (ASCA) was formed on May 5, 2020 by a group of dedicated
-                  horsemen who wanted to create a community in metro Atlanta that promotes positive horsemanship,
-                  shares information related to handling and training horses, encourages and develops sportsmanship
-                  among ASCA members and the local community, and introduces underserved communities to horses and
-                  their transformative power.
+                  {siteText(copy, 'about.history.body')}
                 </p>
               </div>
               <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
@@ -73,8 +72,8 @@ export default async function About() {
         <section className="py-16">
           <div className="container">
             <div className="mb-10 text-center">
-              <p className="section-label">Leadership</p>
-              <h2 className="section-title">Current Officers</h2>
+              <p className="section-label">{siteText(copy, 'about.leadership.label')}</p>
+              <h2 className="section-title">{siteText(copy, 'about.leadership.title')}</h2>
             </div>
             <OfficerList />
           </div>
@@ -83,18 +82,18 @@ export default async function About() {
         {/* Join the Club */}
         <section className="bg-brand-forest py-16 text-white">
           <div className="container max-w-3xl text-center">
-            <p className="section-label text-brand-accent">Join the Club</p>
-            <h2 className="mb-4 text-3xl font-bold md:text-4xl">Become a Member</h2>
+            <p className="section-label text-brand-accent">{siteText(copy, 'about.join.label')}</p>
+            <h2 className="mb-4 text-3xl font-bold md:text-4xl">{siteText(copy, 'about.join.title')}</h2>
             <p className="text-lg leading-relaxed text-amber-100">
-              If you would like to become a member, please plan to attend one of our club meetings, or some of our
-              activities and events, so that you can meet our members and learn more about ASCA. The club meets
-              monthly at Piccadilly Cafeteria, 2449 Godby Road, College Park 30349, on the first Wednesday at 7pm.
+              {siteText(copy, 'about.join.body')}{' '}
+              We meet on the {siteText(copy, 'shared.meeting.cadence')} at {siteText(copy, 'shared.meeting.time')} at{' '}
+              {siteText(copy, 'shared.meeting.venue')}, {siteText(copy, 'shared.meeting.address')}.
             </p>
             <Link
               href="/get-involved"
               className="btn-accent mt-8 inline-flex"
             >
-              Get Involved
+              {siteText(copy, 'about.join.cta')}
             </Link>
           </div>
         </section>

@@ -3,6 +3,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import EventCalendar from '@/components/events/EventCalendar';
 import { getCachedPublicEvents } from '@/lib/db/queries-cache';
+import { getCachedSiteContent, siteText } from '@/lib/site-content';
 
 export const revalidate = 60;
 
@@ -13,7 +14,10 @@ export const metadata: Metadata = {
 };
 
 export default async function WhereToFindUs() {
-  const events = await getCachedPublicEvents();
+  const [events, copy] = await Promise.all([
+    getCachedPublicEvents(),
+    getCachedSiteContent(),
+  ]);
 
   return (
     <>
@@ -21,10 +25,10 @@ export default async function WhereToFindUs() {
       <main className="min-h-screen bg-brand-bg-body">
         <section className="py-12 md:py-16">
           <div className="container text-center">
-            <p className="section-label">Where You&apos;ll Find ASCA</p>
-            <h1 className="section-title">Event Calendar</h1>
+            <p className="section-label">{siteText(copy, 'calendar.label')}</p>
+            <h1 className="section-title">{siteText(copy, 'calendar.title')}</h1>
             <p className="mx-auto max-w-3xl text-lg leading-relaxed text-brand-fg-secondary">
-              Find upcoming ASCA meetings, hosted events, trail rides, parades, and community outreach activities.
+              {siteText(copy, 'calendar.body')}
             </p>
           </div>
         </section>

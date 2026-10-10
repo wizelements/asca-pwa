@@ -5,6 +5,7 @@ import ContactForm from '@/components/ContactForm';
 import { FOOTER_LINKS } from '@/lib/content/site';
 import { getCachedContactEmail, getCachedSiteIdentity, getCachedTheme } from '@/lib/db/queries-cache';
 import { DEFAULT_LOGO } from '@/lib/media';
+import { getCachedSiteContent, siteText } from '@/lib/site-content';
 
 async function getFooterLogo() {
   try {
@@ -16,13 +17,15 @@ async function getFooterLogo() {
 }
 
 export default async function Footer() {
-  const [logoSrc, contactEmail, identity] = await Promise.all([
+  const [logoSrc, contactEmail, identity, copy] = await Promise.all([
     getFooterLogo(),
     getCachedContactEmail().catch(() => 'info@atlantasaddleclub.com'),
     getCachedSiteIdentity().catch(() => ({
       siteName: 'Atlanta Saddle Club Association',
       motto: 'We Ride To Inspire',
+      heroDescription: "Atlanta's premiere saddle club — promoting horsemanship, fellowship, education, and community across metro Atlanta.",
     })),
+    getCachedSiteContent(),
   ]);
 
   return (
@@ -31,16 +34,16 @@ export default async function Footer() {
         <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
           {/* Contact Form */}
           <section id="contact" className="scroll-mt-24 md:col-span-2">
-            <h2 className="mb-2 text-lg font-bold font-display text-brand-fg-primary">Contact Us</h2>
+            <h2 className="mb-2 text-lg font-bold font-display text-brand-fg-primary">{siteText(copy, 'shared.footer.contactTitle')}</h2>
             <p className="mb-6 text-sm text-brand-fg-secondary">
-              Questions about ASCA, membership, or our events? Send us a message and we&apos;ll be in touch.
+              {siteText(copy, 'shared.footer.contactBody')}
             </p>
             <ContactForm fallbackEmail={contactEmail} />
           </section>
 
           {/* Quick Links + Social */}
           <div>
-            <h2 className="mb-6 text-lg font-bold font-display text-brand-fg-primary">Quick Links</h2>
+            <h2 className="mb-6 text-lg font-bold font-display text-brand-fg-primary">{siteText(copy, 'shared.footer.quickLinksTitle')}</h2>
             <ul className="space-y-3">
               {FOOTER_LINKS.map((link) => (
                 <li key={link.href}>
@@ -54,7 +57,7 @@ export default async function Footer() {
               ))}
             </ul>
 
-            <h2 className="mt-8 mb-4 text-lg font-bold font-display text-brand-fg-primary">Follow Us</h2>
+            <h2 className="mt-8 mb-4 text-lg font-bold font-display text-brand-fg-primary">{siteText(copy, 'shared.footer.followTitle')}</h2>
             <SocialLinks />
 
             <p className="mt-6 text-sm text-brand-fg-secondary">

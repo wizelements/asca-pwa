@@ -31,6 +31,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: 'Gallery albums', href: '/admin/albums' },
       { label: 'Horses', href: '/admin/horses' },
+      { label: 'Page text', href: '/admin/content' },
       { label: 'Page images', href: '/admin/media' },
       { label: 'Appearance', href: '/admin/theme' },
       { label: 'Public site settings', href: '/admin/settings' },

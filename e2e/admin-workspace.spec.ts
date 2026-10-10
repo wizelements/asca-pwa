@@ -29,7 +29,7 @@ test.describe('authenticated admin client workspace', () => {
 
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
-    await expect(dialog).toContainText('1 of 15');
+    await expect(dialog).toContainText('1 of 16');
 
     const expectedTitles = [
       'Welcome to the ASCA Client Workspace',
@@ -41,6 +41,7 @@ test.describe('authenticated admin client workspace', () => {
       'Events — the public calendar',
       'Gallery albums — activity photos',
       'Horses — public horse profiles',
+      'Page text — visitor-facing wording without code',
       'Page images — photography used around the site',
       'Appearance — brand settings',
       'Public site settings — homepage identity, contact, social & giving',
@@ -51,7 +52,7 @@ test.describe('authenticated admin client workspace', () => {
 
     for (let index = 0; index < expectedTitles.length; index += 1) {
       await expect(page.getByRole('heading', { name: expectedTitles[index] })).toBeVisible();
-      await expect(dialog).toContainText((index + 1) + ' of 15');
+      await expect(dialog).toContainText((index + 1) + ' of 16');
 
       if (index < expectedTitles.length - 1) {
         await page.getByRole('button', { name: 'Next' }).click();
@@ -79,6 +80,7 @@ test.describe('authenticated admin client workspace', () => {
       'Events',
       'Gallery albums',
       'Horses',
+      'Page text',
       'Page images',
       'Appearance',
       'Public site settings',
@@ -112,7 +114,7 @@ test.describe('authenticated admin client workspace', () => {
     await page.getByRole('button', { name: 'Start admin walkthrough' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Welcome to the ASCA Client Workspace' })).toBeVisible();
-    await expect(page.getByRole('dialog')).toContainText('1 of 15');
+    await expect(page.getByRole('dialog')).toContainText('1 of 16');
   });
   test('mobile client can open navigation and restart the guide', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
@@ -177,6 +179,20 @@ test.describe('authenticated admin client workspace', () => {
     await expect(oversizedMotto.json()).resolves.toMatchObject({
       error: expect.stringMatching(/1 and 80 characters/i),
     });
+  });
+
+  test('Page Text editor exposes public destinations without mixing dynamic content editors', async ({ page }) => {
+    await signIn(page);
+    await markTourCompleteAndClose(page);
+
+    await page.goto('/admin/content');
+    await expect(page.getByRole('heading', { name: 'Page Text' })).toBeVisible();
+    await expect(page.getByText('Safe text only.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Homepage', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'About ASCA', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Shared Site Copy', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: /View public page/ }).first()).toBeVisible();
+    await expect(page.getByText(/dynamic records such as Events, Gallery Albums, Horses, Members/i)).toBeVisible();
   });
 
 });

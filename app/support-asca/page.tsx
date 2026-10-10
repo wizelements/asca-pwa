@@ -4,9 +4,9 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import SupportMethods from '@/components/SupportMethods';
 import { getCachedContactEmail } from '@/lib/db/queries-cache';
-import { SUPPORT_REASONS, OTHER_WAYS_TO_SUPPORT, SUPPORT_NEEDS } from '@/lib/content/club';
 import { getManagedImage } from '@/lib/media';
 import { getPublicManagedImages } from '@/lib/public-content';
+import { getCachedSiteContent, siteList, siteText } from '@/lib/site-content';
 
 export const metadata: Metadata = {
   title: { absolute: 'Support ASCA | Atlanta Saddle Club Association' },
@@ -28,9 +28,10 @@ function BulletList({ items }: { items: string[] }) {
 }
 
 export default async function SupportAsca() {
-  const [images, contactEmail] = await Promise.all([
+  const [images, contactEmail, copy] = await Promise.all([
     getPublicManagedImages(),
     getCachedContactEmail().catch(() => 'info@atlantasaddleclub.com'),
+    getCachedSiteContent(),
   ]);
   const hero = getManagedImage(images, 'support.hero');
 
@@ -41,20 +42,17 @@ export default async function SupportAsca() {
         <Hero
           image={hero.src}
           imageAlt={hero.alt}
-          title="Support ASCA"
-          subtitle="Help us make a difference both in and out of the saddle."
+          title={siteText(copy, 'support.hero.title')}
+          subtitle={siteText(copy, 'support.hero.subtitle')}
         />
 
         {/* Opening */}
         <section className="py-16">
           <div className="container max-w-3xl text-center">
-            <p className="section-label">Support</p>
-            <h2 className="section-title">Why We Need You</h2>
+            <p className="section-label">{siteText(copy, 'support.intro.label')}</p>
+            <h2 className="section-title">{siteText(copy, 'support.intro.title')}</h2>
             <p className="text-lg leading-relaxed text-brand-fg-secondary">
-              The Atlanta Saddle Club Association is dedicated to promoting horsemanship, education, community
-              involvement, and fellowship through a shared love of horses. Through our programs, events, and outreach
-              efforts, we strive to create opportunities for individuals and families to learn, connect, and grow
-              while preserving the traditions and values of the equestrian community.
+              {siteText(copy, 'support.intro.body')}
             </p>
           </div>
         </section>
@@ -62,12 +60,11 @@ export default async function SupportAsca() {
         {/* Why Your Support Matters */}
         <section className="bg-brand-bg-subtle py-16">
           <div className="container max-w-4xl">
-            <h2 className="section-title text-center">Why Your Support Matters</h2>
+            <h2 className="section-title text-center">{siteText(copy, 'support.reasons.title')}</h2>
             <div className="card mt-8">
-              <BulletList items={SUPPORT_REASONS} />
+              <BulletList items={siteList(copy, 'support.reasons.items')} />
               <p className="mt-6 leading-relaxed text-brand-fg-secondary">
-                Every contribution, large or small, helps us expand our programs, strengthen our community impact,
-                and create meaningful opportunities for riders and families in metro Atlanta and beyond.
+                {siteText(copy, 'support.reasons.body')}
               </p>
             </div>
           </div>
@@ -76,9 +73,9 @@ export default async function SupportAsca() {
         {/* Donation methods */}
         <section className="py-16">
           <div className="container max-w-4xl">
-            <h2 className="section-title text-center">Ways to Give</h2>
+            <h2 className="section-title text-center">{siteText(copy, 'support.give.title')}</h2>
             <p className="mx-auto mb-8 max-w-2xl text-center text-brand-fg-secondary">
-              Make a direct donation using either of the options below.
+              {siteText(copy, 'support.give.body')}
             </p>
             <SupportMethods />
           </div>
@@ -89,12 +86,12 @@ export default async function SupportAsca() {
           <div className="container max-w-4xl">
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
               <div className="card">
-                <h2 className="text-2xl font-bold text-brand-fg-primary">Other Ways to Support</h2>
-                <BulletList items={OTHER_WAYS_TO_SUPPORT} />
+                <h2 className="text-2xl font-bold text-brand-fg-primary">{siteText(copy, 'support.other.title')}</h2>
+                <BulletList items={siteList(copy, 'support.other.items')} />
               </div>
               <div className="card">
-                <h2 className="text-2xl font-bold text-brand-fg-primary">Current Needs</h2>
-                <BulletList items={SUPPORT_NEEDS} />
+                <h2 className="text-2xl font-bold text-brand-fg-primary">{siteText(copy, 'support.needs.title')}</h2>
+                <BulletList items={siteList(copy, 'support.needs.items')} />
               </div>
             </div>
           </div>
@@ -103,9 +100,9 @@ export default async function SupportAsca() {
         {/* Sponsorship contact */}
         <section className="py-16">
           <div className="container max-w-3xl text-center">
-            <h2 className="section-title">Contact Us About Sponsorship Opportunities</h2>
+            <h2 className="section-title">{siteText(copy, 'support.sponsor.title')}</h2>
             <p className="text-brand-fg-secondary">
-              Interested in sponsoring an event or partnering with ASCA? Reach out:
+              {siteText(copy, 'support.sponsor.body')}
             </p>
             <div className="mt-6">
               <a
@@ -122,8 +119,7 @@ export default async function SupportAsca() {
         <section className="bg-brand-forest py-12 text-white">
           <div className="container max-w-2xl text-center">
             <p className="text-lg leading-relaxed text-amber-100">
-              Thank you for supporting the Atlanta Saddle Club Association and helping us make a difference both in
-              and out of the saddle.
+              {siteText(copy, 'support.final.body')}
             </p>
           </div>
         </section>
