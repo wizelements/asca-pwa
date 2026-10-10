@@ -71,7 +71,7 @@ const emptyEvent: EventFormState = {
   dateLabel: '',
   sortOrder: '',
   registrationRequired: false,
-  published: true,
+  published: false,
 };
 
 function toDateInput(value?: string) {
@@ -215,7 +215,11 @@ export default function AdminEvents() {
       }
       await fetchEvents();
       setModalOpen(false);
-      setMessage(editing ? 'Event updated.' : 'Event created.');
+      setMessage(
+        data.published
+          ? (editing ? 'Event updated and visible on the public Event Calendar.' : 'Event created and published to the public Event Calendar.')
+          : (editing ? 'Event updated as a draft. It is not visible publicly.' : 'Event draft created. It is not visible publicly.')
+      );
     } catch {
       setError('Unable to save event.');
     } finally {
@@ -224,7 +228,11 @@ export default function AdminEvents() {
   };
 
   const handleDelete = async (event: AdminEvent) => {
-    if (!confirm(`Delete ${event.title}?`)) return;
+    if (event.published) {
+      setError('Unpublish this event before deleting it so a live calendar item cannot disappear by accident.');
+      return;
+    }
+    if (!confirm(`Permanently delete the draft “${event.title}”? This cannot be undone.`)) return;
     const token = getAdminToken();
     setMessage('');
     setError('');
@@ -349,12 +357,14 @@ export default function AdminEvents() {
                           >
                             Edit
                           </button>
-                          <button
-                            onClick={() => handleDelete(event)}
-                            className="rounded-lg bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
-                          >
-                            Delete
-                          </button>
+                          {!event.published && (
+                            <button
+                              onClick={() => handleDelete(event)}
+                              className="rounded-lg border border-red-200 px-3 py-1 text-sm font-semibold text-red-700 hover:bg-red-50"
+                            >
+                              Delete draft
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -462,9 +472,10 @@ export default function AdminEvents() {
                 </div>
                 <div className="sm:col-span-2">
                   <AdminImageField
-                    label="Event image path, URL, or upload"
+                    label="Public event image"
                     value={form.imageUrl}
                     onChange={(imageUrl) => setForm({ ...form, imageUrl })}
+                    helper="Shown on the public Event Calendar when this event is Published. Choosing a file stores the optimized image for preview; saving the event connects it to this event."
                     previewAlt={form.imageAlt || form.title || 'Event image preview'}
                   />
                 </div>
@@ -544,7 +555,7 @@ export default function AdminEvents() {
                     onChange={(e) => setForm({ ...form, published: e.target.checked })}
                     className="h-4 w-4"
                   />
-                  Published
+                  Visible on public Event Calendar
                 </label>
               </div>
 
