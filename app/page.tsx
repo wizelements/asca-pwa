@@ -12,6 +12,7 @@ import { getPublicManagedImages } from '@/lib/public-content';
 import { getFeaturedAlbums } from '@/lib/gallery/services/albums';
 import { isPublicPreviewEnabled } from '@/lib/gallery/feature-state';
 import { getCachedSiteIdentity } from '@/lib/db/queries-cache';
+import { getCachedSiteContent, siteText } from '@/lib/site-content';
 import Image from 'next/image';
 
 const ACTIVITY_SLOTS: SiteImageSlot[] = [
@@ -34,7 +35,7 @@ const ACTIVITY_CATEGORY_MAP: Record<string, string> = {
 };
 
 export default async function Home() {
-  const [images, identity, featuredAlbums] = await Promise.all([
+  const [images, identity, featuredAlbums, copy] = await Promise.all([
     getPublicManagedImages(),
     getCachedSiteIdentity().catch(() => ({
       siteName: 'Atlanta Saddle Club Association',
@@ -42,6 +43,7 @@ export default async function Home() {
       heroDescription: "Atlanta's premiere saddle club — promoting horsemanship, fellowship, education, and community across metro Atlanta.",
     })),
     isPublicPreviewEnabled() ? getFeaturedAlbums(6) : Promise.resolve([]),
+    getCachedSiteContent(),
   ]);
   const hero = getManagedImage(images, 'home.hero');
   const activityHighlights = ACTIVITY_SLOTS.map((slot) => getManagedImage(images, slot));
@@ -65,13 +67,13 @@ export default async function Home() {
             <MeetingCallout />
             <div className="mt-8 flex flex-col flex-wrap items-center justify-center gap-4 sm:flex-row">
               <Link href="/where-to-find-us" className="btn-primary">
-                Attend a Meeting
+                {siteText(copy, 'home.cta.meeting')}
               </Link>
               <Link href="/members" className="btn-secondary">
-                Become a Member
+                {siteText(copy, 'home.cta.member')}
               </Link>
               <Link href="/support-asca" className="btn-accent">
-                Support ASCA
+                {siteText(copy, 'home.cta.support')}
               </Link>
             </div>
           </div>
@@ -80,8 +82,8 @@ export default async function Home() {
         {/* Connect / Learn / Give */}
         <section id="connect" className="scroll-mt-24 bg-brand-bg-subtle py-20">
           <div className="container">
-            <p className="section-label text-center">Our Purpose</p>
-            <h2 className="section-title text-center">Connect · Learn · Give</h2>
+            <p className="section-label text-center">{siteText(copy, 'home.purpose.label')}</p>
+            <h2 className="section-title text-center">{siteText(copy, 'home.purpose.title')}</h2>
             <ConnectLearnGiveCards />
           </div>
         </section>
@@ -89,9 +91,9 @@ export default async function Home() {
         {/* Our Latest Activities (replaces old blog section) */}
         <section className="py-20">
           <div className="container">
-            <h2 className="section-title text-center">Our Latest Activities</h2>
+            <h2 className="section-title text-center">{siteText(copy, 'home.activities.title')}</h2>
             <p className="mx-auto mb-12 max-w-2xl text-center text-brand-fg-secondary">
-              From trail rides to community outreach, here&apos;s a glimpse of how ASCA stays active across metro Atlanta and beyond.
+              {siteText(copy, 'home.activities.body')}
             </p>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {useAlbums
@@ -140,7 +142,7 @@ export default async function Home() {
             </div>
             <div className="mt-10 text-center">
               <Link href="/gallery" className="btn-secondary">
-                View Full Gallery
+                {siteText(copy, 'home.activities.cta')}
               </Link>
             </div>
           </div>
@@ -151,10 +153,10 @@ export default async function Home() {
         {/* Stay Up to Date on our Events */}
         <section id="event-updates" className="scroll-mt-24 py-20">
           <div className="container max-w-3xl text-center">
-            <p className="section-label">Stay Connected</p>
-            <h2 className="section-title">Stay Up to Date on our Events</h2>
+            <p className="section-label">{siteText(copy, 'home.updates.label')}</p>
+            <h2 className="section-title">{siteText(copy, 'home.updates.title')}</h2>
             <p className="mx-auto max-w-2xl text-brand-fg-secondary">
-              Tell us a little about yourself and what you&apos;re interested in, and we&apos;ll keep you posted on upcoming ASCA meetings, rides, and community events.
+              {siteText(copy, 'home.updates.body')}
             </p>
             <EventUpdatesForm />
           </div>
@@ -163,14 +165,14 @@ export default async function Home() {
         {/* Membership CTA */}
         <section className="bg-brand-forest py-20 text-white">
           <div className="container text-center">
-            <p className="section-label text-brand-accent">Get Involved</p>
-            <h2 className="text-3xl font-bold md:text-4xl">Ready to Get Involved?</h2>
+            <p className="section-label text-brand-accent">{siteText(copy, 'home.final.label')}</p>
+            <h2 className="text-3xl font-bold md:text-4xl">{siteText(copy, 'home.final.title')}</h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-amber-100">
-              Attend a meeting, join the club, volunteer, or support ASCA today.
+              {siteText(copy, 'home.final.body')}
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Link href="/get-involved" className="btn-secondary border-white text-white hover:bg-white/10">
-                Get Involved
+                {siteText(copy, 'home.final.cta')}
               </Link>
             </div>
           </div>
