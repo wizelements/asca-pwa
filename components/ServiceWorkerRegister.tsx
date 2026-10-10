@@ -7,13 +7,6 @@ export default function ServiceWorkerRegister() {
     if (!('serviceWorker' in navigator)) return;
 
     let registration: ServiceWorkerRegistration | undefined;
-    let refreshing = false;
-
-    const handleControllerChange = () => {
-      if (refreshing) return;
-      refreshing = true;
-      window.location.reload();
-    };
 
     const checkForUpdate = () => {
       if (document.visibilityState === 'visible') {
@@ -27,6 +20,10 @@ export default function ServiceWorkerRegister() {
           scope: '/',
           updateViaCache: 'none',
         });
+
+        // Keep the installed app fresh without forcibly reloading an open page.
+        // The ASCA worker does not cache page HTML, so an update can activate
+        // safely and the next navigation naturally uses current application code.
         await registration.update();
       } catch (error) {
         if (process.env.NODE_ENV !== 'production') {
@@ -40,13 +37,11 @@ export default function ServiceWorkerRegister() {
 
     window.addEventListener('focus', checkForUpdate);
     document.addEventListener('visibilitychange', checkForUpdate);
-    navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
 
     return () => {
       window.removeEventListener('load', register);
       window.removeEventListener('focus', checkForUpdate);
       document.removeEventListener('visibilitychange', checkForUpdate);
-      navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
     };
   }, []);
 
