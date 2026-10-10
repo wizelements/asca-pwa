@@ -12,6 +12,7 @@ import {
 } from '@/lib/db/queries';
 import { getMediaAssetsForExport } from '@/lib/media-storage';
 import { getGalleryBackupData } from '@/lib/gallery/services/albums';
+import { getSiteContent } from '@/lib/site-content';
 
 export async function GET(request: Request) {
   try {
@@ -26,6 +27,7 @@ export async function GET(request: Request) {
       gallery,
       formSubmissions,
       recentActivity,
+      siteContent,
     ] = await Promise.all([
       getSettings(),
       getTheme(),
@@ -36,6 +38,7 @@ export async function GET(request: Request) {
       getGalleryBackupData(),
       getFormSubmissions(),
       getRecentActivity(100),
+      getSiteContent(),
     ]);
 
     const exportedAt = new Date().toISOString();
@@ -43,11 +46,12 @@ export async function GET(request: Request) {
       exportedAt,
       exportedBy: user.email,
       site: 'Atlanta Saddle Club Association',
-      version: 2,
+      version: 3,
       recoveryNotes: {
         gallerySystem: 'activity_albums',
         includesLegacyGallery: true,
         includesMediaAssets: true,
+        includesSiteContent: true,
         restoreOrder: [
           'mediaAssets',
           'gallery.categories',
@@ -65,6 +69,7 @@ export async function GET(request: Request) {
         mediaAssets,
         formSubmissions,
         recentActivity,
+        siteContent,
       },
     };
 
