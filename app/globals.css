@@ -181,12 +181,12 @@
 
 
 /* Installed-app safe areas. Browser tabs keep the normal layout. */
+.pwa-safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
 @media (display-mode: standalone) {
   .pwa-safe-top {
     padding-top: env(safe-area-inset-top);
-  }
-
-  .pwa-safe-bottom {
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
 }
