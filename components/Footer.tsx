@@ -2,8 +2,8 @@ import Link from 'next/link';
 import ManagedImage from '@/components/media/ManagedImage';
 import SocialLinks from '@/components/SocialLinks';
 import ContactForm from '@/components/ContactForm';
-import { FOOTER_LINKS, CONTACT_EMAILS } from '@/lib/content/site';
-import { getCachedTheme } from '@/lib/db/queries-cache';
+import { FOOTER_LINKS } from '@/lib/content/site';
+import { getCachedContactEmail, getCachedTheme } from '@/lib/db/queries-cache';
 import { DEFAULT_LOGO } from '@/lib/media';
 
 async function getFooterLogo() {
@@ -16,7 +16,10 @@ async function getFooterLogo() {
 }
 
 export default async function Footer() {
-  const logoSrc = await getFooterLogo();
+  const [logoSrc, contactEmail] = await Promise.all([
+    getFooterLogo(),
+    getCachedContactEmail().catch(() => 'info@atlantasaddleclub.com'),
+  ]);
 
   return (
     <footer className="border-t border-brand-border-subtle bg-brand-bg-elevated">
@@ -28,7 +31,7 @@ export default async function Footer() {
             <p className="mb-6 text-sm text-brand-fg-secondary">
               Questions about ASCA, membership, or our events? Send us a message and we&apos;ll be in touch.
             </p>
-            <ContactForm />
+            <ContactForm fallbackEmail={contactEmail} />
           </section>
 
           {/* Quick Links + Social */}
@@ -51,8 +54,8 @@ export default async function Footer() {
             <SocialLinks />
 
             <p className="mt-6 text-sm text-brand-fg-secondary">
-              <a href={`mailto:${CONTACT_EMAILS.primary}`} className="hover:text-brand-forest">
-                {CONTACT_EMAILS.primary}
+              <a href={`mailto:${contactEmail}`} className="hover:text-brand-forest">
+                {contactEmail}
               </a>
             </p>
 
