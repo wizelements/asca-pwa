@@ -145,7 +145,7 @@ test.describe('authenticated admin client workspace', () => {
     await expect(page.getByText('Fallback only').first()).toBeVisible();
 
     await page.goto('/admin/forms');
-    await expect(page.getByRole('heading', { name: 'Messages' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Messages', exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Where Messages come from' })).toBeVisible();
     await expect(page.getByText('Website Contact Form', { exact: true })).toBeVisible();
     await expect(page.getByText('Event Updates Form', { exact: true })).toBeVisible();
