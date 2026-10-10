@@ -118,12 +118,12 @@ const STEPS: WalkthroughStep[] = [
   },
   {
     group: 'Website',
-    title: 'Contact, social & giving — public operational settings',
-    body: 'This section controls the official public contact email, Facebook/Instagram/TikTok links, and donation handles used on the live site.',
-    useFor: 'Changing the email visitors see, official social profiles, or approved Cash App/Zelle information.',
-    bestPractice: 'Double-check every email, handle, and external URL before saving. Verify the footer and Support ASCA after consequential changes.',
+    title: 'Public site settings — homepage identity, contact, social & giving',
+    body: 'This section controls the homepage motto and hero description, official public contact email, Facebook/Instagram/TikTok links, and donation handles used on the live site.',
+    useFor: 'Updating ASCA’s main homepage introduction, the email visitors see, official social profiles, or approved Cash App/Zelle information.',
+    bestPractice: 'Keep the homepage introduction concise, double-check every email/handle/URL, then verify the homepage, footer, and Support ASCA after consequential changes.',
     href: '/admin/settings',
-    action: 'Open public settings',
+    action: 'Open public site settings',
   },
   {
     group: 'Support',
