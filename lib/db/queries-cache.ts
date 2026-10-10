@@ -1,6 +1,7 @@
 import { unstable_cache } from 'next/cache';
 import {
   getGalleryImages as getGalleryImagesRaw,
+  getActiveMemberCount as getActiveMemberCountRaw,
   getSiteTagline as getSiteTaglineRaw,
   getSettings as getSettingsRaw,
   getTheme as getThemeRaw,
@@ -14,6 +15,7 @@ const CACHE_TAG_SETTINGS = 'settings';
 const CACHE_TAG_THEME = 'theme';
 const CACHE_TAG_EVENTS = 'events';
 const CACHE_TAG_GALLERY = 'gallery';
+const CACHE_TAG_MEMBERS = 'members';
 
 export const getCachedManagedImages = unstable_cache(
   async (): Promise<ManagedImage[]> => {
@@ -49,6 +51,12 @@ export const getCachedPublicEvents = unstable_cache(
   { revalidate: 60, tags: [CACHE_TAG_EVENTS] }
 );
 
+export const getCachedActiveMemberCount = unstable_cache(
+  async () => getActiveMemberCountRaw(),
+  ['active-member-count-public'],
+  { revalidate: 60, tags: [CACHE_TAG_MEMBERS] }
+);
+
 export const getCachedGalleryImages = unstable_cache(
   async (category?: string) => {
     try {
@@ -62,4 +70,4 @@ export const getCachedGalleryImages = unstable_cache(
   { revalidate: 60, tags: [CACHE_TAG_GALLERY] }
 );
 
-export { CACHE_TAG_SETTINGS, CACHE_TAG_THEME, CACHE_TAG_EVENTS, CACHE_TAG_GALLERY };
+export { CACHE_TAG_SETTINGS, CACHE_TAG_THEME, CACHE_TAG_EVENTS, CACHE_TAG_GALLERY, CACHE_TAG_MEMBERS };
