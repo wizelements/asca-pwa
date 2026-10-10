@@ -16,6 +16,7 @@ import { isPublicPreviewEnabled } from '@/lib/gallery/feature-state';
 import Pagination from '@/components/gallery/Pagination';
 import Breadcrumbs from '@/components/gallery/Breadcrumbs';
 import PublicEmptyState from '@/components/gallery/PublicEmptyState';
+import { getCachedSiteContent, siteText, type SiteContentValues } from '@/lib/site-content';
 
 export const metadata: Metadata = {
   title: { absolute: 'Photo Gallery | ASCA' },
@@ -48,10 +49,12 @@ function LegacyGallery({
   selectedCategory,
   images,
   gallery,
+  copy,
 }: {
   selectedCategory?: string;
   images: Awaited<ReturnType<typeof getPublicManagedImages>>;
   gallery: GalleryImage[];
+  copy: SiteContentValues;
 }) {
   const hero = getManagedImage(images, 'gallery.hero');
   const staticGallery = FALLBACK_GALLERY_SLOTS.map((slot) => getManagedImage(images, slot));
@@ -92,8 +95,8 @@ function LegacyGallery({
       <Hero
         image={hero.src}
         imageAlt={hero.alt}
-        title="Photo Gallery"
-        subtitle="Moments from ASCA events and activities"
+        title={siteText(copy, 'gallery.hero.title')}
+        subtitle={siteText(copy, 'gallery.hero.subtitle')}
       />
 
       <section className="bg-brand-bg-subtle py-20">
@@ -186,10 +189,11 @@ function AlbumCard({ album }: { album: AlbumRecord }) {
 
 async function NewGallery({ selectedCategory, page }: { selectedCategory?: string; page: number }) {
   const pageSize = 12;
-  const [images, categories, total] = await Promise.all([
+  const [images, categories, total, copy] = await Promise.all([
     getPublicManagedImages(),
     getPublicCategories(),
     selectedCategory ? countPublicAlbums(selectedCategory) : countPublicAlbums(),
+    getCachedSiteContent(),
   ]);
 
   if (selectedCategory && !categories.some((category) => category.slug === selectedCategory)) {
@@ -207,7 +211,7 @@ async function NewGallery({ selectedCategory, page }: { selectedCategory?: strin
 
   return (
     <>
-      <Hero image={hero.src} imageAlt={hero.alt} title="Photo Gallery" subtitle="Albums from ASCA events and activities" />
+      <Hero image={hero.src} imageAlt={hero.alt} title={siteText(copy, 'gallery.hero.title')} subtitle={siteText(copy, 'gallery.hero.subtitle')} />
 
       <section className="bg-brand-bg-subtle py-20">
         <div className="container">
@@ -240,8 +244,8 @@ async function NewGallery({ selectedCategory, page }: { selectedCategory?: strin
             </div>
           ) : (
             <PublicEmptyState
-              title="No albums yet"
-              description="New albums from ASCA events and activities will appear here."
+              title={siteText(copy, 'gallery.empty.title')}
+              description={siteText(copy, 'gallery.empty.body')}
               action={{ label: 'Back to home', href: '/' }}
             />
           )}
@@ -273,15 +277,16 @@ export default async function Gallery({ searchParams }: GalleryPageProps) {
     );
   }
 
-  const [images, gallery] = await Promise.all([
+  const [images, gallery, copy] = await Promise.all([
     getPublicManagedImages(),
     getCachedGalleryImages(selectedCategory),
+    getCachedSiteContent(),
   ]);
 
   return (
     <>
       <Header />
-      <LegacyGallery selectedCategory={selectedCategory} images={images} gallery={gallery} />
+      <LegacyGallery selectedCategory={selectedCategory} images={images} gallery={gallery} copy={copy} />
       <Footer />
     </>
   );
