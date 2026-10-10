@@ -256,11 +256,68 @@ export async function createHorse(
 export async function updateHorse(
   id: number,
   input: Partial<HorseProfileCreateInput>,
-  mediaUpdates?: { reorder?: Array<{ mediaAssetId: string; sortOrder: number }>; remove?: string[] }
+  mediaUpdates?: {
+    add?: HorseProfileMediaCreateInput[];
+    reorder?: Array<{ mediaAssetId: string; sortOrder: number }>;
+    remove?: string[];
+    metadata?: Array<{ mediaAssetId: string; altText: string; caption?: string | null }>;
+  }
 ): Promise<HorseProfileRecord | null> {
   const db = getDbClient();
   const existing = await getHorseById(id);
   if (!existing) return null;
+
+  const additions = mediaUpdates?.add ?? [];
+  if (additions.length) {
+    await validateMedia(db, additions);
+  }
+
+  for (let i = 0; i < additions.length; i++) {
+    const parsed = horseProfileMediaInputSchema.parse(additions[i]);
+    await db.execute({
+      sql: `INSERT INTO horse_profile_media
+        (horse_profile_id, media_asset_id, sort_order, caption, alt_text, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, unixepoch(), unixepoch())
+        ON CONFLICT(horse_profile_id, media_asset_id) DO UPDATE SET
+          sort_order = excluded.sort_order,
+          caption = excluded.caption,
+          alt_text = excluded.alt_text,
+          updated_at = unixepoch()`,
+      args: [id, parsed.mediaAssetId, parsed.sortOrder ?? i * 10, parsed.caption ?? null, parsed.altText],
+    });
+  }
+
+  if (mediaUpdates?.remove?.length) {
+    for (const mediaAssetId of mediaUpdates.remove) {
+      await db.execute({
+        sql: 'DELETE FROM horse_profile_media WHERE horse_profile_id = ? AND media_asset_id = ?',
+        args: [id, mediaAssetId],
+      });
+    }
+  }
+
+  if (mediaUpdates?.metadata?.length) {
+    for (const item of mediaUpdates.metadata) {
+      if (!item.altText?.trim()) throw new Error('Every horse image needs descriptive alt text.');
+      await db.execute({
+        sql: `UPDATE horse_profile_media
+              SET alt_text = ?, caption = ?, updated_at = unixepoch()
+              WHERE horse_profile_id = ? AND media_asset_id = ?`,
+        args: [item.altText.trim(), item.caption?.trim() || null, id, item.mediaAssetId],
+      });
+    }
+  }
+
+  if (mediaUpdates?.reorder?.length) {
+    for (const item of mediaUpdates.reorder) {
+      await db.execute({
+        sql: `UPDATE horse_profile_media
+              SET sort_order = ?, updated_at = unixepoch()
+              WHERE horse_profile_id = ? AND media_asset_id = ?`,
+        args: [item.sortOrder, id, item.mediaAssetId],
+      });
+    }
+  }
 
   const updates: string[] = [];
   const args: (string | number | null)[] = [];
@@ -272,6 +329,13 @@ export async function updateHorse(
     if (input.primaryMediaAssetId) {
       const exists = await getMediaAssetById(input.primaryMediaAssetId);
       if (!exists) throw new Error(`Primary media asset not found: ${input.primaryMediaAssetId}`);
+      const attached = await db.execute({
+        sql: 'SELECT 1 FROM horse_profile_media WHERE horse_profile_id = ? AND media_asset_id = ? LIMIT 1',
+        args: [id, input.primaryMediaAssetId],
+      });
+      if (attached.rows.length === 0) {
+        throw new Error('Primary horse image must be attached to this profile.');
+      }
     }
     updates.push('primary_media_asset_id = ?'); args.push(input.primaryMediaAssetId ?? null);
   }
@@ -287,26 +351,6 @@ export async function updateHorse(
     });
   }
 
-  if (mediaUpdates?.reorder) {
-    for (const item of mediaUpdates.reorder) {
-      await db.execute({
-        sql: 'UPDATE horse_profile_media SET sort_order = ? WHERE horse_profile_id = ? AND media_asset_id = ?',
-        args: [item.sortOrder, id, item.mediaAssetId],
-      });
-    }
-  }
-
-  if (mediaUpdates?.remove?.length) {
-    for (const mediaAssetId of mediaUpdates.remove) {
-      await db.execute({
-        sql: 'DELETE FROM horse_profile_media WHERE horse_profile_id = ? AND media_asset_id = ?',
-        args: [id, mediaAssetId],
-      });
-    }
-  }
-
-  // After archive/soft-delete, getHorseById would return null. Refetch using the
-  // same connection and raw row to return the updated record without deleted_at filter.
   const result = await db.execute({
     sql: `
       SELECT h.*,
