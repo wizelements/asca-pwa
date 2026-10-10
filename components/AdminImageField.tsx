@@ -20,6 +20,7 @@ interface AdminImageFieldProps {
   preserveTransparency?: boolean;
   allowClear?: boolean;
   clearLabel?: string;
+  showUrlInput?: boolean;
 }
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -106,6 +107,7 @@ export default function AdminImageField({
   preserveTransparency = false,
   allowClear = true,
   clearLabel = 'Clear image',
+  showUrlInput = true,
 }: AdminImageFieldProps) {
   const textId = useId();
   const fileId = useId();
@@ -129,18 +131,20 @@ export default function AdminImageField({
   return (
     <div className="space-y-3">
       <div>
-        <label htmlFor={textId} className="mb-1 block text-sm font-semibold text-brand-fg-primary">
+        <label htmlFor={showUrlInput ? textId : fileId} className="mb-1 block text-sm font-semibold text-brand-fg-primary">
           {label}{required ? ' *' : ''}
         </label>
-        <input
-          id={textId}
-          type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary"
-          required={required}
-        />
+        {showUrlInput && (
+          <input
+            id={textId}
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary"
+            required={required}
+          />
+        )}
         <p className="mt-1 text-xs text-brand-fg-muted">{helper}</p>
       </div>
 
