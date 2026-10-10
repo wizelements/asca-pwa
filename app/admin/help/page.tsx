@@ -61,6 +61,13 @@ const sections = [
     publicEffect: 'Published horse profiles appear on the public site.',
   },
   {
+    label: 'Page text',
+    href: '/admin/content',
+    purpose: 'Visitor-facing headings, paragraphs, list items, facts, and button labels across the static public pages.',
+    workflow: 'Open the page group, change only the intended wording, save that page, then use View public page to confirm it in context.',
+    publicEffect: 'Saved text appears on the named public page after cache revalidation. Dynamic records and links remain in their dedicated editors.',
+  },
+  {
     label: 'Page images',
     href: '/admin/media',
     purpose: 'Managed photography used in page heroes and website sections rather than Gallery albums.',
@@ -108,6 +115,10 @@ const taskRecipes = [
     steps: 'Contacts for relationship history and notes → Members for the official member record → Tasks for any promised follow-up.',
   },
   {
+    title: 'Change public wording',
+    steps: 'Page text → open the affected page group → edit wording → Save page text → View public page → verify the change in context.',
+  },
+  {
     title: 'Change a website photo',
     steps: 'Page images → locate the exact page/slot → replace image → verify alt text → Save → View site → check the affected page.',
   },
@@ -148,7 +159,7 @@ export default function AdminHelp() {
             <p><strong className="text-admin-fg-primary">1. Dashboard:</strong> review New messages and Open tasks.</p>
             <p><strong className="text-admin-fg-primary">2. Follow-up:</strong> process Messages, Contacts, Members, and Tasks so every conversation has a clear next step.</p>
             <p><strong className="text-admin-fg-primary">3. Operations:</strong> keep Events accurate before visitors rely on the calendar.</p>
-            <p><strong className="text-admin-fg-primary">4. Website:</strong> update Gallery, Horses, Page images, Appearance, or Public site settings only when needed.</p>
+            <p><strong className="text-admin-fg-primary">4. Website:</strong> update Gallery, Horses, Page text, Page images, Appearance, or Public site settings only when needed.</p>
             <p><strong className="text-admin-fg-primary">5. Verify:</strong> use View site after any public-facing change.</p>
             <p><strong className="text-admin-fg-primary">6. Protect:</strong> download a backup from Dashboard after major content work.</p>
           </div>
