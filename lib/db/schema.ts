@@ -25,6 +25,14 @@ export const settings = sqliteTable('settings', {
   updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
 });
 
+export const siteContent = sqliteTable('site_content', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
+  updatedBy: integer('updated_by'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+});
+
 export const theme = sqliteTable('theme', {
   id: integer('id').primaryKey(),
   colors: text('colors', { mode: 'json' }).notNull().default(
