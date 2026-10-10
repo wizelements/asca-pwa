@@ -811,18 +811,20 @@ export async function upsertContactFromSubmission(params: {
   return { contactId: contact.id, messageId: message.id };
 }
 
-export async function getCrmDashboardStats(): Promise<{ totalContacts: number; activeMembers: number; newMessages: number; openTasks: number }> {
+export async function getCrmDashboardStats(): Promise<{ totalContacts: number; activeMembers: number; totalMessages: number; newMessages: number; openTasks: number }> {
   const db = getDb();
-  const [contacts, members, messages, tasks] = await Promise.all([
+  const [contacts, members, totalMessages, newMessages, tasks] = await Promise.all([
     db.execute('SELECT COUNT(*) as c FROM contacts'),
     db.execute("SELECT COUNT(*) as c FROM contacts WHERE lifecycle_stage = 'member' AND is_active = 1"),
+    db.execute('SELECT COUNT(*) as c FROM contact_messages'),
     db.execute("SELECT COUNT(*) as c FROM contact_messages WHERE status = 'new'"),
     db.execute("SELECT COUNT(*) as c FROM contact_tasks WHERE status != 'done' AND status != 'cancelled'"),
   ]);
   return {
     totalContacts: Number(contacts.rows[0]?.c ?? 0),
     activeMembers: Number(members.rows[0]?.c ?? 0),
-    newMessages: Number(messages.rows[0]?.c ?? 0),
+    totalMessages: Number(totalMessages.rows[0]?.c ?? 0),
+    newMessages: Number(newMessages.rows[0]?.c ?? 0),
     openTasks: Number(tasks.rows[0]?.c ?? 0),
   };
 }
