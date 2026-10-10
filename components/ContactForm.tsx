@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-export default function ContactForm() {
+export default function ContactForm({ fallbackEmail = 'info@atlantasaddleclub.com' }: { fallbackEmail?: string }) {
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -114,7 +114,7 @@ export default function ContactForm() {
       )}
       {status === 'error' && (
         <p className="text-sm text-brand-danger sm:col-span-2">
-          Something went wrong. Please try again or email info@atlantasaddleclub.com.
+          Something went wrong. Please try again or email {fallbackEmail}.
         </p>
       )}
     </form>
