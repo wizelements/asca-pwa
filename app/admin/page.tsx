@@ -201,6 +201,11 @@ export default function AdminDashboard() {
               description="Create albums and manage recent activity photos."
             />
             <QuickAction
+              href="/admin/content"
+              label="Update page text"
+              description="Change public wording without touching code."
+            />
+            <QuickAction
               href="/admin/media"
               label="Update page images"
               description="Change key website photography without touching code."
