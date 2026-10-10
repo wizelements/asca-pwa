@@ -3,7 +3,7 @@ import Hero from '@/components/Hero';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import SupportMethods from '@/components/SupportMethods';
-import { CONTACT_EMAILS } from '@/lib/content/site';
+import { getCachedContactEmail } from '@/lib/db/queries-cache';
 import { SUPPORT_REASONS, OTHER_WAYS_TO_SUPPORT, SUPPORT_NEEDS } from '@/lib/content/club';
 import { getManagedImage } from '@/lib/media';
 import { getPublicManagedImages } from '@/lib/public-content';
@@ -28,7 +28,10 @@ function BulletList({ items }: { items: string[] }) {
 }
 
 export default async function SupportAsca() {
-  const images = await getPublicManagedImages();
+  const [images, contactEmail] = await Promise.all([
+    getPublicManagedImages(),
+    getCachedContactEmail().catch(() => 'info@atlantasaddleclub.com'),
+  ]);
   const hero = getManagedImage(images, 'support.hero');
 
   return (
@@ -104,18 +107,12 @@ export default async function SupportAsca() {
             <p className="text-brand-fg-secondary">
               Interested in sponsoring an event or partnering with ASCA? Reach out:
             </p>
-            <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-8">
+            <div className="mt-6">
               <a
-                href={`mailto:${CONTACT_EMAILS.primary}`}
+                href={`mailto:${contactEmail}`}
                 className="text-lg font-semibold text-brand-forest hover:text-brand-forest-muted"
               >
-                {CONTACT_EMAILS.primary}
-              </a>
-              <a
-                href={`mailto:${CONTACT_EMAILS.secondary}`}
-                className="text-lg font-semibold text-brand-forest hover:text-brand-forest-muted"
-              >
-                {CONTACT_EMAILS.secondary}
+                {contactEmail}
               </a>
             </div>
           </div>

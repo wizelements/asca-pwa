@@ -62,6 +62,11 @@ export async function getMediaAssetUsage(id: string): Promise<MediaAssetUsage> {
     db.execute({ sql: 'SELECT COUNT(*) as c FROM horse_profile_media WHERE media_asset_id = ?', args: [id] }),
     db.execute({ sql: 'SELECT COUNT(*) as c FROM gallery_images WHERE image LIKE ?', args: [publicUrlPrefix + '%'] }),
     db.execute({ sql: 'SELECT COUNT(*) as c FROM settings WHERE heroes LIKE ?', args: ['%' + publicUrlPrefix + '%'] }),
+    db.execute({ sql: 'SELECT COUNT(*) as c FROM theme WHERE logo LIKE ?', args: [publicUrlPrefix + '%'] }),
+    db.execute({ sql: 'SELECT COUNT(*) as c FROM theme WHERE favicon LIKE ?', args: [publicUrlPrefix + '%'] }),
+    db.execute({ sql: 'SELECT COUNT(*) as c FROM events WHERE image_url LIKE ?', args: [publicUrlPrefix + '%'] }),
+    db.execute({ sql: 'SELECT COUNT(*) as c FROM members WHERE photo LIKE ?', args: [publicUrlPrefix + '%'] }),
+    db.execute({ sql: 'SELECT COUNT(*) as c FROM blog_posts WHERE image LIKE ?', args: [publicUrlPrefix + '%'] }),
   ]);
 
   const labels = [
@@ -71,6 +76,11 @@ export async function getMediaAssetUsage(id: string): Promise<MediaAssetUsage> {
     'horse photo',
     'legacy gallery',
     'page image',
+    'site logo',
+    'favicon',
+    'event image',
+    'member record photo',
+    'blog image',
   ];
   const locations: string[] = [];
   let total = 0;

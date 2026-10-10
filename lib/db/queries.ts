@@ -552,6 +552,12 @@ export async function deleteEvent(id: number): Promise<boolean> {
   return Number(result.rowsAffected) > 0;
 }
 
+export async function getActiveMemberCount(): Promise<number> {
+  const db = getDb();
+  const result = await db.execute('SELECT COUNT(*) as c FROM members WHERE is_active = 1');
+  return Number(result.rows[0]?.c ?? 0);
+}
+
 export async function getMembers(active?: boolean): Promise<Member[]> {
   const db = getDb();
   let sql = 'SELECT * FROM members';
@@ -894,7 +900,12 @@ export async function getStats(): Promise<Stats> {
     db.execute('SELECT COUNT(*) as c FROM events'),
     db.execute('SELECT COUNT(*) as c FROM members'),
     db.execute('SELECT COUNT(*) as c FROM blog_posts'),
-    db.execute('SELECT COUNT(*) as c FROM gallery_images'),
+    db.execute(`
+      SELECT COUNT(*) as c
+      FROM album_media_assets media
+      JOIN activity_albums album ON album.id = media.album_id
+      WHERE album.deleted_at IS NULL
+    `),
     db.execute('SELECT COUNT(*) as c FROM form_submissions'),
   ]);
 

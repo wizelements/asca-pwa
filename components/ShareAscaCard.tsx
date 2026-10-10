@@ -184,7 +184,7 @@ export default function ShareAscaCard({ siteUrl }: { siteUrl: string }) {
           </h2>
           <p className="mt-4 text-base leading-7 text-brand-fg-secondary">
             Share the official ASCA website from your phone, copy the link for a message,
-            or install the app so this QR page is always easy to reach.
+            or install ASCA for fast home-screen access. Share ASCA also stays available from the mobile menu and footer.
           </p>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-2">
@@ -202,7 +202,7 @@ export default function ShareAscaCard({ siteUrl }: { siteUrl: string }) {
             >
               {standalone ? 'ASCA Installed' : 'Install ASCA'}
             </button>
-            <a href={siteUrl} className="btn-secondary w-full" target="_blank" rel="noopener noreferrer">
+            <a href={siteUrl} className="btn-secondary w-full">
               Open Website
             </a>
           </div>

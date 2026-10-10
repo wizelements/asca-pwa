@@ -41,7 +41,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 }
 
 async function optimizeImage(file: File): Promise<string> {
-  if (!['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'].includes(file.type)) {
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
     throw new Error(file.name + ': unsupported image format.');
   }
   if (file.size > MAX_UPLOAD_SIZE_BYTES) {
@@ -503,14 +503,14 @@ export default function AdminAlbumEditPage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h2 className="text-lg font-bold text-admin-fg-primary">Add photos</h2>
-                <p className="mt-1 text-sm text-admin-fg-secondary">Choose several photos at once. They are optimized before upload.</p>
+                <p className="mt-1 text-sm text-admin-fg-secondary">Choose several JPG, PNG, or WebP photos at once. They are prepared locally first and are only uploaded and attached when you save the album.</p>
               </div>
               <label className="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg border border-admin-border-subtle px-4 text-sm font-semibold text-admin-fg-primary hover:bg-admin-bg-subtle">
                 {preparingImages ? 'Preparing…' : 'Choose photos'}
                 <input
                   type="file"
                   multiple
-                  accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+                  accept="image/jpeg,image/png,image/webp"
                   className="sr-only"
                   disabled={preparingImages || saving}
                   onChange={(event) => {

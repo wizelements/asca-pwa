@@ -92,7 +92,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <meta name="apple-mobile-web-app-title" content="ASCA" />
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-        <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="bg-brand-bg-body text-brand-fg-primary font-sans">
         <PwaLaunchSplash />

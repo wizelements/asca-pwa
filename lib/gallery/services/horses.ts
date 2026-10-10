@@ -256,68 +256,120 @@ export async function createHorse(
 export async function updateHorse(
   id: number,
   input: Partial<HorseProfileCreateInput>,
-  mediaUpdates?: { reorder?: Array<{ mediaAssetId: string; sortOrder: number }>; remove?: string[] }
+  mediaUpdates?: {
+    add?: HorseProfileMediaCreateInput[];
+    reorder?: Array<{ mediaAssetId: string; sortOrder: number }>;
+    remove?: string[];
+    metadata?: Array<{ mediaAssetId: string; altText: string; caption?: string | null }>;
+  }
 ): Promise<HorseProfileRecord | null> {
-  const db = getDbClient();
   const existing = await getHorseById(id);
   if (!existing) return null;
 
-  const updates: string[] = [];
-  const args: (string | number | null)[] = [];
-
-  if (input.name !== undefined) { updates.push('name = ?'); args.push(input.name); }
-  if (input.slug !== undefined) { args.push(await ensureUniqueSlug(db, input.slug, id)); updates.push('slug = ?'); }
-  if (input.description !== undefined) { updates.push('description = ?'); args.push(input.description ?? ''); }
-  if (input.primaryMediaAssetId !== undefined) {
-    if (input.primaryMediaAssetId) {
-      const exists = await getMediaAssetById(input.primaryMediaAssetId);
-      if (!exists) throw new Error(`Primary media asset not found: ${input.primaryMediaAssetId}`);
+  return withTransaction(async (db) => {
+    const additions = mediaUpdates?.add ?? [];
+    if (additions.length) {
+      await validateMedia(db, additions);
     }
-    updates.push('primary_media_asset_id = ?'); args.push(input.primaryMediaAssetId ?? null);
-  }
-  if (input.status !== undefined) { updates.push('status = ?'); args.push(input.status as HorseStatus); }
-  if (input.sortOrder !== undefined) { updates.push('sort_order = ?'); args.push(input.sortOrder ?? 0); }
 
-  if (updates.length > 0) {
-    updates.push('updated_at = unixepoch()');
-    args.push(id);
-    await db.execute({
-      sql: `UPDATE horse_profiles SET ${updates.join(', ')} WHERE id = ?`,
-      args,
+    for (let i = 0; i < additions.length; i++) {
+      const parsed = horseProfileMediaInputSchema.parse(additions[i]);
+      await db.execute({
+        sql: `INSERT INTO horse_profile_media
+          (horse_profile_id, media_asset_id, sort_order, caption, alt_text, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, unixepoch(), unixepoch())
+          ON CONFLICT(horse_profile_id, media_asset_id) DO UPDATE SET
+            sort_order = excluded.sort_order,
+            caption = excluded.caption,
+            alt_text = excluded.alt_text,
+            updated_at = unixepoch()`,
+        args: [id, parsed.mediaAssetId, parsed.sortOrder ?? i * 10, parsed.caption ?? null, parsed.altText],
+      });
+    }
+
+    if (mediaUpdates?.remove?.length) {
+      for (const mediaAssetId of mediaUpdates.remove) {
+        await db.execute({
+          sql: 'DELETE FROM horse_profile_media WHERE horse_profile_id = ? AND media_asset_id = ?',
+          args: [id, mediaAssetId],
+        });
+      }
+    }
+
+    if (mediaUpdates?.metadata?.length) {
+      for (const item of mediaUpdates.metadata) {
+        if (!item.altText?.trim()) throw new Error('Every horse image needs descriptive alt text.');
+        await db.execute({
+          sql: `UPDATE horse_profile_media
+                SET alt_text = ?, caption = ?, updated_at = unixepoch()
+                WHERE horse_profile_id = ? AND media_asset_id = ?`,
+          args: [item.altText.trim(), item.caption?.trim() || null, id, item.mediaAssetId],
+        });
+      }
+    }
+
+    if (mediaUpdates?.reorder?.length) {
+      for (const item of mediaUpdates.reorder) {
+        await db.execute({
+          sql: `UPDATE horse_profile_media
+                SET sort_order = ?, updated_at = unixepoch()
+                WHERE horse_profile_id = ? AND media_asset_id = ?`,
+          args: [item.sortOrder, id, item.mediaAssetId],
+        });
+      }
+    }
+
+    const updates: string[] = [];
+    const args: (string | number | null)[] = [];
+
+    if (input.name !== undefined) { updates.push('name = ?'); args.push(input.name); }
+    if (input.slug !== undefined) { args.push(await ensureUniqueSlug(db, input.slug, id)); updates.push('slug = ?'); }
+    if (input.description !== undefined) { updates.push('description = ?'); args.push(input.description ?? ''); }
+    if (input.primaryMediaAssetId !== undefined) {
+      if (input.primaryMediaAssetId) {
+        const asset = await db.execute({
+          sql: 'SELECT 1 FROM media_assets WHERE id = ? LIMIT 1',
+          args: [input.primaryMediaAssetId],
+        });
+        if (asset.rows.length === 0) {
+          throw new Error(`Primary media asset not found: ${input.primaryMediaAssetId}`);
+        }
+
+        const attached = await db.execute({
+          sql: 'SELECT 1 FROM horse_profile_media WHERE horse_profile_id = ? AND media_asset_id = ? LIMIT 1',
+          args: [id, input.primaryMediaAssetId],
+        });
+        if (attached.rows.length === 0) {
+          throw new Error('Primary horse image must be attached to this profile.');
+        }
+      }
+      updates.push('primary_media_asset_id = ?');
+      args.push(input.primaryMediaAssetId ?? null);
+    }
+    if (input.status !== undefined) { updates.push('status = ?'); args.push(input.status as HorseStatus); }
+    if (input.sortOrder !== undefined) { updates.push('sort_order = ?'); args.push(input.sortOrder ?? 0); }
+
+    if (updates.length > 0) {
+      updates.push('updated_at = unixepoch()');
+      args.push(id);
+      await db.execute({
+        sql: `UPDATE horse_profiles SET ${updates.join(', ')} WHERE id = ?`,
+        args,
+      });
+    }
+
+    const result = await db.execute({
+      sql: `
+        SELECT h.*,
+               (SELECT COUNT(*) FROM horse_profile_media WHERE horse_profile_id = h.id) as media_count
+        FROM horse_profiles h
+        WHERE h.deleted_at IS NULL AND h.id = ?
+      `,
+      args: [id],
     });
-  }
-
-  if (mediaUpdates?.reorder) {
-    for (const item of mediaUpdates.reorder) {
-      await db.execute({
-        sql: 'UPDATE horse_profile_media SET sort_order = ? WHERE horse_profile_id = ? AND media_asset_id = ?',
-        args: [item.sortOrder, id, item.mediaAssetId],
-      });
-    }
-  }
-
-  if (mediaUpdates?.remove?.length) {
-    for (const mediaAssetId of mediaUpdates.remove) {
-      await db.execute({
-        sql: 'DELETE FROM horse_profile_media WHERE horse_profile_id = ? AND media_asset_id = ?',
-        args: [id, mediaAssetId],
-      });
-    }
-  }
-
-  // After archive/soft-delete, getHorseById would return null. Refetch using the
-  // same connection and raw row to return the updated record without deleted_at filter.
-  const result = await db.execute({
-    sql: `
-      SELECT h.*,
-             (SELECT COUNT(*) FROM horse_profile_media WHERE horse_profile_id = h.id) as media_count
-      FROM horse_profiles h
-      WHERE h.id = ?
-    `,
-    args: [id],
+    if (result.rows.length === 0) return null;
+    return rowToHorse(result.rows[0], Number(result.rows[0].media_count ?? 0));
   });
-  if (result.rows.length === 0) return null;
-  return rowToHorse(result.rows[0], Number(result.rows[0].media_count ?? 0));
 }
 
 export async function addHorseMedia(horseId: number, items: HorseProfileMediaCreateInput[]): Promise<HorseProfileRecord | null> {

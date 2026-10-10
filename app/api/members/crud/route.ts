@@ -1,5 +1,7 @@
+import { revalidateTag } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
+import { CACHE_TAG_MEMBERS } from '@/lib/db/queries-cache';
 import {
   createMember,
   deleteMember,
@@ -71,6 +73,7 @@ export async function POST(request: NextRequest) {
       joinDate: body.joinDate ? new Date(body.joinDate) : new Date(),
     } as any);
 
+    revalidateTag(CACHE_TAG_MEMBERS);
     await logActivity('member', `Created member "${member.firstName} ${member.lastName}"`, user.name || user.email);
     return NextResponse.json(member, { status: 201 });
   } catch (error: any) {
@@ -109,6 +112,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Member not found' }, { status: 404 });
     }
 
+    revalidateTag(CACHE_TAG_MEMBERS);
     await logActivity('member', `Updated member "${member.firstName} ${member.lastName}"`, user.name || user.email);
     return NextResponse.json(member);
   } catch (error: any) {
@@ -137,6 +141,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await deleteMember(Number(id));
+    revalidateTag(CACHE_TAG_MEMBERS);
     await logActivity('member', `Deleted member "${member.firstName} ${member.lastName}"`, user.name || user.email);
 
     return NextResponse.json({ success: true, message: 'Member deleted' });

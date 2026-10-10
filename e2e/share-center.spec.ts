@@ -18,9 +18,10 @@ test.describe('ASCA member share center', () => {
     await expect(page.getByRole('button', { name: 'Share ASCA' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Copy Link' })).toBeVisible();
     await expect(page.getByRole('button', { name: /Install ASCA|ASCA Installed/ })).toBeVisible();
+    const expectedSiteUrl = new URL('/', page.url()).origin;
     await expect(page.getByRole('link', { name: 'Open Website' })).toHaveAttribute(
       'href',
-      'https://www.atlantasaddleclub.com'
+      expectedSiteUrl
     );
     await expect(page.getByRole('link', { name: 'Download QR for print or flyers' })).toHaveAttribute(
       'href',

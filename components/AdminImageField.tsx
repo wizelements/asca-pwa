@@ -16,6 +16,11 @@ interface AdminImageFieldProps {
   placeholder?: string;
   helper?: string;
   previewAlt?: string;
+  storageMode?: 'asset' | 'inline';
+  preserveTransparency?: boolean;
+  allowClear?: boolean;
+  clearLabel?: string;
+  showUrlInput?: boolean;
 }
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -27,12 +32,15 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-async function optimizeImageFile(file: File): Promise<string> {
+async function optimizeImageFile(file: File, preserveTransparency: boolean): Promise<string> {
   if (!file.type.startsWith('image/')) {
     throw new Error('Choose an image file.');
   }
   if (file.type === 'image/svg+xml') {
     throw new Error('SVG uploads are not supported here. Use JPG, PNG, or WebP.');
+  }
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    throw new Error('Use a JPG, PNG, or WebP image.');
   }
   if (file.size > MAX_UPLOAD_SIZE_BYTES) {
     throw new Error('Image is too large. Choose an image under 8 MB.');
@@ -49,8 +57,20 @@ async function optimizeImageFile(file: File): Promise<string> {
     canvas.height = height;
     const context = canvas.getContext('2d');
     if (!context) throw new Error('Unable to optimize image in this browser.');
+
+    if (!preserveTransparency) {
+      context.fillStyle = '#ffffff';
+      context.fillRect(0, 0, width, height);
+    }
     context.drawImage(image, 0, 0, width, height);
-    return canvas.toDataURL('image/jpeg', JPEG_QUALITY);
+
+    const outputType = preserveTransparency && (file.type === 'image/png' || file.type === 'image/webp')
+      ? 'image/png'
+      : 'image/jpeg';
+
+    return outputType === 'image/png'
+      ? canvas.toDataURL(outputType)
+      : canvas.toDataURL(outputType, JPEG_QUALITY);
   } finally {
     URL.revokeObjectURL(objectUrl);
   }
@@ -81,8 +101,13 @@ export default function AdminImageField({
   onChange,
   required,
   placeholder = '/images/gallery/event.jpg or https://...',
-  helper = 'Paste an image path/URL, or upload a JPG/PNG/WebP. Uploads are optimized and stored separately so pages stay fast.',
+  helper = 'Paste an image path/URL, or upload a JPG/PNG/WebP. Uploads are optimized before they are used.',
   previewAlt = 'Image preview',
+  storageMode = 'asset',
+  preserveTransparency = false,
+  allowClear = true,
+  clearLabel = 'Clear image',
+  showUrlInput = true,
 }: AdminImageFieldProps) {
   const textId = useId();
   const fileId = useId();
@@ -94,8 +119,8 @@ export default function AdminImageField({
     setUploading(true);
     setError('');
     try {
-      const dataUrl = await optimizeImageFile(file);
-      onChange(await storeImage(dataUrl));
+      const dataUrl = await optimizeImageFile(file, preserveTransparency);
+      onChange(storageMode === 'inline' ? dataUrl : await storeImage(dataUrl));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to upload image.');
     } finally {
@@ -106,18 +131,20 @@ export default function AdminImageField({
   return (
     <div className="space-y-3">
       <div>
-        <label htmlFor={textId} className="mb-1 block text-sm font-semibold text-brand-fg-primary">
+        <label htmlFor={showUrlInput ? textId : fileId} className="mb-1 block text-sm font-semibold text-brand-fg-primary">
           {label}{required ? ' *' : ''}
         </label>
-        <input
-          id={textId}
-          type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary"
-          required={required}
-        />
+        {showUrlInput && (
+          <input
+            id={textId}
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary"
+            required={required}
+          />
+        )}
         <p className="mt-1 text-xs text-brand-fg-muted">{helper}</p>
       </div>
 
@@ -133,15 +160,15 @@ export default function AdminImageField({
           htmlFor={fileId}
           className="inline-flex cursor-pointer justify-center rounded-lg border border-brand-border-subtle px-4 py-2 text-sm font-semibold text-brand-fg-primary hover:bg-brand-bg-subtle"
         >
-          {uploading ? 'Optimizing image...' : 'Upload image'}
+          {uploading ? 'Preparing image...' : 'Choose image'}
         </label>
-        {value && (
+        {allowClear && value && (
           <button
             type="button"
             onClick={() => onChange('')}
             className="rounded-lg border border-brand-border-subtle px-4 py-2 text-sm font-semibold text-brand-fg-primary hover:bg-brand-bg-subtle"
           >
-            Clear image
+            {clearLabel}
           </button>
         )}
       </div>

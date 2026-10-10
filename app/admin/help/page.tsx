@@ -30,7 +30,7 @@ const sections = [
     href: '/admin/members',
     purpose: 'Official ASCA member records, including roles, join date, photo, bio, active status, and verification state.',
     workflow: 'Update the member record when membership details change. Prefer inactive status over deleting a historical member when the record should be retained.',
-    publicEffect: 'Member data may be used by member-facing parts of the site depending on the record settings.',
+    publicEffect: 'Individual member records stay private. Only the count of records marked Active is used publicly on the Meet ASCA page.',
   },
   {
     label: 'Tasks',
@@ -64,8 +64,8 @@ const sections = [
     label: 'Page images',
     href: '/admin/media',
     purpose: 'Managed photography used in page heroes and website sections rather than Gallery albums.',
-    workflow: 'Change only the intended image slot, maintain useful alt text, save, then verify the affected public page.',
-    publicEffect: 'Saved page-image changes affect the corresponding public website sections.',
+    workflow: 'Use the destination shown on each image card, replace the image, maintain useful alt text, save, then open the linked public page. Fallback slots may be correctly saved without being visible while Gallery content is taking priority.',
+    publicEffect: 'Saved direct slots affect the named public section. Cards labeled Fallback only appear when their higher-priority Gallery content is unavailable.',
   },
   {
     label: 'Appearance',
@@ -75,11 +75,11 @@ const sections = [
     publicEffect: 'Can affect the appearance of the entire public site.',
   },
   {
-    label: 'Social & donations',
+    label: 'Public site settings',
     href: '/admin/settings',
-    purpose: 'Official social links and donation/payment handles shown to visitors.',
-    workflow: 'Double-check every URL, handle, and email before saving. Verify the public Support ASCA experience after any donation change.',
-    publicEffect: 'Changes affect visitor links and payment/donation information.',
+    purpose: 'Homepage identity copy, official public contact email, social links, and donation/payment handles shown to visitors.',
+    workflow: 'Keep the homepage motto/description concise, double-check every URL, handle, and email, then verify the homepage, footer, and Support ASCA after consequential changes.',
+    publicEffect: 'Changes affect the homepage introduction, installed-app motto, visitor contact/social links, and donation information.',
   },
   {
     label: 'Account',
@@ -148,7 +148,7 @@ export default function AdminHelp() {
             <p><strong className="text-admin-fg-primary">1. Dashboard:</strong> review New messages and Open tasks.</p>
             <p><strong className="text-admin-fg-primary">2. Follow-up:</strong> process Messages, Contacts, Members, and Tasks so every conversation has a clear next step.</p>
             <p><strong className="text-admin-fg-primary">3. Operations:</strong> keep Events accurate before visitors rely on the calendar.</p>
-            <p><strong className="text-admin-fg-primary">4. Website:</strong> update Gallery, Horses, Page images, Appearance, or Social & donations only when needed.</p>
+            <p><strong className="text-admin-fg-primary">4. Website:</strong> update Gallery, Horses, Page images, Appearance, or Public site settings only when needed.</p>
             <p><strong className="text-admin-fg-primary">5. Verify:</strong> use View site after any public-facing change.</p>
             <p><strong className="text-admin-fg-primary">6. Protect:</strong> download a backup from Dashboard after major content work.</p>
           </div>

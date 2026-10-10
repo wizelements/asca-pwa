@@ -195,7 +195,7 @@ export default function AdminMembers() {
         <div>
           <h1 className="text-4xl font-bold text-brand-fg-primary">Member Records</h1>
           <p className="mt-1 text-sm text-brand-fg-secondary">
-            Manage ASCA&apos;s internal roster. These records do not publish a public member directory.
+            Manage ASCA&apos;s private roster. Individual names, emails, bios, and photos are not published as a directory. The number of records marked Active updates the public member count on Meet ASCA.
           </p>
         </div>
         <button onClick={openCreate} className="rounded-lg bg-brand-forest px-6 py-2 font-semibold text-white hover:bg-brand-forest-muted">
@@ -288,15 +288,16 @@ export default function AdminMembers() {
                 </div>
                 <div className="sm:col-span-2">
                   <AdminImageField
-                    label="Photo path, URL, or upload"
+                    label="Internal member photo"
                     value={form.photo}
                     onChange={(photo) => setForm({ ...form, photo })}
                     placeholder="/images/members/member-1.jpg or https://..."
+                    helper="Stored with the private member record for staff reference. It is not published on the current public website."
                     previewAlt={`${form.firstName || 'Member'} ${form.lastName || 'photo'}`}
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Bio</label>
+                  <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Internal member bio</label>
                   <textarea value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={4} className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary" />
                 </div>
               </div>

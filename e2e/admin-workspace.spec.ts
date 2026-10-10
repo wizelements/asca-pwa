@@ -43,7 +43,7 @@ test.describe('authenticated admin client workspace', () => {
       'Horses — public horse profiles',
       'Page images — photography used around the site',
       'Appearance — brand settings',
-      'Social & donations — public links and payment handles',
+      'Public site settings — homepage identity, contact, social & giving',
       'Account — protect admin access',
       'Preview — verify what visitors actually see',
       'Backups and Help — finish safely',
@@ -81,7 +81,7 @@ test.describe('authenticated admin client workspace', () => {
       'Horses',
       'Page images',
       'Appearance',
-      'Social & donations',
+      'Public site settings',
       'Account',
     ]) {
       await expect(page.getByRole('heading', { name: section, exact: true })).toBeVisible();
@@ -125,12 +125,58 @@ test.describe('authenticated admin client workspace', () => {
     await expect(page.getByRole('navigation', { name: 'Admin' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Gallery albums' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Help & walkthrough' })).toBeVisible();
-    await page.locator('aside[aria-hidden="false"]').getByRole('button', { name: 'Close navigation' }).click();
+    await page.getByRole('dialog', { name: 'Admin navigation' }).getByRole('button', { name: 'Close navigation' }).click();
+    await expect(page.getByRole('dialog', { name: 'Admin navigation' })).toHaveCount(0);
 
     await expect(page.getByRole('button', { name: 'Start admin walkthrough' })).toBeVisible();
     await page.getByRole('button', { name: 'Start admin walkthrough' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Welcome to the ASCA Client Workspace' })).toBeVisible();
+  });
+
+  test('public-facing admin controls explain their real website effects', async ({ page }) => {
+    await signIn(page);
+    await markTourCompleteAndClose(page);
+
+    await page.goto('/admin/media');
+    await expect(page.getByRole('heading', { name: 'Page Images' })).toBeVisible();
+    await expect(page.getByText('Fallback does not mean broken.')).toBeVisible();
+    await expect(page.getByRole('link', { name: /View affected page/ }).first()).toBeVisible();
+    await expect(page.getByText('Fallback only').first()).toBeVisible();
+
+    await page.goto('/admin/forms');
+    await expect(page.getByRole('heading', { name: 'Messages', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Where Messages come from' })).toBeVisible();
+    await expect(page.locator('strong').filter({ hasText: 'Website Contact Form' })).toBeVisible();
+    await expect(page.locator('strong').filter({ hasText: 'Event Updates Form' })).toBeVisible();
+
+    await page.goto('/admin/settings');
+    await expect(page.getByRole('heading', { name: 'Public Site Settings' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Homepage Identity' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Public Contact Email' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Social Links' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Donation Methods' })).toBeVisible();
+  });
+
+  test('public settings reject unsafe or structurally invalid values', async ({ page }) => {
+    await signIn(page);
+    await markTourCompleteAndClose(page);
+
+    const unsafeSocial = await page.request.post('/api/settings', {
+      data: { social: { facebook: 'javascript:alert(1)' } },
+    });
+    expect(unsafeSocial.status()).toBe(400);
+    await expect(unsafeSocial.json()).resolves.toMatchObject({
+      error: expect.stringMatching(/http:\/\/ or https:\/\//i),
+    });
+
+    const oversizedMotto = await page.request.post('/api/settings', {
+      data: { siteDescription: 'A'.repeat(81) },
+    });
+    expect(oversizedMotto.status()).toBe(400);
+    await expect(oversizedMotto.json()).resolves.toMatchObject({
+      error: expect.stringMatching(/1 and 80 characters/i),
+    });
   });
 
 });

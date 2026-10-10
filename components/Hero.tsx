@@ -1,4 +1,5 @@
 import ManagedImage from '@/components/media/ManagedImage';
+import { getCachedSiteIdentity } from '@/lib/db/queries-cache';
 
 interface HeroProps {
   image?: string;
@@ -12,7 +13,7 @@ interface HeroProps {
   darken?: boolean;
 }
 
-export default function Hero({
+export default async function Hero({
   image,
   imageAlt,
   title,
@@ -20,6 +21,11 @@ export default function Hero({
   cta,
   darken = true,
 }: HeroProps) {
+  const identity = await getCachedSiteIdentity().catch(() => ({
+    siteName: 'Atlanta Saddle Club Association',
+    motto: 'We Ride To Inspire',
+  }));
+
   return (
     <section className="relative isolate flex min-h-[500px] items-center overflow-hidden py-24 md:min-h-[580px] md:py-32">
       {image ? (
@@ -51,7 +57,7 @@ export default function Hero({
       <div className="container relative z-10">
         <div className="max-w-4xl">
           <p className="inline-flex rounded-full border border-white/20 bg-black/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-accent backdrop-blur-sm">
-            Atlanta Saddle Club Association
+            {identity.siteName}
           </p>
           <h1 className="mt-6 max-w-3xl text-4xl font-bold leading-[1.02] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
             {title}

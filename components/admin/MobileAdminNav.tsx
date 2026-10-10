@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { NAV_GROUPS } from './AdminSidebar';
 
@@ -17,33 +18,55 @@ function isCurrent(activeHref: string | undefined, href: string) {
 }
 
 export default function MobileAdminNav({ activeHref, open, onClose }: MobileAdminNavProps) {
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const focusTimer = window.setTimeout(() => closeRef.current?.focus(), 0);
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.clearTimeout(focusTimer);
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open, onClose]);
+
+  if (!open) return null;
+
   return (
     <>
-      {open && (
-        <button
-          type="button"
-          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
-          onClick={onClose}
-          aria-label="Close navigation"
-        />
-      )}
+      <button
+        type="button"
+        className="fixed inset-0 z-40 bg-black/45 lg:hidden"
+        onClick={onClose}
+        aria-label="Close navigation"
+        tabIndex={-1}
+      />
 
       <aside
-        className={cn(
-          'fixed inset-y-0 left-0 z-50 w-[min(82vw,19rem)] transform bg-admin-surface shadow-2xl transition-transform duration-200 lg:hidden',
-          open ? 'translate-x-0' : '-translate-x-full'
-        )}
-        aria-hidden={!open}
+        className="fixed inset-y-0 left-0 z-50 w-[min(86vw,20rem)] bg-admin-surface shadow-2xl lg:hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Admin navigation"
       >
-        <div className="flex h-16 items-center justify-between border-b border-admin-border-subtle px-4">
+        <div className="pwa-safe-top flex min-h-16 items-center justify-between border-b border-admin-border-subtle px-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-admin-primary">ASCA</p>
             <p className="text-sm font-bold text-admin-fg-primary">Client Workspace</p>
           </div>
           <button
+            ref={closeRef}
             type="button"
             onClick={onClose}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-admin-fg-primary hover:bg-admin-bg-subtle"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-admin-fg-primary hover:bg-admin-bg-subtle"
             aria-label="Close navigation"
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
@@ -52,7 +75,7 @@ export default function MobileAdminNav({ activeHref, open, onClose }: MobileAdmi
           </button>
         </div>
 
-        <nav className="h-[calc(100dvh-4rem)] overflow-y-auto px-3 py-5" aria-label="Admin">
+        <nav className="pwa-safe-bottom h-[calc(100dvh-4rem)] overflow-y-auto px-3 py-5" aria-label="Admin">
           {NAV_GROUPS.map((group) => (
             <div key={group.label} className="mb-5">
               <p className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-admin-fg-muted">

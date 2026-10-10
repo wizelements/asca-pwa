@@ -2,8 +2,8 @@ import Link from 'next/link';
 import ManagedImage from '@/components/media/ManagedImage';
 import SocialLinks from '@/components/SocialLinks';
 import ContactForm from '@/components/ContactForm';
-import { FOOTER_LINKS, CONTACT_EMAILS } from '@/lib/content/site';
-import { getCachedTheme } from '@/lib/db/queries-cache';
+import { FOOTER_LINKS } from '@/lib/content/site';
+import { getCachedContactEmail, getCachedSiteIdentity, getCachedTheme } from '@/lib/db/queries-cache';
 import { DEFAULT_LOGO } from '@/lib/media';
 
 async function getFooterLogo() {
@@ -16,7 +16,14 @@ async function getFooterLogo() {
 }
 
 export default async function Footer() {
-  const logoSrc = await getFooterLogo();
+  const [logoSrc, contactEmail, identity] = await Promise.all([
+    getFooterLogo(),
+    getCachedContactEmail().catch(() => 'info@atlantasaddleclub.com'),
+    getCachedSiteIdentity().catch(() => ({
+      siteName: 'Atlanta Saddle Club Association',
+      motto: 'We Ride To Inspire',
+    })),
+  ]);
 
   return (
     <footer className="border-t border-brand-border-subtle bg-brand-bg-elevated">
@@ -28,7 +35,7 @@ export default async function Footer() {
             <p className="mb-6 text-sm text-brand-fg-secondary">
               Questions about ASCA, membership, or our events? Send us a message and we&apos;ll be in touch.
             </p>
-            <ContactForm />
+            <ContactForm fallbackEmail={contactEmail} />
           </section>
 
           {/* Quick Links + Social */}
@@ -51,8 +58,8 @@ export default async function Footer() {
             <SocialLinks />
 
             <p className="mt-6 text-sm text-brand-fg-secondary">
-              <a href={`mailto:${CONTACT_EMAILS.primary}`} className="hover:text-brand-forest">
-                {CONTACT_EMAILS.primary}
+              <a href={`mailto:${contactEmail}`} className="hover:text-brand-forest">
+                {contactEmail}
               </a>
             </p>
 
@@ -60,7 +67,7 @@ export default async function Footer() {
               <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-brand-forest p-2 shadow-sm">
                 <ManagedImage
                   src={logoSrc}
-                  alt="Atlanta Saddle Club Association logo"
+                  alt={`${identity.siteName} logo`}
                   width={80}
                   height={66}
                   className="h-full w-auto"
@@ -72,7 +79,7 @@ export default async function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-10 flex flex-col gap-4 border-t border-brand-border-subtle pt-6 text-sm text-brand-fg-muted md:flex-row md:items-center md:justify-between">
-          <p className="uppercase tracking-[0.24em]">© {new Date().getFullYear()} Atlanta Saddle Club Association</p>
+          <p className="uppercase tracking-[0.24em]">© {new Date().getFullYear()} {identity.siteName}</p>
           <p className="text-xs uppercase tracking-[0.24em] text-brand-fg-secondary">
             Built by{' '}
             <a

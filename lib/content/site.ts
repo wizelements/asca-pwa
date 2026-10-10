@@ -55,5 +55,6 @@ export const FOOTER_LINKS = [
   { href: '/where-to-find-us', label: 'Event Calendar' },
   { href: '/gallery', label: 'Club Activity / Photo Gallery' },
   { href: '/support-asca', label: 'Support ASCA' },
+  { href: '/share', label: 'Share ASCA' },
   { href: '/#contact', label: 'Contact' },
 ];

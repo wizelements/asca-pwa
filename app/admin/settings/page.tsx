@@ -11,6 +11,7 @@ function sanitizeSocial(social: any) {
   return {
     facebook: typeof social?.facebook === 'string' ? social.facebook : '',
     instagram: typeof social?.instagram === 'string' ? social.instagram : '',
+    tiktok: typeof social?.tiktok === 'string' ? social.tiktok : '',
   };
 }
 
@@ -26,6 +27,18 @@ function normalizeSettings(settings: any) {
     ...settings,
     social: sanitizeSocial(settings?.social),
     donation: sanitizeDonationSettings(settings),
+    contactEmail: typeof settings?.contactEmail === 'string' && settings.contactEmail
+      ? settings.contactEmail
+      : 'info@atlantasaddleclub.com',
+    siteDescription: typeof settings?.siteDescription === 'string' && settings.siteDescription.trim()
+      ? settings.siteDescription
+      : 'We Ride To Inspire',
+    tagline:
+      typeof settings?.tagline === 'string' &&
+      settings.tagline.trim() &&
+      settings.tagline !== 'Promoting horsemanship, sportsmanship, and community'
+        ? settings.tagline
+        : "Atlanta's premiere saddle club — promoting horsemanship, fellowship, education, and community across metro Atlanta.",
   };
 }
 
@@ -47,11 +60,11 @@ export default function AdminSettings() {
         const data = await res.json();
         setSettings(normalizeSettings(data));
       } else {
-        setError('Unable to load social and donation settings.');
+        setError('Unable to load public website settings.');
       }
     } catch (error) {
       console.error('Failed to fetch settings:', error);
-      setError('Unable to load social and donation settings.');
+      setError('Unable to load public website settings.');
     } finally {
       setLoading(false);
     }
@@ -79,7 +92,12 @@ export default function AdminSettings() {
 
     try {
       const payload: any = {};
-      if (section === 'social') {
+      if (section === 'identity') {
+        payload.siteDescription = settings.siteDescription.trim();
+        payload.tagline = settings.tagline.trim();
+      } else if (section === 'contact') {
+        payload.contactEmail = settings.contactEmail.trim();
+      } else if (section === 'social') {
         payload.social = sanitizeSocial(settings.social);
       } else if (section === 'donations') {
         payload.cashApp = settings.donation.cashApp;
@@ -125,9 +143,9 @@ export default function AdminSettings() {
   if (!settings) {
     return (
       <div className="space-y-4">
-        <h1 className="text-4xl font-bold text-brand-fg-primary">Social & Donation Settings</h1>
+        <h1 className="text-4xl font-bold text-brand-fg-primary">Public Site Settings</h1>
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-          {error || 'Unable to load social and donation settings.'}
+          {error || 'Unable to load public website settings.'}
         </div>
       </div>
     );
@@ -137,15 +155,76 @@ export default function AdminSettings() {
     <div className="space-y-8">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-brand-fg-primary">Social & Donation Settings</h1>
+          <h1 className="text-4xl font-bold text-brand-fg-primary">Public Site Settings</h1>
           <p className="mt-2 max-w-3xl text-sm text-brand-fg-secondary">
-            These are the public-site settings ASCA can safely manage here. Facebook and Instagram update the site header/footer. Cash App and Zelle update the Support ASCA donation cards.
+            These controls are limited to settings the public website actually consumes: homepage identity copy, official contact email, social links, and donation handles. Each section below states where the change appears.
           </p>
         </div>
         {message && <span className="text-sm font-medium text-green-600">{message}</span>}
       </div>
 
       {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>}
+
+      <div className="rounded-xl border border-brand-border-subtle bg-brand-bg-elevated p-6 shadow-sm">
+        <h2 className="text-2xl font-bold text-brand-fg-primary">Homepage Identity</h2>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-fg-secondary">
+          These two lines are the main public introduction to ASCA. The motto appears as the homepage hero title and on the installed-app launch screen. The description appears directly beneath the homepage motto.
+        </p>
+        <div className="mt-5 grid gap-5 lg:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Public motto</label>
+            <input
+              type="text"
+              maxLength={80}
+              value={settings.siteDescription || ''}
+              onChange={(e) => updateField('siteDescription', e.target.value)}
+              className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary focus:outline-none focus:ring-2 focus:ring-brand-forest"
+            />
+            <p className="mt-1 text-xs text-brand-fg-muted">Example: We Ride To Inspire</p>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Homepage hero description</label>
+            <textarea
+              rows={3}
+              maxLength={240}
+              value={settings.tagline || ''}
+              onChange={(e) => updateField('tagline', e.target.value)}
+              className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary focus:outline-none focus:ring-2 focus:ring-brand-forest"
+            />
+            <p className="mt-1 text-xs text-brand-fg-muted">Keep this concise enough to read comfortably over the hero image on a phone.</p>
+          </div>
+        </div>
+        <button
+          onClick={() => handleSave('identity')}
+          disabled={saving || !settings.siteDescription?.trim() || !settings.tagline?.trim()}
+          className="mt-5 rounded-lg bg-brand-forest px-5 py-2 font-semibold text-white hover:bg-brand-forest-muted disabled:opacity-50"
+        >
+          {saving ? 'Saving...' : 'Save Homepage Identity'}
+        </button>
+      </div>
+
+      <div className="rounded-xl border border-brand-border-subtle bg-brand-bg-elevated p-6 shadow-sm">
+        <h2 className="text-2xl font-bold text-brand-fg-primary">Public Contact Email</h2>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-fg-secondary">
+          This is the official email visitors see in the site footer and on Support ASCA for sponsorship questions. Website form submissions are saved in Messages whether or not an email alert is delivered.
+        </p>
+        <div className="mt-5 max-w-xl">
+          <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Official contact email</label>
+          <input
+            type="email"
+            value={settings.contactEmail || ''}
+            onChange={(e) => updateField('contactEmail', e.target.value)}
+            className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary focus:outline-none focus:ring-2 focus:ring-brand-forest"
+          />
+          <button
+            onClick={() => handleSave('contact')}
+            disabled={saving || !settings.contactEmail}
+            className="mt-4 rounded-lg bg-brand-forest px-5 py-2 font-semibold text-white hover:bg-brand-forest-muted disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : 'Save Public Contact Email'}
+          </button>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-brand-bg-elevated p-6 rounded-xl shadow-sm border border-brand-border-subtle">
@@ -154,6 +233,7 @@ export default function AdminSettings() {
             {[
               { label: 'Facebook', key: 'social.facebook' },
               { label: 'Instagram', key: 'social.instagram' },
+              { label: 'TikTok', key: 'social.tiktok' },
             ].map((field) => (
               <div key={field.key}>
                 <label className="block text-sm font-semibold text-brand-fg-primary mb-1">{field.label}</label>
@@ -165,9 +245,8 @@ export default function AdminSettings() {
                 />
               </div>
             ))}
-            <div className="rounded-lg border border-brand-border-subtle bg-brand-bg-subtle p-4">
-              <p className="text-sm font-semibold text-brand-fg-primary">TikTok</p>
-              <p className="mt-1 text-sm text-brand-fg-secondary">Coming soon — shown as text on the public footer, not a link.</p>
+            <div className="rounded-lg border border-brand-border-subtle bg-brand-bg-subtle p-4 text-sm text-brand-fg-secondary">
+              Facebook, Instagram, and TikTok are used by the public social icons in the header/mobile menu and footer. Save a full http:// or https:// URL. Clear a field and save to hide that icon.
             </div>
             <button
               onClick={() => handleSave('social')}

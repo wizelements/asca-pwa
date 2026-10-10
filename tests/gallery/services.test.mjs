@@ -23,14 +23,14 @@ async function setupDb() {
     CREATE TABLE IF NOT EXISTS settings (id integer PRIMARY KEY);
     CREATE TABLE IF NOT EXISTS theme (id integer PRIMARY KEY);
     CREATE TABLE IF NOT EXISTS users (id integer PRIMARY KEY AUTOINCREMENT, email text, password text, role text, is_active integer);
-    CREATE TABLE IF NOT EXISTS events (id integer PRIMARY KEY AUTOINCREMENT, title text, description text, date integer, end_date integer, location text, published integer);
+    CREATE TABLE IF NOT EXISTS events (id integer PRIMARY KEY AUTOINCREMENT, title text, description text, date integer, end_date integer, location text, image_url text, published integer);
     CREATE TABLE IF NOT EXISTS members (
       id integer PRIMARY KEY AUTOINCREMENT,
       first_name text, last_name text, email text, bio text, photo text, roles text,
       is_active integer, is_verified integer, join_date integer, created_at integer, updated_at integer,
       contact_id integer
     );
-    CREATE TABLE IF NOT EXISTS blog_posts (id integer PRIMARY KEY AUTOINCREMENT, title text, slug text, content text, author text, published integer);
+    CREATE TABLE IF NOT EXISTS blog_posts (id integer PRIMARY KEY AUTOINCREMENT, title text, slug text, content text, author text, image text, published integer);
     CREATE TABLE IF NOT EXISTS gallery_images (id integer PRIMARY KEY AUTOINCREMENT, title text, description text, category text, image text, alt text, sort_order integer, published integer, uploaded_at integer);
     CREATE TABLE IF NOT EXISTS form_submissions (
       id integer PRIMARY KEY AUTOINCREMENT,
@@ -214,6 +214,70 @@ describe('horse services', () => {
     const detail = await getHorseDetailBySlug('buddy');
     assert.equal(detail?.name, 'Buddy');
     assert.equal(detail?.media.length, 1);
+  });
+
+  it(' updates horse profile and media as one compound save', async () => {
+    const { createMediaAssetFromDataUrl } = await import('../../lib/gallery/services/media.ts');
+    const { createHorse, updateHorse, getHorseDetailBySlug } = await import('../../lib/gallery/services/horses.ts');
+
+    const first = await createMediaAssetFromDataUrl(DATA_URL);
+    const second = await createMediaAssetFromDataUrl(DATA_URL);
+    const horse = await createHorse(
+      { name: 'Atomic Horse', slug: 'atomic-horse', primaryMediaAssetId: first.id, status: 'draft' },
+      [{ mediaAssetId: first.id, altText: 'Original horse image', caption: 'Original caption', sortOrder: 0 }]
+    );
+
+    await updateHorse(
+      horse.id,
+      { name: 'Atomic Horse Updated', primaryMediaAssetId: second.id },
+      {
+        add: [{ mediaAssetId: second.id, altText: 'Second horse image', caption: 'Second caption', sortOrder: 10 }],
+        remove: [first.id],
+        reorder: [{ mediaAssetId: second.id, sortOrder: 0 }],
+        metadata: [{ mediaAssetId: second.id, altText: 'Updated second horse image', caption: 'Updated second caption' }],
+      }
+    );
+
+    const detail = await getHorseDetailBySlug('atomic-horse');
+    assert.equal(detail?.name, 'Atomic Horse Updated');
+    assert.equal(detail?.primaryMediaAssetId, second.id);
+    assert.equal(detail?.media.length, 1);
+    assert.equal(detail?.media[0].mediaAssetId, second.id);
+    assert.equal(detail?.media[0].sortOrder, 0);
+    assert.equal(detail?.media[0].altText, 'Updated second horse image');
+    assert.equal(detail?.media[0].caption, 'Updated second caption');
+  });
+
+  it(' rolls back horse media mutations when a later validation fails', async () => {
+    const { createMediaAssetFromDataUrl } = await import('../../lib/gallery/services/media.ts');
+    const { createHorse, updateHorse, getHorseDetailBySlug } = await import('../../lib/gallery/services/horses.ts');
+
+    const first = await createMediaAssetFromDataUrl(DATA_URL);
+    const second = await createMediaAssetFromDataUrl(DATA_URL);
+    const horse = await createHorse(
+      { name: 'Rollback Horse', slug: 'rollback-horse', primaryMediaAssetId: first.id, status: 'draft' },
+      [{ mediaAssetId: first.id, altText: 'Rollback original image', caption: 'Keep me', sortOrder: 0 }]
+    );
+
+    await assert.rejects(
+      () => updateHorse(
+        horse.id,
+        { name: 'Should Not Persist', primaryMediaAssetId: 'missing-media-asset' },
+        {
+          add: [{ mediaAssetId: second.id, altText: 'Should roll back', caption: 'Temporary', sortOrder: 10 }],
+          remove: [first.id],
+        }
+      ),
+      /Primary media asset not found/
+    );
+
+    const detail = await getHorseDetailBySlug('rollback-horse');
+    assert.equal(detail?.name, 'Rollback Horse');
+    assert.equal(detail?.primaryMediaAssetId, first.id);
+    assert.equal(detail?.media.length, 1);
+    assert.equal(detail?.media[0].mediaAssetId, first.id);
+    assert.equal(detail?.media[0].altText, 'Rollback original image');
+    assert.equal(detail?.media[0].caption, 'Keep me');
   });
 });
 

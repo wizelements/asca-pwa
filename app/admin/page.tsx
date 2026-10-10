@@ -28,6 +28,7 @@ interface RecentActivity {
 interface CrmStats {
   totalContacts: number;
   activeMembers: number;
+  totalMessages: number;
   newMessages: number;
   openTasks: number;
 }
@@ -35,6 +36,7 @@ interface CrmStats {
 const EMPTY_CRM: CrmStats = {
   totalContacts: 0,
   activeMembers: 0,
+  totalMessages: 0,
   newMessages: 0,
   openTasks: 0,
 };
@@ -210,8 +212,8 @@ export default function AdminDashboard() {
           <h2 className="text-lg font-bold text-admin-fg-primary">At a glance</h2>
           <dl className="mt-5 divide-y divide-admin-border-subtle">
             <SummaryRow label="Contacts" value={loading ? '—' : crmStats.totalContacts} />
-            <SummaryRow label="Gallery images" value={loading ? '—' : stats.totalGalleryImages} />
-            <SummaryRow label="All form submissions" value={loading ? '—' : stats.totalFormSubmissions} />
+            <SummaryRow label="Gallery photos" value={loading ? '—' : stats.totalGalleryImages} />
+            <SummaryRow label="Message history" value={loading ? '—' : crmStats.totalMessages} />
           </dl>
         </AdminCard>
       </div>

@@ -47,9 +47,9 @@ export default function SocialLinks({
       .then((settings) => {
         if (!mounted) return;
         setLinks({
-          facebook: settings?.social?.facebook || SOCIAL_LINKS.facebook,
-          instagram: settings?.social?.instagram || SOCIAL_LINKS.instagram,
-          tiktok: settings?.social?.tiktok || SOCIAL_LINKS.tiktok,
+          facebook: typeof settings?.social?.facebook === 'string' ? settings.social.facebook : SOCIAL_LINKS.facebook,
+          instagram: typeof settings?.social?.instagram === 'string' ? settings.social.instagram : SOCIAL_LINKS.instagram,
+          tiktok: typeof settings?.social?.tiktok === 'string' ? settings.social.tiktok : SOCIAL_LINKS.tiktok,
         });
       })
       .catch(() => undefined);
@@ -60,7 +60,7 @@ export default function SocialLinks({
 
   return (
     <div className={`flex items-center gap-4 ${className}`}>
-      <a
+      {links.facebook && <a
         href={links.facebook}
         target="_blank"
         rel="noopener noreferrer"
@@ -68,8 +68,8 @@ export default function SocialLinks({
         className="transition-colors hover:text-brand-forest"
       >
         {facebookIcon}
-      </a>
-      <a
+      </a>}
+      {links.instagram && <a
         href={links.instagram}
         target="_blank"
         rel="noopener noreferrer"
@@ -77,8 +77,8 @@ export default function SocialLinks({
         className="transition-colors hover:text-brand-forest"
       >
         {instagramIcon}
-      </a>
-      <a
+      </a>}
+      {links.tiktok && <a
         href={links.tiktok}
         target="_blank"
         rel="noopener noreferrer"
@@ -86,7 +86,7 @@ export default function SocialLinks({
         className="transition-colors hover:text-brand-forest"
       >
         {tiktokIcon}
-      </a>
+      </a>}
       {showTikTokNote && SOCIAL_LINKS.tiktokComingSoon && (
         <span className="text-xs uppercase tracking-[0.18em] text-brand-fg-muted">
           TikTok coming soon

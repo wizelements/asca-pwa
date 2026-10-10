@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { getAdminToken, logout } from "@/components/AdminGuard";
@@ -13,17 +14,48 @@ const STATUS_OPTIONS: Array<{ value: "" | ContactMessage["status"]; label: strin
 ];
 
 const KNOWN_SOURCES = ["contact", "event-updates", "membership", "volunteer", "manual"];
+
+const SOURCE_CONTEXT: Record<string, { label: string; where: string; href?: string; note: string; active: boolean }> = {
+  contact: {
+    label: "Website Contact Form",
+    where: "Contact Us form in the footer of every public page",
+    href: "/#contact",
+    note: "Saved here and linked to a CRM contact. If ASCA email notifications are configured, the admin inbox also receives an alert.",
+    active: true,
+  },
+  "event-updates": {
+    label: "Event Updates Form",
+    where: "Homepage — Stay Up to Date on our Events",
+    href: "/#event-updates",
+    note: "Saved here and linked to a CRM contact so ASCA can follow up with people interested in meetings, rides, and community events.",
+    active: true,
+  },
+  membership: {
+    label: "Legacy Membership Submission",
+    where: "Historical website membership form",
+    href: "/get-involved",
+    note: "Kept for historical records. The current public membership application opens ASCA's external application form instead of posting here.",
+    active: false,
+  },
+  volunteer: {
+    label: "Legacy Volunteer Submission",
+    where: "Historical website volunteer form",
+    href: "/get-involved",
+    note: "Kept for historical records. Current volunteer interest is routed through the present Get Involved/contact experience.",
+    active: false,
+  },
+  manual: {
+    label: "Internal / Manual",
+    where: "Created inside the admin or imported",
+    note: "This did not come directly from a public website form.",
+    active: false,
+  },
+};
+
 const MESSAGE_STATUSES = STATUS_OPTIONS.map((status) => status.value).filter(Boolean);
 
 function displaySource(type: string) {
-  const labels: Record<string, string> = {
-    contact: "Contact Form",
-    "event-updates": "Event Updates",
-    membership: "Membership",
-    volunteer: "Volunteer",
-    manual: "Manual",
-  };
-  if (labels[type]) return labels[type];
+  if (SOURCE_CONTEXT[type]?.label) return SOURCE_CONTEXT[type].label;
   return type
     .split("-")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
@@ -137,7 +169,7 @@ export default function AdminForms() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-4xl font-bold text-brand-fg-primary">Messages</h1>
-          <p className="mt-1 text-sm text-brand-fg-secondary">Review and triage inquiries from the public site.</p>
+          <p className="mt-1 max-w-2xl text-sm text-brand-fg-secondary">This is ASCA&apos;s website-response inbox. Each row shows where the visitor submitted it, who it belongs to, and whether follow-up is still needed.</p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
           <select
@@ -159,6 +191,32 @@ export default function AdminForms() {
               <option key={status.value || "all"} value={status.value}>{status.label}</option>
             ))}
           </select>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-blue-200 bg-blue-50 p-5">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 className="font-bold text-blue-950">Where Messages come from</h2>
+            <p className="mt-1 max-w-3xl text-sm leading-6 text-blue-900">
+              A public form submission is saved here first so it cannot disappear just because an email alert is missed. The same person is also connected to Contacts for relationship history. Use Email to reply, then mark the message Replied or Resolved.
+            </p>
+          </div>
+          <Link href="/admin/contacts" className="shrink-0 text-sm font-semibold text-blue-900 underline underline-offset-4">
+            Open Contacts
+          </Link>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          {Object.entries(SOURCE_CONTEXT).filter(([, source]) => source.active).map(([key, source]) => (
+            <div key={key} className="rounded-lg bg-white/75 p-3 text-sm text-blue-950">
+              <div className="flex items-center justify-between gap-3">
+                <strong>{source.label}</strong>
+                {source.href && <Link href={source.href} target="_blank" className="text-xs font-semibold underline">View source ↗</Link>}
+              </div>
+              <p className="mt-1">{source.where}</p>
+              <p className="mt-1 text-xs leading-5 text-blue-800">{source.note}</p>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -195,7 +253,12 @@ export default function AdminForms() {
                         <p className="font-semibold text-brand-fg-primary">{name}</p>
                         <p className="text-sm text-brand-fg-secondary">{msg.contact?.email || "-"}</p>
                       </td>
-                      <td className="px-6 py-4 text-sm text-brand-fg-secondary">{displaySource(msg.sourcePage || msg.status)}</td>
+                      <td className="px-6 py-4 text-sm text-brand-fg-secondary">
+                        <p className="font-semibold text-brand-fg-primary">{displaySource(msg.sourcePage || msg.status)}</p>
+                        <p className="mt-1 max-w-[16rem] text-xs leading-5 text-brand-fg-muted">
+                          {SOURCE_CONTEXT[msg.sourcePage || ""]?.where || "Website or internal source"}
+                        </p>
+                      </td>
                       <td className="px-6 py-4 text-sm text-brand-fg-secondary">
                         {msg.createdAt ? new Date(msg.createdAt).toLocaleString() : "-"}
                       </td>
@@ -240,6 +303,11 @@ export default function AdminForms() {
               <div>
                 <h2 className="text-2xl font-bold text-brand-fg-primary">Message Details</h2>
                 <p className="mt-1 text-sm text-brand-fg-secondary">{displaySource(selected.sourcePage || "inquiry")} · {selected.status}</p>
+                {SOURCE_CONTEXT[selected.sourcePage || ""] && (
+                  <p className="mt-2 max-w-xl text-xs leading-5 text-brand-fg-muted">
+                    <strong>Origin:</strong> {SOURCE_CONTEXT[selected.sourcePage || ""]?.where}. {SOURCE_CONTEXT[selected.sourcePage || ""]?.note}
+                  </p>
+                )}
               </div>
               <button onClick={() => setSelected(null)} className="rounded-lg border border-brand-border-subtle px-3 py-1 text-sm text-brand-fg-primary hover:bg-brand-bg-subtle">
                 Close

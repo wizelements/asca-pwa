@@ -1,6 +1,7 @@
 import { unstable_cache } from 'next/cache';
 import {
   getGalleryImages as getGalleryImagesRaw,
+  getActiveMemberCount as getActiveMemberCountRaw,
   getSiteTagline as getSiteTaglineRaw,
   getSettings as getSettingsRaw,
   getTheme as getThemeRaw,
@@ -14,6 +15,7 @@ const CACHE_TAG_SETTINGS = 'settings';
 const CACHE_TAG_THEME = 'theme';
 const CACHE_TAG_EVENTS = 'events';
 const CACHE_TAG_GALLERY = 'gallery';
+const CACHE_TAG_MEMBERS = 'members';
 
 export const getCachedManagedImages = unstable_cache(
   async (): Promise<ManagedImage[]> => {
@@ -37,6 +39,36 @@ export const getCachedTheme = unstable_cache(
   { revalidate: 60, tags: [CACHE_TAG_THEME] }
 );
 
+const LEGACY_TAGLINE = 'Promoting horsemanship, sportsmanship, and community';
+const DEFAULT_HERO_DESCRIPTION =
+  "Atlanta's premiere saddle club — promoting horsemanship, fellowship, education, and community across metro Atlanta.";
+
+export const getCachedSiteIdentity = unstable_cache(
+  async (): Promise<{ siteName: string; motto: string; heroDescription: string }> => {
+    const settings = await getSettingsRaw();
+    const storedTagline = (settings.tagline || '').trim();
+    return {
+      siteName: settings.siteName || 'Atlanta Saddle Club Association',
+      motto: (settings.siteDescription || '').trim() || 'We Ride To Inspire',
+      heroDescription:
+        !storedTagline || storedTagline === LEGACY_TAGLINE
+          ? DEFAULT_HERO_DESCRIPTION
+          : storedTagline,
+    };
+  },
+  ['site-identity-public'],
+  { revalidate: 60, tags: [CACHE_TAG_SETTINGS] }
+);
+
+export const getCachedContactEmail = unstable_cache(
+  async (): Promise<string> => {
+    const settings = await getSettingsRaw();
+    return settings.contactEmail || 'info@atlantasaddleclub.com';
+  },
+  ['contact-email-public'],
+  { revalidate: 60, tags: [CACHE_TAG_SETTINGS] }
+);
+
 export const getCachedSiteTagline = unstable_cache(
   async (): Promise<string> => getSiteTaglineRaw(),
   ['site-tagline-public'],
@@ -47,6 +79,12 @@ export const getCachedPublicEvents = unstable_cache(
   async () => getPublicEventsRaw(),
   ['events-public'],
   { revalidate: 60, tags: [CACHE_TAG_EVENTS] }
+);
+
+export const getCachedActiveMemberCount = unstable_cache(
+  async () => getActiveMemberCountRaw(),
+  ['active-member-count-public'],
+  { revalidate: 60, tags: [CACHE_TAG_MEMBERS] }
 );
 
 export const getCachedGalleryImages = unstable_cache(
@@ -62,4 +100,4 @@ export const getCachedGalleryImages = unstable_cache(
   { revalidate: 60, tags: [CACHE_TAG_GALLERY] }
 );
 
-export { CACHE_TAG_SETTINGS, CACHE_TAG_THEME, CACHE_TAG_EVENTS, CACHE_TAG_GALLERY };
+export { CACHE_TAG_SETTINGS, CACHE_TAG_THEME, CACHE_TAG_EVENTS, CACHE_TAG_GALLERY, CACHE_TAG_MEMBERS };

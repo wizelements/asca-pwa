@@ -11,6 +11,7 @@ import { getManagedImage, type SiteImageSlot } from '@/lib/media';
 import { getPublicManagedImages } from '@/lib/public-content';
 import { getFeaturedAlbums } from '@/lib/gallery/services/albums';
 import { isPublicPreviewEnabled } from '@/lib/gallery/feature-state';
+import { getCachedSiteIdentity } from '@/lib/db/queries-cache';
 import Image from 'next/image';
 
 const ACTIVITY_SLOTS: SiteImageSlot[] = [
@@ -33,10 +34,17 @@ const ACTIVITY_CATEGORY_MAP: Record<string, string> = {
 };
 
 export default async function Home() {
-  const images = await getPublicManagedImages();
+  const [images, identity, featuredAlbums] = await Promise.all([
+    getPublicManagedImages(),
+    getCachedSiteIdentity().catch(() => ({
+      siteName: 'Atlanta Saddle Club Association',
+      motto: 'We Ride To Inspire',
+      heroDescription: "Atlanta's premiere saddle club — promoting horsemanship, fellowship, education, and community across metro Atlanta.",
+    })),
+    isPublicPreviewEnabled() ? getFeaturedAlbums(6) : Promise.resolve([]),
+  ]);
   const hero = getManagedImage(images, 'home.hero');
   const activityHighlights = ACTIVITY_SLOTS.map((slot) => getManagedImage(images, slot));
-  const featuredAlbums = isPublicPreviewEnabled() ? await getFeaturedAlbums(6) : [];
   const useAlbums = featuredAlbums.length > 0;
 
 
@@ -47,8 +55,8 @@ export default async function Home() {
         <Hero
           image={hero.src}
           imageAlt={hero.alt}
-          title="We Ride To Inspire"
-          subtitle="Atlanta's premiere saddle club — promoting horsemanship, fellowship, education, and community across metro Atlanta."
+          title={identity.motto}
+          subtitle={identity.heroDescription}
         />
 
         {/* Meeting callout + primary CTAs */}
@@ -141,7 +149,7 @@ export default async function Home() {
 
 
         {/* Stay Up to Date on our Events */}
-        <section className="py-20">
+        <section id="event-updates" className="scroll-mt-24 py-20">
           <div className="container max-w-3xl text-center">
             <p className="section-label">Stay Connected</p>
             <h2 className="section-title">Stay Up to Date on our Events</h2>

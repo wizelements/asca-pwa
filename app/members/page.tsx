@@ -8,6 +8,7 @@ import { MEMBERSHIP_APPLICATION_URL } from '@/lib/content/site';
 import { WHY_MEMBERS_JOIN, FUN_FACTS } from '@/lib/content/club';
 import { getManagedImage } from '@/lib/media';
 import { getPublicManagedImages } from '@/lib/public-content';
+import { getCachedActiveMemberCount } from '@/lib/db/queries-cache';
 
 export const metadata: Metadata = {
   title: { absolute: 'Meet Our Members | ASCA' },
@@ -16,7 +17,15 @@ export const metadata: Metadata = {
 };
 
 export default async function Members() {
-  const images = await getPublicManagedImages();
+  const [images, activeMemberCount] = await Promise.all([
+    getPublicManagedImages(),
+    getCachedActiveMemberCount().catch(() => null),
+  ]);
+  const publicFacts = FUN_FACTS.map((fact) => (
+    fact.label === 'Members' && activeMemberCount !== null
+      ? { ...fact, value: String(activeMemberCount) }
+      : fact
+  ));
   const hero = getManagedImage(images, 'members.hero');
   const communityOne = getManagedImage(images, 'members.community.1');
   const communityTwo = getManagedImage(images, 'members.community.2');
@@ -97,7 +106,7 @@ export default async function Members() {
               <h2 className="section-title">Fun Facts About Our Club</h2>
             </div>
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {FUN_FACTS.map((fact) => (
+              {publicFacts.map((fact) => (
                 <div key={fact.label} className="card">
                   <p className="text-sm font-semibold uppercase tracking-[0.16em] text-brand-forest">
                     {fact.label}

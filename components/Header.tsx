@@ -52,7 +52,7 @@ export default function Header() {
   }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-brand-border-subtle bg-brand-bg-elevated/95 shadow-sm backdrop-blur-xl">
+    <header className="pwa-safe-top sticky top-0 z-50 border-b border-brand-border-subtle bg-brand-bg-elevated/95 shadow-sm backdrop-blur-xl">
       <nav className="container flex min-h-[72px] items-center justify-between gap-4" aria-label="Primary">
         <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="ASCA home">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-forest p-1.5 ring-1 ring-black/5">
@@ -144,6 +144,13 @@ export default function Header() {
                 );
               })}
             </ul>
+            <Link
+              href="/share"
+              className="mt-3 flex min-h-[48px] items-center justify-between rounded-xl border border-brand-forest/20 bg-brand-bg-soft px-4 text-sm font-bold text-brand-forest"
+            >
+              <span>Share ASCA</span>
+              <span aria-hidden="true">QR · Share →</span>
+            </Link>
             <div className="mt-4 flex items-center justify-between border-t border-brand-border-subtle pt-4">
               <p className="text-xs font-medium uppercase tracking-[0.14em] text-brand-fg-muted">Follow ASCA</p>
               <SocialLinks showTikTokNote={false} />
