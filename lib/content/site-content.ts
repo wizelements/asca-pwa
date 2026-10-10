@@ -398,7 +398,7 @@ export const SITE_CONTENT_PAGES: SiteContentPageDefinition[] = [
           text('share.step1.title', 'Step 1 title', '1 · Show', 60),
           area('share.step1.body', 'Step 1 body', 'Open this page and let someone scan the large ASCA QR code.', 240),
           text('share.step2.title', 'Step 2 title', '2 · Share', 60),
-          area('share.step2.body', 'Step 2 body', 'Send the official website through your phone’s normal share menu.', 240),
+          area('share.step2.body', 'Step 2 body', "Send the official website through your phone's normal share menu.", 240),
           text('share.step3.title', 'Step 3 title', '3 · Install', 60),
           area('share.step3.body', 'Step 3 body', 'Add ASCA to your home screen so the share center is always close by.', 240),
         ],
