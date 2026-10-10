@@ -52,7 +52,7 @@ export default function ShareAscaCard({
   siteUrl,
   siteName,
   motto,
-  copy,
+  copy: pageCopy,
 }: {
   siteUrl: string;
   siteName: string;
@@ -188,20 +188,20 @@ export default function ShareAscaCard({
               />
             </div>
 
-            <p className="mt-5 text-sm font-semibold text-white">{copy.scanLabel}</p>
+            <p className="mt-5 text-sm font-semibold text-white">{pageCopy.scanLabel}</p>
             <p className="mt-1 break-all text-xs text-white/70">{siteUrl.replace(/^https?:\/\//, '')}</p>
           </div>
         </div>
 
         <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-12">
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-brand-forest">
-            {copy.label}
+            {pageCopy.label}
           </p>
           <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-brand-fg-primary sm:text-4xl">
-            {copy.title}
+            {pageCopy.title}
           </h2>
           <p className="mt-4 text-base leading-7 text-brand-fg-secondary">
-            {copy.body}
+            {pageCopy.body}
           </p>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-2">
@@ -229,7 +229,7 @@ export default function ShareAscaCard({
             download="ASCA-website-QR.svg"
             className="mt-4 inline-flex min-h-[44px] items-center justify-center rounded-xl px-4 text-sm font-semibold text-brand-forest underline-offset-4 hover:underline"
           >
-            {copy.downloadLabel}
+            {pageCopy.downloadLabel}
           </a>
 
           {installHelp && (
