@@ -98,9 +98,9 @@
       ]
     },
     {
-      "name": "Members Directory",
-      "short_name": "Members",
-      "description": "Browse ASCA members",
+      "name": "Meet ASCA",
+      "short_name": "Meet ASCA",
+      "description": "Learn about the ASCA community and membership",
       "url": "/members",
       "icons": [
         {
@@ -125,4 +125,4 @@
     }
   ],
   "prefer_related_applications": false
-}\n
+}
