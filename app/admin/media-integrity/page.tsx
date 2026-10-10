@@ -49,7 +49,7 @@ function formatBytes(bytes: number): string {
 }
 
 function friendlyLocation(location: string) {
-  return LOCATION_LABELS[location] || location.replaceAll('_', ' ');
+  return LOCATION_LABELS[location] || location.replace(/_/g, ' ');
 }
 
 function ageLabel(value: string | null) {
