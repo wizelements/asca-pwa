@@ -169,7 +169,7 @@ export default function AdminForms() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-4xl font-bold text-brand-fg-primary">Messages</h1>
-          <p className="mt-1 max-w-2xl text-sm text-brand-fg-secondary">This is ASCA's website-response inbox. Each row shows where the visitor submitted it, who it belongs to, and whether follow-up is still needed.</p>
+          <p className="mt-1 max-w-2xl text-sm text-brand-fg-secondary">This is ASCA&apos;s website-response inbox. Each row shows where the visitor submitted it, who it belongs to, and whether follow-up is still needed.</p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
           <select
