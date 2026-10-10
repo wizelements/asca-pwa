@@ -5,6 +5,7 @@ export default async function PwaLaunchSplash() {
   const identity = await getCachedSiteIdentity().catch(() => ({
     siteName: 'Atlanta Saddle Club Association',
     motto: 'We Ride To Inspire',
+    heroDescription: "Atlanta's premiere saddle club — promoting horsemanship, fellowship, education, and community across metro Atlanta.",
   }));
 
   return (
