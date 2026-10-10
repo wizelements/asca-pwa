@@ -143,7 +143,7 @@ export default function AdminSettings() {
   if (!settings) {
     return (
       <div className="space-y-4">
-        <h1 className="text-4xl font-bold text-brand-fg-primary">Public Contact, Social & Donation Settings</h1>
+        <h1 className="text-4xl font-bold text-brand-fg-primary">Public Site Settings</h1>
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
           {error || 'Unable to load public website settings.'}
         </div>
@@ -155,7 +155,7 @@ export default function AdminSettings() {
     <div className="space-y-8">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-brand-fg-primary">Public Contact, Social & Donation Settings</h1>
+          <h1 className="text-4xl font-bold text-brand-fg-primary">Public Site Settings</h1>
           <p className="mt-2 max-w-3xl text-sm text-brand-fg-secondary">
             These controls are limited to settings the public website actually consumes: homepage identity copy, official contact email, social links, and donation handles. Each section below states where the change appears.
           </p>
