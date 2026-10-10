@@ -900,7 +900,12 @@ export async function getStats(): Promise<Stats> {
     db.execute('SELECT COUNT(*) as c FROM events'),
     db.execute('SELECT COUNT(*) as c FROM members'),
     db.execute('SELECT COUNT(*) as c FROM blog_posts'),
-    db.execute('SELECT COUNT(*) as c FROM gallery_images'),
+    db.execute(`
+      SELECT COUNT(*) as c
+      FROM album_media_assets media
+      JOIN activity_albums album ON album.id = media.album_id
+      WHERE album.deleted_at IS NULL
+    `),
     db.execute('SELECT COUNT(*) as c FROM form_submissions'),
   ]);
 
