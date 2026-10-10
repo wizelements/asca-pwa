@@ -30,7 +30,7 @@ const sections = [
     href: '/admin/members',
     purpose: 'Official ASCA member records, including roles, join date, photo, bio, active status, and verification state.',
     workflow: 'Update the member record when membership details change. Prefer inactive status over deleting a historical member when the record should be retained.',
-    publicEffect: 'Member data may be used by member-facing parts of the site depending on the record settings.',
+    publicEffect: 'Individual member records stay private. Only the count of records marked Active is used publicly on the Meet ASCA page.',
   },
   {
     label: 'Tasks',
@@ -64,8 +64,8 @@ const sections = [
     label: 'Page images',
     href: '/admin/media',
     purpose: 'Managed photography used in page heroes and website sections rather than Gallery albums.',
-    workflow: 'Change only the intended image slot, maintain useful alt text, save, then verify the affected public page.',
-    publicEffect: 'Saved page-image changes affect the corresponding public website sections.',
+    workflow: 'Use the destination shown on each image card, replace the image, maintain useful alt text, save, then open the linked public page. Fallback slots may be correctly saved without being visible while Gallery content is taking priority.',
+    publicEffect: 'Saved direct slots affect the named public section. Cards labeled Fallback only appear when their higher-priority Gallery content is unavailable.',
   },
   {
     label: 'Appearance',
