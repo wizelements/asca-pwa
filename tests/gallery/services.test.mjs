@@ -23,14 +23,14 @@ async function setupDb() {
     CREATE TABLE IF NOT EXISTS settings (id integer PRIMARY KEY);
     CREATE TABLE IF NOT EXISTS theme (id integer PRIMARY KEY);
     CREATE TABLE IF NOT EXISTS users (id integer PRIMARY KEY AUTOINCREMENT, email text, password text, role text, is_active integer);
-    CREATE TABLE IF NOT EXISTS events (id integer PRIMARY KEY AUTOINCREMENT, title text, description text, date integer, end_date integer, location text, published integer);
+    CREATE TABLE IF NOT EXISTS events (id integer PRIMARY KEY AUTOINCREMENT, title text, description text, date integer, end_date integer, location text, image_url text, published integer);
     CREATE TABLE IF NOT EXISTS members (
       id integer PRIMARY KEY AUTOINCREMENT,
       first_name text, last_name text, email text, bio text, photo text, roles text,
       is_active integer, is_verified integer, join_date integer, created_at integer, updated_at integer,
       contact_id integer
     );
-    CREATE TABLE IF NOT EXISTS blog_posts (id integer PRIMARY KEY AUTOINCREMENT, title text, slug text, content text, author text, published integer);
+    CREATE TABLE IF NOT EXISTS blog_posts (id integer PRIMARY KEY AUTOINCREMENT, title text, slug text, content text, author text, image text, published integer);
     CREATE TABLE IF NOT EXISTS gallery_images (id integer PRIMARY KEY AUTOINCREMENT, title text, description text, category text, image text, alt text, sort_order integer, published integer, uploaded_at integer);
     CREATE TABLE IF NOT EXISTS form_submissions (
       id integer PRIMARY KEY AUTOINCREMENT,
