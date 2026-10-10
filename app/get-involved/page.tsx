@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import { MEMBERSHIP_APPLICATION_URL } from '@/lib/content/site';
 import { getManagedImage } from '@/lib/media';
 import { getPublicManagedImages } from '@/lib/public-content';
+import { getCachedSiteContent, siteText } from '@/lib/site-content';
 
 export const metadata: Metadata = {
   title: { absolute: 'Get Involved | ASCA' },
@@ -13,44 +14,38 @@ export const metadata: Metadata = {
     "There's a place for everyone at the Atlanta Saddle Club Association — become a member, attend an event, volunteer, or partner with us.",
 };
 
-interface InvolveCard {
-  title: string;
-  body: string;
-  cta: string;
-  href: string;
-  external?: boolean;
-}
-
-const CARDS: InvolveCard[] = [
-  {
-    title: 'Become a Member',
-    body: 'Join a network of horse enthusiasts who share a passion for riding, learning, service, and fellowship.',
-    cta: 'ASCA Membership Application',
-    href: MEMBERSHIP_APPLICATION_URL,
-    external: true,
-  },
-  {
-    title: 'Attend an Event',
-    body: 'From trail rides and educational programs to community outreach and special events, there are many opportunities to participate throughout the year.',
-    cta: 'Event Calendar',
-    href: '/where-to-find-us',
-  },
-  {
-    title: 'Volunteer',
-    body: 'Help support our events, youth programs, fundraising efforts, and community service projects.',
-    cta: 'Contact Us',
-    href: '/#contact',
-  },
-  {
-    title: 'Partner With Us',
-    body: 'Businesses, organizations, and community leaders can support our mission through sponsorships and partnerships.',
-    cta: 'Support ASCA',
-    href: '/support-asca',
-  },
-];
-
 export default async function GetInvolved() {
-  const images = await getPublicManagedImages();
+  const [images, copy] = await Promise.all([
+    getPublicManagedImages(),
+    getCachedSiteContent(),
+  ]);
+  const cards = [
+    {
+      title: siteText(copy, 'involved.member.title'),
+      body: siteText(copy, 'involved.member.body'),
+      cta: siteText(copy, 'involved.member.cta'),
+      href: MEMBERSHIP_APPLICATION_URL,
+      external: true,
+    },
+    {
+      title: siteText(copy, 'involved.event.title'),
+      body: siteText(copy, 'involved.event.body'),
+      cta: siteText(copy, 'involved.event.cta'),
+      href: '/where-to-find-us',
+    },
+    {
+      title: siteText(copy, 'involved.volunteer.title'),
+      body: siteText(copy, 'involved.volunteer.body'),
+      cta: siteText(copy, 'involved.volunteer.cta'),
+      href: '/#contact',
+    },
+    {
+      title: siteText(copy, 'involved.partner.title'),
+      body: siteText(copy, 'involved.partner.body'),
+      cta: siteText(copy, 'involved.partner.cta'),
+      href: '/support-asca',
+    },
+  ];
   const hero = getManagedImage(images, 'getInvolved.hero');
 
   return (
@@ -60,19 +55,17 @@ export default async function GetInvolved() {
         <Hero
           image={hero.src}
           imageAlt={hero.alt}
-          title="Get Involved"
-          subtitle="Join our equestrian community — there's a place for everyone."
+          title={siteText(copy, 'involved.hero.title')}
+          subtitle={siteText(copy, 'involved.hero.subtitle')}
         />
 
         {/* Opening */}
         <section className="py-16">
           <div className="container max-w-3xl text-center">
-            <p className="section-label">Connect</p>
-            <h2 className="section-title">Ways to Take Part</h2>
+            <p className="section-label">{siteText(copy, 'involved.intro.label')}</p>
+            <h2 className="section-title">{siteText(copy, 'involved.intro.title')}</h2>
             <p className="text-lg leading-relaxed text-brand-fg-secondary">
-              There&apos;s a place for everyone at the Atlanta Saddle Club Association. Whether you&apos;re an
-              experienced rider, new to horses, looking to volunteer, or simply interested in becoming part of a
-              welcoming community, we&apos;d love to meet you.
+              {siteText(copy, 'involved.intro.body')}
             </p>
           </div>
         </section>
@@ -81,7 +74,7 @@ export default async function GetInvolved() {
         <section className="pb-8">
           <div className="container">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {CARDS.map((card) => (
+              {cards.map((card) => (
                 <div key={card.title} className="card flex flex-col">
                   <h3 className="text-xl font-bold text-brand-fg-primary">{card.title}</h3>
                   <p className="mt-3 flex-1 text-brand-fg-secondary">{card.body}</p>
@@ -110,7 +103,7 @@ export default async function GetInvolved() {
           <div className="container max-w-3xl">
             <div className="rounded-2xl border border-brand-border-subtle bg-brand-bg-elevated p-4 shadow-sm">
               <h2 className="mb-4 text-center text-xl font-bold font-display text-brand-fg-primary">
-                ASCA Membership Application
+                {siteText(copy, 'involved.application.title')}
               </h2>
               <iframe
                 src={MEMBERSHIP_APPLICATION_URL}
@@ -128,11 +121,7 @@ export default async function GetInvolved() {
         <section className="bg-brand-bg-subtle py-12">
           <div className="container max-w-2xl text-center">
             <p className="text-lg text-brand-fg-secondary">
-              Ready to get started? Complete our membership application or{' '}
-              <Link href="/#contact" className="font-semibold text-brand-forest hover:text-brand-forest-muted">
-                contact us
-              </Link>{' '}
-              to learn more.
+              {siteText(copy, 'involved.final.body')}
             </p>
           </div>
         </section>
