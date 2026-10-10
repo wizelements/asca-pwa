@@ -191,7 +191,7 @@ export default function AdminPageText() {
                           )}
                           <span className="mt-1 block text-xs leading-5 text-admin-fg-muted">
                             {field.type === 'list'
-                              ? `One item per line · up to ${field.maxLength} characters per item.`
+                              ? field.help || `One item per line · up to ${field.maxLength} characters per item.`
                               : field.help || `Up to ${field.maxLength} characters.`}
                           </span>
                         </label>
