@@ -40,7 +40,25 @@ async function copyText(value: string) {
   textarea.remove();
 }
 
-export default function ShareAscaCard({ siteUrl }: { siteUrl: string }) {
+interface ShareCardCopy {
+  label: string;
+  title: string;
+  body: string;
+  scanLabel: string;
+  downloadLabel: string;
+}
+
+export default function ShareAscaCard({
+  siteUrl,
+  siteName,
+  motto,
+  copy,
+}: {
+  siteUrl: string;
+  siteName: string;
+  motto: string;
+  copy: ShareCardCopy;
+}) {
   const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null);
   const [standalone, setStandalone] = useState(false);
   const [isIos, setIsIos] = useState(false);
@@ -74,8 +92,8 @@ export default function ShareAscaCard({ siteUrl }: { siteUrl: string }) {
 
   const share = async () => {
     const shareData = {
-      title: 'Atlanta Saddle Club Association',
-      text: 'Check out the Atlanta Saddle Club Association — We Ride To Inspire.',
+      title: siteName,
+      text: `Check out ${siteName} — ${motto}.`,
       url: siteUrl,
     };
 
@@ -144,7 +162,7 @@ export default function ShareAscaCard({ siteUrl }: { siteUrl: string }) {
             <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl bg-white p-2 shadow-lg">
               <Image
                 src="/icons/icon-192.png"
-                alt="Atlanta Saddle Club Association"
+                alt={siteName}
                 width={80}
                 height={80}
                 className="h-full w-full object-cover"
@@ -153,16 +171,16 @@ export default function ShareAscaCard({ siteUrl }: { siteUrl: string }) {
             </div>
 
             <p className="mt-5 text-xs font-bold uppercase tracking-[0.28em] text-brand-accent">
-              Atlanta Saddle Club Association
+              {siteName}
             </p>
             <h2 className="mt-2 font-display text-3xl font-extrabold text-white">
-              We Ride To Inspire
+              {motto}
             </h2>
 
             <div className="mx-auto mt-7 w-full max-w-[19rem] rounded-[1.75rem] bg-white p-4 shadow-2xl">
               <Image
                 src="/qr/asca-site.svg"
-                alt="QR code for the Atlanta Saddle Club Association website"
+                alt={`QR code for the ${siteName} website`}
                 width={304}
                 height={304}
                 unoptimized
@@ -170,21 +188,20 @@ export default function ShareAscaCard({ siteUrl }: { siteUrl: string }) {
               />
             </div>
 
-            <p className="mt-5 text-sm font-semibold text-white">Scan to visit ASCA</p>
+            <p className="mt-5 text-sm font-semibold text-white">{copy.scanLabel}</p>
             <p className="mt-1 break-all text-xs text-white/70">{siteUrl.replace(/^https?:\/\//, '')}</p>
           </div>
         </div>
 
         <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-12">
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-brand-forest">
-            Member-ready sharing
+            {copy.label}
           </p>
           <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-brand-fg-primary sm:text-4xl">
-            Put ASCA in someone&apos;s hand in seconds.
+            {copy.title}
           </h2>
           <p className="mt-4 text-base leading-7 text-brand-fg-secondary">
-            Share the official ASCA website from your phone, copy the link for a message,
-            or install ASCA for fast home-screen access. Share ASCA also stays available from the mobile menu and footer.
+            {copy.body}
           </p>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-2">
@@ -212,7 +229,7 @@ export default function ShareAscaCard({ siteUrl }: { siteUrl: string }) {
             download="ASCA-website-QR.svg"
             className="mt-4 inline-flex min-h-[44px] items-center justify-center rounded-xl px-4 text-sm font-semibold text-brand-forest underline-offset-4 hover:underline"
           >
-            Download QR for print or flyers
+            {copy.downloadLabel}
           </a>
 
           {installHelp && (
