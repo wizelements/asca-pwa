@@ -199,12 +199,14 @@ export default function AdminTheme() {
                 </select>
               </div>
               <AdminImageField
-                label="Logo image path, URL, or upload"
+                label="ASCA logo"
                 value={theme.logoImageId || ''}
                 onChange={(logo) => updateField('logoImageId', logo)}
                 placeholder="/images/asca/logo.png or https://..."
-                helper="Controls the header/footer logo. Leave blank to use the default ASCA logo."
+                helper="Shown in the public site header and footer. Transparent PNG/WebP artwork keeps its transparent background. Choose the image here, then Save Theme Changes to publish it."
                 previewAlt="ASCA logo preview"
+                preserveTransparency
+                clearLabel="Use default ASCA logo"
               />
             </div>
           </div>
