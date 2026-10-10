@@ -39,12 +39,21 @@ export const getCachedTheme = unstable_cache(
   { revalidate: 60, tags: [CACHE_TAG_THEME] }
 );
 
+const LEGACY_TAGLINE = 'Promoting horsemanship, sportsmanship, and community';
+const DEFAULT_HERO_DESCRIPTION =
+  "Atlanta's premiere saddle club — promoting horsemanship, fellowship, education, and community across metro Atlanta.";
+
 export const getCachedSiteIdentity = unstable_cache(
-  async (): Promise<{ siteName: string; motto: string }> => {
+  async (): Promise<{ siteName: string; motto: string; heroDescription: string }> => {
     const settings = await getSettingsRaw();
+    const storedTagline = (settings.tagline || '').trim();
     return {
       siteName: settings.siteName || 'Atlanta Saddle Club Association',
-      motto: settings.siteDescription || 'We Ride To Inspire',
+      motto: (settings.siteDescription || '').trim() || 'We Ride To Inspire',
+      heroDescription:
+        !storedTagline || storedTagline === LEGACY_TAGLINE
+          ? DEFAULT_HERO_DESCRIPTION
+          : storedTagline,
     };
   },
   ['site-identity-public'],
