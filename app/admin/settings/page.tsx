@@ -27,6 +27,9 @@ function normalizeSettings(settings: any) {
     ...settings,
     social: sanitizeSocial(settings?.social),
     donation: sanitizeDonationSettings(settings),
+    contactEmail: typeof settings?.contactEmail === 'string' && settings.contactEmail
+      ? settings.contactEmail
+      : 'info@atlantasaddleclub.com',
   };
 }
 
@@ -80,7 +83,9 @@ export default function AdminSettings() {
 
     try {
       const payload: any = {};
-      if (section === 'social') {
+      if (section === 'contact') {
+        payload.contactEmail = settings.contactEmail.trim();
+      } else if (section === 'social') {
         payload.social = sanitizeSocial(settings.social);
       } else if (section === 'donations') {
         payload.cashApp = settings.donation.cashApp;
@@ -140,13 +145,36 @@ export default function AdminSettings() {
         <div>
           <h1 className="text-4xl font-bold text-brand-fg-primary">Social & Donation Settings</h1>
           <p className="mt-2 max-w-3xl text-sm text-brand-fg-secondary">
-            These are the public-site settings ASCA can safely manage here. Facebook and Instagram update the site header/footer. Cash App and Zelle update the Support ASCA donation cards.
+            These controls are limited to settings the public website actually consumes: official contact email, social links, and donation handles. Each section below states where the change appears.
           </p>
         </div>
         {message && <span className="text-sm font-medium text-green-600">{message}</span>}
       </div>
 
       {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>}
+
+      <div className="rounded-xl border border-brand-border-subtle bg-brand-bg-elevated p-6 shadow-sm">
+        <h2 className="text-2xl font-bold text-brand-fg-primary">Public Contact Email</h2>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-fg-secondary">
+          This is the official email visitors see in the site footer and on Support ASCA for sponsorship questions. Website form submissions are saved in Messages whether or not an email alert is delivered.
+        </p>
+        <div className="mt-5 max-w-xl">
+          <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Official contact email</label>
+          <input
+            type="email"
+            value={settings.contactEmail || ''}
+            onChange={(e) => updateField('contactEmail', e.target.value)}
+            className="w-full rounded-lg border border-brand-border-subtle bg-brand-bg-body px-4 py-2 text-brand-fg-primary focus:outline-none focus:ring-2 focus:ring-brand-forest"
+          />
+          <button
+            onClick={() => handleSave('contact')}
+            disabled={saving || !settings.contactEmail}
+            className="mt-4 rounded-lg bg-brand-forest px-5 py-2 font-semibold text-white hover:bg-brand-forest-muted disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : 'Save Public Contact Email'}
+          </button>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-brand-bg-elevated p-6 rounded-xl shadow-sm border border-brand-border-subtle">
