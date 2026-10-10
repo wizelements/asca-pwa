@@ -69,6 +69,21 @@ export const SITE_CONTENT_PAGES: SiteContentPageDefinition[] = [
         ],
       },
       {
+        label: 'Connect · Learn · Give cards',
+        fields: [
+          text('home.connect.title', 'Connect title', 'Connect', 60),
+          text('home.connect.label', 'Connect label', 'We are a community of horsemen', 100),
+          area('home.connect.body', 'Connect body', 'Connection is at the heart of everything we do. Through shared experiences with horses, our members build friendships, develop trust, and become part of a supportive community. The unique bond between horse and rider encourages personal growth, confidence, and a deeper understanding of oneself and others.', 900),
+          text('home.learn.title', 'Learn title', 'Learn', 60),
+          text('home.learn.label', 'Learn label', 'Horsemanship for every level', 100),
+          area('home.learn.body', 'Learn body', "Learning never stops when horses are involved. Members gain hands-on knowledge in horsemanship, riding, horse care, safety, trail etiquette, and leadership. Whether you're new to horses or have years of experience, our club provides opportunities to expand your skills, share knowledge, and grow your confidence through education and experience. Every ride, event, and activity offers an opportunity to learn something new.", 1100),
+          text('home.give.title', 'Give title', 'Give', 60),
+          text('home.give.label', 'Give label', 'Serving our community', 100),
+          area('home.give.body', 'Give body', 'Our club believes in giving back to the community. Funds raised through our events help us provide educational opportunities, support local initiatives, and create meaningful experiences for both the young and the young at heart. Together, we strive to make a positive impact. We welcome your donations to support our efforts.', 900),
+          text('home.give.cta', 'Give button', 'Donate', 50),
+        ],
+      },
+      {
         label: 'Latest activities',
         fields: [
           text('home.activities.title', 'Heading', 'Our Latest Activities', 100),
@@ -128,6 +143,26 @@ export const SITE_CONTENT_PAGES: SiteContentPageDefinition[] = [
         fields: [
           text('about.leadership.label', 'Eyebrow', 'Leadership', 60),
           text('about.leadership.title', 'Heading', 'Current Officers', 100),
+        ],
+      },
+      {
+        label: 'Officer roster',
+        fields: [
+          list(
+            'about.officers.items',
+            'Officers',
+            [
+              'President | Jadon Relaford | founding',
+              'Vice President | Deja Shelton',
+              'Treasurer | Nicole McNeil',
+              'Secretary | Bonita Hartage',
+              'Member Services Chair | Terrell Brown',
+              'Senior Delegate | Rebecca Lord | founding',
+              'Senior Delegate | Randall Atchison | founding',
+            ],
+            180,
+            'One officer per line: Role | Name | founding. Omit “founding” when it does not apply.'
+          ),
         ],
       },
       {
