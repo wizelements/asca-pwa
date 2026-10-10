@@ -147,8 +147,8 @@ test.describe('authenticated admin client workspace', () => {
     await page.goto('/admin/forms');
     await expect(page.getByRole('heading', { name: 'Messages', exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Where Messages come from' })).toBeVisible();
-    await expect(page.getByText('Website Contact Form', { exact: true })).toBeVisible();
-    await expect(page.getByText('Event Updates Form', { exact: true })).toBeVisible();
+    await expect(page.locator('strong').filter({ hasText: 'Website Contact Form' })).toBeVisible();
+    await expect(page.locator('strong').filter({ hasText: 'Event Updates Form' })).toBeVisible();
 
     await page.goto('/admin/settings');
     await expect(page.getByRole('heading', { name: 'Public Site Settings' })).toBeVisible();
