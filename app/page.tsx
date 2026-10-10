@@ -141,7 +141,7 @@ export default async function Home() {
 
 
         {/* Stay Up to Date on our Events */}
-        <section className="py-20">
+        <section id="event-updates" className="scroll-mt-24 py-20">
           <div className="container max-w-3xl text-center">
             <p className="section-label">Stay Connected</p>
             <h2 className="section-title">Stay Up to Date on our Events</h2>
