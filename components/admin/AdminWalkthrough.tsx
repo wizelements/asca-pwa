@@ -100,6 +100,15 @@ const STEPS: WalkthroughStep[] = [
   },
   {
     group: 'Website',
+    title: 'Page text — visitor-facing wording without code',
+    body: 'Page Text controls approved static wording across Home, About, Meet ASCA, Get Involved, Support ASCA, Event Calendar, Gallery, Horses, meeting information, and footer contact copy.',
+    useFor: 'Changing headings, paragraphs, list items, factual wording, and button labels while keeping links, layout, and executable code protected.',
+    bestPractice: 'Save one page group at a time, then open its linked public page and verify the wording in context. Use the dedicated Events, Gallery, Horses, Members, Page Images, and Public Site Settings editors for dynamic data.',
+    href: '/admin/content',
+    action: 'Open Page text',
+  },
+  {
+    group: 'Website',
     title: 'Page images — photography used around the site',
     body: 'Page Images controls fixed website photography such as hero and supporting images. Every card names its exact public destination and tells you whether the image is always visible or only a fallback behind Gallery content.',
     useFor: 'Replacing a hero/section image, updating alt text, restoring a default, and immediately opening the affected public page to verify the result.',
@@ -137,7 +146,7 @@ const STEPS: WalkthroughStep[] = [
   {
     group: 'Quality control',
     title: 'Preview — verify what visitors actually see',
-    body: 'The View site button opens the public ASCA site in a separate tab. This is the final visual check after editing events, gallery content, horse profiles, page images, appearance, or donation settings.',
+    body: 'The View site button opens the public ASCA site in a separate tab. This is the final visual check after editing page text, events, gallery content, horse profiles, page images, appearance, or public settings.',
     useFor: 'Confirming that a saved admin change produced the intended customer-facing result.',
     bestPractice: 'A successful Save message is not the same as a verified public outcome. Check the affected public page after consequential changes.',
     href: '/',
