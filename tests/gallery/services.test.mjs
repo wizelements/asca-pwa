@@ -215,6 +215,70 @@ describe('horse services', () => {
     assert.equal(detail?.name, 'Buddy');
     assert.equal(detail?.media.length, 1);
   });
+
+  it(' updates horse profile and media as one compound save', async () => {
+    const { createMediaAssetFromDataUrl } = await import('../../lib/gallery/services/media.ts');
+    const { createHorse, updateHorse, getHorseDetailBySlug } = await import('../../lib/gallery/services/horses.ts');
+
+    const first = await createMediaAssetFromDataUrl(DATA_URL);
+    const second = await createMediaAssetFromDataUrl(DATA_URL);
+    const horse = await createHorse(
+      { name: 'Atomic Horse', slug: 'atomic-horse', primaryMediaAssetId: first.id, status: 'draft' },
+      [{ mediaAssetId: first.id, altText: 'Original horse image', caption: 'Original caption', sortOrder: 0 }]
+    );
+
+    await updateHorse(
+      horse.id,
+      { name: 'Atomic Horse Updated', primaryMediaAssetId: second.id },
+      {
+        add: [{ mediaAssetId: second.id, altText: 'Second horse image', caption: 'Second caption', sortOrder: 10 }],
+        remove: [first.id],
+        reorder: [{ mediaAssetId: second.id, sortOrder: 0 }],
+        metadata: [{ mediaAssetId: second.id, altText: 'Updated second horse image', caption: 'Updated second caption' }],
+      }
+    );
+
+    const detail = await getHorseDetailBySlug('atomic-horse');
+    assert.equal(detail?.name, 'Atomic Horse Updated');
+    assert.equal(detail?.primaryMediaAssetId, second.id);
+    assert.equal(detail?.media.length, 1);
+    assert.equal(detail?.media[0].mediaAssetId, second.id);
+    assert.equal(detail?.media[0].sortOrder, 0);
+    assert.equal(detail?.media[0].altText, 'Updated second horse image');
+    assert.equal(detail?.media[0].caption, 'Updated second caption');
+  });
+
+  it(' rolls back horse media mutations when a later validation fails', async () => {
+    const { createMediaAssetFromDataUrl } = await import('../../lib/gallery/services/media.ts');
+    const { createHorse, updateHorse, getHorseDetailBySlug } = await import('../../lib/gallery/services/horses.ts');
+
+    const first = await createMediaAssetFromDataUrl(DATA_URL);
+    const second = await createMediaAssetFromDataUrl(DATA_URL);
+    const horse = await createHorse(
+      { name: 'Rollback Horse', slug: 'rollback-horse', primaryMediaAssetId: first.id, status: 'draft' },
+      [{ mediaAssetId: first.id, altText: 'Rollback original image', caption: 'Keep me', sortOrder: 0 }]
+    );
+
+    await assert.rejects(
+      () => updateHorse(
+        horse.id,
+        { name: 'Should Not Persist', primaryMediaAssetId: 'missing-media-asset' },
+        {
+          add: [{ mediaAssetId: second.id, altText: 'Should roll back', caption: 'Temporary', sortOrder: 10 }],
+          remove: [first.id],
+        }
+      ),
+      /Primary media asset not found/
+    );
+
+    const detail = await getHorseDetailBySlug('rollback-horse');
+    assert.equal(detail?.name, 'Rollback Horse');
+    assert.equal(detail?.primaryMediaAssetId, first.id);
+    assert.equal(detail?.media.length, 1);
+    assert.equal(detail?.media[0].mediaAssetId, first.id);
+    assert.equal(detail?.media[0].altText, 'Rollback original image');
+    assert.equal(detail?.media[0].caption, 'Keep me');
+  });
 });
 
 describe('legacy review services', () => {
