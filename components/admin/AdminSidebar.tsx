@@ -33,7 +33,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Horses', href: '/admin/horses' },
       { label: 'Page images', href: '/admin/media' },
       { label: 'Appearance', href: '/admin/theme' },
-      { label: 'Contact, social & giving', href: '/admin/settings' },
+      { label: 'Public site settings', href: '/admin/settings' },
     ],
   },
   {
