@@ -52,7 +52,7 @@ export default function Header() {
   }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-brand-border-subtle bg-brand-bg-elevated/95 shadow-sm backdrop-blur-xl">
+    <header className="pwa-safe-top sticky top-0 z-50 border-b border-brand-border-subtle bg-brand-bg-elevated/95 shadow-sm backdrop-blur-xl">
       <nav className="container flex min-h-[72px] items-center justify-between gap-4" aria-label="Primary">
         <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="ASCA home">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-forest p-1.5 ring-1 ring-black/5">
