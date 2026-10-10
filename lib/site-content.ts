@@ -99,9 +99,8 @@ export async function updateSiteContent(
 
   const db = getDb();
   try {
-    await db.execute('BEGIN');
-    for (const item of validated) {
-      await db.execute({
+    await db.batch(
+      validated.map((item) => ({
         sql: `INSERT INTO site_content (key, value, updated_by, created_at, updated_at)
               VALUES (?, ?, ?, unixepoch(), unixepoch())
               ON CONFLICT(key) DO UPDATE SET
@@ -109,11 +108,10 @@ export async function updateSiteContent(
                 updated_by = excluded.updated_by,
                 updated_at = unixepoch()`,
         args: [item.key, encodeValue(item.field, item.value), updatedBy ?? null],
-      });
-    }
-    await db.execute('COMMIT');
+      })),
+      'write'
+    );
   } catch (error) {
-    await db.execute('ROLLBACK').catch(() => undefined);
     if (isMissingTableError(error)) {
       throw new Error('Page text storage has not been migrated in this environment yet.');
     }
