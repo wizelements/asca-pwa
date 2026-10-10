@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getAdminToken, logout } from '@/components/AdminGuard';
+import { getAdminToken, logout, useAuth } from '@/components/AdminGuard';
 import AdminPagination from '@/components/admin/AdminPagination';
 import AdminEmptyState from '@/components/admin/AdminEmptyState';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
@@ -22,6 +22,8 @@ const PAGE_SIZE = 20;
 
 export default function AdminHorsesPage() {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [horses, setHorses] = useState<Horse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -134,7 +136,15 @@ export default function AdminHorsesPage() {
                   <td className="px-4 py-3">{horse.mediaCount}</td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-2">
-                      {horse.status !== 'published' && (
+                      <Link href={`/admin/horses/${horse.id}`} className="rounded-md bg-admin-bg-subtle px-2.5 py-1 text-xs font-medium text-admin-fg-primary hover:bg-admin-border-subtle">
+                        Edit
+                      </Link>
+                      {horse.status === 'published' && (
+                        <Link href={`/horses/${horse.slug}`} target="_blank" className="rounded-md border border-admin-border-subtle px-2.5 py-1 text-xs font-medium text-admin-fg-primary hover:bg-admin-bg-subtle">
+                          View public ↗
+                        </Link>
+                      )}
+                      {isAdmin && horse.status !== 'published' && horse.status !== 'archived' && (
                         <button
                           onClick={() => action(horse.id, 'publish')}
                           className="rounded-md bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 hover:bg-green-200"
@@ -142,7 +152,7 @@ export default function AdminHorsesPage() {
                           Publish
                         </button>
                       )}
-                      {horse.status !== 'archived' && (
+                      {isAdmin && horse.status !== 'archived' && (
                         <button
                           onClick={() => action(horse.id, 'archive')}
                           className="rounded-md bg-red-100 px-2.5 py-1 text-xs font-medium text-red-800 hover:bg-red-200"
@@ -150,7 +160,7 @@ export default function AdminHorsesPage() {
                           Archive
                         </button>
                       )}
-                      {horse.status === 'archived' && (
+                      {isAdmin && horse.status === 'archived' && (
                         <button
                           onClick={() => action(horse.id, 'restore')}
                           className="rounded-md bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-800 hover:bg-blue-200"
