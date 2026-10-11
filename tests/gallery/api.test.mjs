@@ -369,4 +369,61 @@ describe('Gallery API authorization and integrity', () => {
     const data = await response.json();
     assert.match(data.error, /still in use/i);
   });
+  it('suggests grounded photo alt text but never bypasses privacy review', async () => {
+    const { POST } = await importApi('describe');
+    const photoRequest = {
+      method: 'POST',
+      url: 'http://localhost/api/gallery/describe',
+      headers: authHeaders(editorToken),
+      body: {
+        dataUrl: DATA_URL,
+        context: { title: 'ASCA Trail Ride', category: 'Trail Rides', summary: 'A riding day' },
+      },
+    };
+    const viewer = await POST(req({ ...photoRequest, headers: authHeaders(viewerToken) }));
+    assert.equal(viewer.status, 403);
+
+    const oldKey = process.env.OPENAI_API_KEY;
+    const oldFetch = globalThis.fetch;
+    try {
+      delete process.env.OPENAI_API_KEY;
+      const missingConfig = await POST(req(photoRequest));
+      assert.equal(missingConfig.status, 503);
+      assert.match((await missingConfig.json()).error, /not configured/i);
+
+      process.env.OPENAI_API_KEY = 'synthetic-test-key';
+      let called = 0;
+      globalThis.fetch = async (url, options) => {
+        assert.equal(url, 'https://api.openai.com/v1/chat/completions');
+        assert.equal(options.headers.Authorization, 'Bearer synthetic-test-key');
+        const payload = JSON.parse(options.body);
+        assert.equal(payload.store, false);
+        assert.ok(payload.messages[1].content[0].text.includes('ASCA Trail Ride'));
+        assert.ok(payload.messages[1].content[1].image_url.url.startsWith('data:image/png;base64,'));
+        called++;
+        return new Response(JSON.stringify({
+          choices: [{ message: { content: 'Saddle club participants standing beside horses on a sunlit trail.' } }],
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      };
+      const response = await POST(req(photoRequest));
+      assert.equal(response.status, 200);
+      const suggestion = await response.json();
+      assert.match(suggestion.description, /participants standing beside horses/);
+      assert.equal(suggestion.reviewRequired, true);
+      assert.equal(called, 1);
+
+      // AI-generated text is only returned to an editor; it never approves or publishes.
+      const draft = await client.execute({
+        sql: "SELECT status, privacy_review_status FROM activity_albums WHERE slug = 'editor-attempt'",
+      });
+      assert.equal(String(draft.rows[0].status), 'draft');
+      assert.equal(String(draft.rows[0].privacy_review_status), 'pending');
+    } finally {
+      globalThis.fetch = oldFetch;
+      if (oldKey === undefined) delete process.env.OPENAI_API_KEY;
+      else process.env.OPENAI_API_KEY = oldKey;
+    }
+  });
+
+
 });
