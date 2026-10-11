@@ -17,12 +17,10 @@ export const metadata: Metadata = {
 function BulletList({ items }: { items: string[] }) {
   return (
     <ul className="mt-7 space-y-4">
-      {items.map((item, index) => (
-        <li key={item} className="flex items-start gap-4 text-brand-fg-secondary">
-          <span className="mt-0.5 font-serif text-sm italic text-brand-forest/70">
-            {String(index + 1).padStart(2, '0')}
-          </span>
-          <span className="leading-7">{item}</span>
+      {items.map((item) => (
+        <li key={item} className="flex items-start gap-3 text-base leading-7 text-brand-fg-secondary">
+          <span className="mt-3 h-px w-5 shrink-0 bg-brand-accent" aria-hidden="true" />
+          <span>{item}</span>
         </li>
       ))}
     </ul>
@@ -52,7 +50,7 @@ export default async function SupportAsca() {
           <div className="container max-w-5xl">
             <div className="mx-auto max-w-3xl text-center">
               <p className="section-label">{siteText(copy, 'support.intro.label')}</p>
-              <h2 className="font-serif text-4xl font-medium tracking-tight text-brand-fg-primary md:text-5xl">
+              <h2 className="font-serif text-4xl font-semibold tracking-tight text-brand-fg-primary md:text-5xl">
                 {siteText(copy, 'support.intro.title')}
               </h2>
               <div className="mx-auto mt-6 h-px w-20 bg-brand-accent" aria-hidden="true" />
@@ -68,7 +66,7 @@ export default async function SupportAsca() {
             <div className="grid gap-8 lg:grid-cols-[.8fr_1.2fr] lg:items-start">
               <div>
                 <p className="section-label">Stewardship</p>
-                <h2 className="font-serif text-4xl font-medium tracking-tight text-brand-fg-primary md:text-5xl">
+                <h2 className="font-serif text-4xl font-semibold tracking-tight text-brand-fg-primary md:text-5xl">
                   {siteText(copy, 'support.reasons.title')}
                 </h2>
                 <p className="mt-6 text-base leading-8 text-brand-fg-secondary">
@@ -76,7 +74,7 @@ export default async function SupportAsca() {
                 </p>
               </div>
               <article className="editorial-card p-8 md:p-10">
-                <p className="text-xs font-bold uppercase tracking-[0.12em] text-brand-forest">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-forest">
                   What your support sustains
                 </p>
                 <BulletList items={siteList(copy, 'support.reasons.items')} />
@@ -89,7 +87,7 @@ export default async function SupportAsca() {
           <div className="container max-w-5xl">
             <div className="mx-auto mb-12 max-w-3xl text-center">
               <p className="section-label">Direct support</p>
-              <h2 className="font-serif text-4xl font-medium tracking-tight text-brand-fg-primary md:text-5xl">
+              <h2 className="font-serif text-4xl font-semibold tracking-tight text-brand-fg-primary md:text-5xl">
                 {siteText(copy, 'support.give.title')}
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-brand-fg-secondary">
@@ -104,8 +102,8 @@ export default async function SupportAsca() {
           <div className="container max-w-5xl">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <article className="editorial-card p-8 md:p-10">
-                <p className="text-xs font-bold uppercase tracking-[0.12em] text-brand-forest">Participation</p>
-                <h2 className="mt-5 font-serif text-3xl font-medium text-brand-fg-primary">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-forest">Participation</p>
+                <h2 className="mt-5 font-serif text-3xl font-semibold text-brand-fg-primary">
                   {siteText(copy, 'support.other.title')}
                 </h2>
                 <div className="mt-5 h-px w-12 bg-brand-accent" aria-hidden="true" />
@@ -113,8 +111,8 @@ export default async function SupportAsca() {
               </article>
 
               <article className="editorial-card p-8 md:p-10">
-                <p className="text-xs font-bold uppercase tracking-[0.12em] text-brand-forest">Current priorities</p>
-                <h2 className="mt-5 font-serif text-3xl font-medium text-brand-fg-primary">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-forest">Current priorities</p>
+                <h2 className="mt-5 font-serif text-3xl font-semibold text-brand-fg-primary">
                   {siteText(copy, 'support.needs.title')}
                 </h2>
                 <div className="mt-5 h-px w-12 bg-brand-accent" aria-hidden="true" />
@@ -128,7 +126,7 @@ export default async function SupportAsca() {
           <div className="container max-w-4xl">
             <div className="editorial-card p-8 text-center md:p-12">
               <p className="section-label">Partnership</p>
-              <h2 className="font-serif text-4xl font-medium tracking-tight text-brand-fg-primary md:text-5xl">
+              <h2 className="font-serif text-4xl font-semibold tracking-tight text-brand-fg-primary md:text-5xl">
                 {siteText(copy, 'support.sponsor.title')}
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-brand-fg-secondary">
@@ -146,7 +144,7 @@ export default async function SupportAsca() {
 
         <section className="forest-luxe py-20 text-white md:py-24">
           <div className="container max-w-3xl text-center">
-            <p className="heritage-rule justify-center text-xs font-bold uppercase tracking-[0.12em] text-brand-accent">
+            <p className="heritage-rule justify-center text-xs font-semibold uppercase tracking-[0.12em] text-brand-accent">
               With gratitude
             </p>
             <p className="mx-auto mt-7 max-w-2xl font-serif text-2xl font-medium leading-relaxed md:text-3xl">
