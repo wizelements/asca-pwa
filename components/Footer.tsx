@@ -29,67 +29,91 @@ export default async function Footer() {
   ]);
 
   return (
-    <footer className="border-t border-brand-border-subtle bg-brand-bg-elevated">
-      <div className="container py-14">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
-          {/* Contact Form */}
-          <section id="contact" className="scroll-mt-24 md:col-span-2">
-            <h2 className="mb-2 text-lg font-bold font-display text-brand-fg-primary">{siteText(copy, 'shared.footer.contactTitle')}</h2>
-            <p className="mb-6 text-sm text-brand-fg-secondary">
-              {siteText(copy, 'shared.footer.contactBody')}
-            </p>
-            <ContactForm fallbackEmail={contactEmail} />
+    <footer className="border-t border-brand-forest/10 bg-[#f7f5ee]">
+      <div className="container py-16 md:py-20">
+        <div className="mb-12 grid gap-8 border-b border-brand-forest/10 pb-10 lg:grid-cols-[1.3fr_.7fr] lg:items-end">
+          <div>
+            <p className="section-label">Atlanta · Georgia</p>
+            <h2 className="max-w-3xl font-serif text-4xl font-medium leading-tight tracking-tight text-brand-fg-primary md:text-5xl">
+              {identity.motto}
+            </h2>
+          </div>
+          <p className="max-w-xl text-sm leading-7 text-brand-fg-secondary lg:justify-self-end">
+            {identity.heroDescription}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.5fr_.5fr] lg:gap-16">
+          <section id="contact" className="scroll-mt-24">
+            <div className="editorial-card p-6 sm:p-8 md:p-10">
+              <p className="section-label">{siteText(copy, 'shared.footer.contactTitle')}</p>
+              <p className="mb-7 max-w-2xl text-sm leading-7 text-brand-fg-secondary">
+                {siteText(copy, 'shared.footer.contactBody')}
+              </p>
+              <ContactForm fallbackEmail={contactEmail} />
+            </div>
           </section>
 
-          {/* Quick Links + Social */}
-          <div>
-            <h2 className="mb-6 text-lg font-bold font-display text-brand-fg-primary">{siteText(copy, 'shared.footer.quickLinksTitle')}</h2>
-            <ul className="space-y-3">
+          <div className="lg:border-l lg:border-brand-forest/10 lg:pl-10">
+            <div className="flex items-center gap-4">
+              <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-brand-forest p-2 shadow-[0_12px_26px_rgba(31,107,58,.14)] ring-1 ring-brand-accent/30">
+                <ManagedImage
+                  src={logoSrc}
+                  alt={identity.siteName + ' logo'}
+                  width={80}
+                  height={66}
+                  className="h-full w-auto"
+                />
+              </span>
+              <div>
+                <p className="font-serif text-xl font-semibold text-brand-fg-primary">ASCA</p>
+                <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.18em] text-brand-fg-muted">
+                  Equestrian community
+                </p>
+              </div>
+            </div>
+
+            <h2 className="mt-9 text-[10px] font-bold uppercase tracking-[0.2em] text-brand-fg-muted">
+              {siteText(copy, 'shared.footer.quickLinksTitle')}
+            </h2>
+            <ul className="mt-5 space-y-3">
               {FOOTER_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-brand-fg-secondary transition-colors hover:text-brand-forest"
+                    className="group inline-flex items-center gap-2 text-sm font-medium text-brand-fg-secondary transition-colors hover:text-brand-forest"
                   >
+                    <span className="h-px w-3 bg-brand-accent/70 transition-all group-hover:w-5" aria-hidden="true" />
                     {link.label}
                   </Link>
                 </li>
               ))}
             </ul>
 
-            <h2 className="mt-8 mb-4 text-lg font-bold font-display text-brand-fg-primary">{siteText(copy, 'shared.footer.followTitle')}</h2>
+            <h2 className="mb-4 mt-9 text-[10px] font-bold uppercase tracking-[0.2em] text-brand-fg-muted">
+              {siteText(copy, 'shared.footer.followTitle')}
+            </h2>
             <SocialLinks />
 
-            <p className="mt-6 text-sm text-brand-fg-secondary">
-              <a href={`mailto:${contactEmail}`} className="hover:text-brand-forest">
+            <p className="mt-7 text-sm text-brand-fg-secondary">
+              <a href={'mailto:' + contactEmail} className="border-b border-brand-accent/60 pb-1 hover:text-brand-forest">
                 {contactEmail}
               </a>
             </p>
-
-            <div className="mt-8">
-              <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-brand-forest p-2 shadow-sm">
-                <ManagedImage
-                  src={logoSrc}
-                  alt={`${identity.siteName} logo`}
-                  width={80}
-                  height={66}
-                  className="h-full w-auto"
-                />
-              </span>
-            </div>
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="mt-10 flex flex-col gap-4 border-t border-brand-border-subtle pt-6 text-sm text-brand-fg-muted md:flex-row md:items-center md:justify-between">
-          <p className="uppercase tracking-[0.24em]">© {new Date().getFullYear()} {identity.siteName}</p>
-          <p className="text-xs uppercase tracking-[0.24em] text-brand-fg-secondary">
+        <div className="mt-12 flex flex-col gap-4 border-t border-brand-forest/10 pt-7 text-brand-fg-muted md:flex-row md:items-center md:justify-between">
+          <p className="text-[9px] font-bold uppercase tracking-[0.22em]">
+            © {new Date().getFullYear()} {identity.siteName}
+          </p>
+          <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-brand-fg-secondary">
             Built by{' '}
             <a
               href="https://www.cod3blackagency.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-semibold text-brand-forest hover:text-brand-forest-muted"
+              className="text-brand-forest hover:text-brand-forest-muted"
             >
               Cod3 Black Agency
             </a>
