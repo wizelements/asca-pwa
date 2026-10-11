@@ -8,6 +8,8 @@ import { decodeDataImage, stripImageMetadata } from '@/lib/media-storage';
 import { isGenericAltText } from '@/lib/gallery/validation';
 import { logActivity } from '@/lib/db/queries';
 
+export const maxDuration = 60;
+
 const MAX_IMAGE_LENGTH = 6 * 1024 * 1024;
 const MAX_REQUEST_BYTES = 7 * 1024 * 1024;
 const descriptionInput = z.object({
@@ -131,7 +133,7 @@ export async function POST(request: NextRequest) {
           ],
         }),
         cache: 'no-store',
-        signal: AbortSignal.timeout(20000),
+        signal: AbortSignal.timeout(55000),
       });
     } catch {
       return jsonError(503, 'OPEE could not be reached to describe this photo. Your photos are still here; try again or write a description.');
