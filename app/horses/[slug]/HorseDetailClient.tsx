@@ -26,19 +26,19 @@ export default function HorseDetailClient({ horse, breadcrumbs, initialPhotoInde
 
   return (
     <>
-      <main className="bg-brand-bg-subtle min-h-screen py-16">
+      <main className="quiet-luxe min-h-screen py-16 md:py-20">
         <div className="container">
           <div className="mb-8">
             {breadcrumbs}
             <Link
               href="/horses"
-              className="mb-5 inline-flex min-h-[44px] items-center rounded-lg px-3 text-sm font-semibold text-brand-forest hover:bg-brand-bg-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-forest"
+              className="mb-6 inline-flex min-h-[44px] items-center text-sm font-semibold text-brand-forest hover:text-brand-forest-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-forest"
             >
               ← Back to Our Horses
             </Link>
             <p className="section-label">Meet the Horses</p>
-            <h1 className="section-title">{horse.name}</h1>
-            {horse.description && <p className="mt-4 max-w-2xl text-brand-fg-secondary">{horse.description}</p>}
+            <h1 className="font-serif text-5xl font-semibold tracking-tight text-brand-fg-primary md:text-6xl">{horse.name}</h1>
+            {horse.description && <p className="mt-5 max-w-3xl text-lg leading-8 text-brand-fg-secondary">{horse.description}</p>}
           </div>
 
           {mosaic && <section className="relative mb-10" aria-label="Featured photos">
@@ -46,11 +46,11 @@ export default function HorseDetailClient({ horse, breadcrumbs, initialPhotoInde
             <div className="relative md:hidden"><div className="flex snap-x snap-mandatory overflow-x-auto" style={{ scrollbarWidth: 'none' }} onScroll={(e: UIEvent<HTMLDivElement>) => setMobileIndex(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}>{allImages.map((image, idx) => <button key={`${image.url}-${idx}`} onClick={() => openViewer(idx)} className="relative aspect-[4/3] min-w-full snap-center"><Image src={image.url} alt={image.altText} fill priority={idx === 0} sizes="100vw" className="object-cover" /></button>)}</div><span className="absolute bottom-3 right-3 rounded-full bg-black/70 px-3 py-1 text-sm text-white">{mobileIndex + 1} / {allImages.length}</span></div>
             <button onClick={() => openViewer(0)} className="absolute bottom-4 right-4 hidden min-h-[44px] items-center gap-2 rounded-lg border border-brand-border-subtle bg-white px-4 font-semibold text-brand-fg-primary shadow md:flex"><svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z" /></svg>Show all photos</button>
           </section>}
-          {mosaic && <h2 className="mb-6 text-2xl font-bold text-brand-fg-primary">All photos</h2>}
+          {mosaic && <h2 className="mb-6 font-serif text-3xl font-semibold text-brand-fg-primary">All photos</h2>}
 
           {horse.primaryUrl && (
             <figure
-              className="group mb-8 cursor-pointer overflow-hidden rounded-xl bg-brand-bg-elevated shadow-sm transition hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-forest focus-visible:ring-offset-2 motion-reduce:transition-none"
+              className="group mb-8 cursor-pointer media-luxe overflow-hidden bg-brand-bg-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-forest focus-visible:ring-offset-2 motion-reduce:transition-none"
               onClick={() => openViewer(0)}
               role="button"
               tabIndex={0}
@@ -81,7 +81,7 @@ export default function HorseDetailClient({ horse, breadcrumbs, initialPhotoInde
                 return (
                   <figure
                     key={item.mediaAssetId}
-                    className="group cursor-pointer overflow-hidden rounded-xl bg-brand-bg-elevated shadow-sm transition hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-forest focus-visible:ring-offset-2 motion-reduce:transition-none"
+                    className="group cursor-pointer media-luxe overflow-hidden bg-brand-bg-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-forest focus-visible:ring-offset-2 motion-reduce:transition-none"
                     onClick={() => openViewer(figureIndex)}
                     role="button"
                     tabIndex={0}
@@ -102,13 +102,13 @@ export default function HorseDetailClient({ horse, breadcrumbs, initialPhotoInde
                         <svg viewBox="0 0 24 24" className="h-10 w-10 rounded-full bg-white/90 p-2 text-brand-forest" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4M11 8v6M8 11h6" /></svg>
                       </span>
                     </div>
-                    {item.caption && <figcaption className="p-3 text-sm text-brand-fg-secondary">{item.caption}</figcaption>}
+                    {item.caption && <figcaption className="p-4 text-base leading-7 text-brand-fg-secondary">{item.caption}</figcaption>}
                   </figure>
                 );
               })}
             </div>
           ) : (
-            <p className="text-brand-fg-muted">No additional photos for this horse.</p>
+            <p className="text-base text-brand-fg-secondary">No additional photos for this horse.</p>
           )}
         </div>
       </main>
