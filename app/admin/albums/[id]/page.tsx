@@ -321,7 +321,7 @@ export default function AdminAlbumEditPage() {
           const detail = error instanceof Error ? error.message : 'Unable to generate a description.';
           issues.push(item.label + ': ' + detail);
           // Stop after a configuration or authorization failure; repeating cannot help.
-          if (/not configured|AI connection|session expired|cannot edit/i.test(detail)) break;
+          if (/not connected|OPEE needs|session expired|cannot edit/i.test(detail)) break;
         }
       }
       if (targets.length > selected.length) issues.push('Only 20 photos are processed at a time. Use the button again to describe the remaining photos.');
@@ -343,7 +343,7 @@ export default function AdminAlbumEditPage() {
   const uploadNewMedia = async (): Promise<ManagedMediaItem[]> => {
     if (!newMedia.length) return [];
     const missingAlt = newMedia.find((item) => isGenericAltText(item.altText));
-    if (missingAlt) throw new Error('"' + missingAlt.name + '" needs a meaningful photo description. Select Generate missing descriptions or type what is visible.');
+    if (missingAlt) throw new Error('"' + missingAlt.name + '" needs a meaningful photo description. Select Generate missing descriptions with OPEE or type what is visible.');
 
     const results = await Promise.allSettled(
       newMedia.map(async (item, index) => {
@@ -403,7 +403,7 @@ export default function AdminAlbumEditPage() {
     if (!slug.trim()) throw new Error('Add an album page address. Normally this is created from the album title.');
     if (!categoryId) throw new Error('Choose a category for this album before saving.');
     if (media.some((item) => isGenericAltText(item.altText))) {
-      throw new Error('Some saved photos have missing or vague descriptions. Select Generate missing descriptions or describe what is visible in each photo.');
+      throw new Error('Some saved photos have missing or vague descriptions. Select Generate missing descriptions with OPEE or describe what is visible in each photo.');
     }
     if (newMedia.some((item) => isGenericAltText(item.altText))) {
       throw new Error('Some new photos need descriptions before upload. Select Generate missing descriptions or add them manually. Photos have not been uploaded yet.');
@@ -657,17 +657,17 @@ export default function AdminAlbumEditPage() {
               </label>
             </div>
 
-            {newMedia.length > 0 && <p id="album-photo-description-help" className="mt-3 text-sm text-admin-fg-secondary">Every photo needs a meaningful description before it can be uploaded. Generate missing descriptions with AI or describe the image yourself.</p>}
+            {newMedia.length > 0 && <p id="album-photo-description-help" className="mt-3 text-sm text-admin-fg-secondary">Every photo needs a meaningful description before it can be uploaded. Generate missing descriptions with OPEE or describe the image yourself.</p>}
             {(newMedia.length > 0 || media.some((item) => isGenericAltText(item.altText))) && (
               <div className="mt-4 rounded-lg border border-admin-border-subtle bg-admin-bg-subtle p-4">
                 <div className="flex flex-wrap items-center gap-3">
                   <button type="button" className="btn-admin-secondary" disabled={describing || saving || preparingImages || missingDescriptionCount === 0} onClick={() => void generateMissingDescriptions()}>
-                    {describing ? 'Generating descriptions…' : 'Generate missing descriptions with AI (' + missingDescriptionCount + ')'}
+                    {describing ? 'Generating descriptions…' : 'Generate missing descriptions with OPEE (' + missingDescriptionCount + ')'}
                   </button>
                   {describing && <span role="status" className="text-sm text-admin-fg-secondary">{descriptionProgress}</span>}
                 </div>
                 <p className="mt-2 text-xs leading-5 text-admin-fg-secondary">
-                  This sends only the selected photos needing descriptions, plus the album title, category and summary, to an external AI provider for analysis. Use only when you have permission to process these photos. Suggestions are editable, may be inaccurate, and must be checked before saving and publishing. Existing descriptions are never replaced.
+                  ASCA's OPEE assistant processes only photos needing descriptions together with the album title, category and summary. Use only when you have permission to process these photos. Suggestions are editable, may be inaccurate, and must be checked before saving and publishing. Existing descriptions are never replaced.
                 </p>
               </div>
             )}
