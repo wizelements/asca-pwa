@@ -10,7 +10,7 @@ from unittest.mock import patch
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
-from server import ACTIVE, ATTEMPTS, Handler, vision_request
+from server import ACTIVE, ATTEMPTS, BoundedThreadingHTTPServer, Handler, vision_request
 
 PNG = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
 AUTH = "s" * 48
@@ -30,7 +30,7 @@ BODY = {
 @contextmanager
 def running():
     with patch("server.credentials", return_value=(AUTH, "o" * 48)):
-        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        server = BoundedThreadingHTTPServer(("127.0.0.1", 0), Handler)
         thread = Thread(target=server.serve_forever, daemon=True)
         thread.start()
         try:
@@ -153,6 +153,20 @@ class VisionWorkerTests(unittest.TestCase):
             with redirect_stdout(report):
                 self.assertTrue(certify("http://127.0.0.1:18886/v1/chat/completions", "synthetic"))
             self.assertIn("PASS (2 images", report.getvalue())
+
+    def test_connection_limit_before_authentication(self):
+        server = BoundedThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        try:
+            for _ in range(16):
+                self.assertTrue(server._request_slots.acquire(blocking=False))
+            self.assertFalse(server._request_slots.acquire(blocking=False))
+            with patch.object(server, "shutdown_request") as close:
+                server.process_request(object(), ("127.0.0.1", 1234))
+                close.assert_called_once()
+        finally:
+            for _ in range(16):
+                server._request_slots.release()
+            server.server_close()
 
     def test_rate_limit_is_bounded(self):
         with running() as url, patch("server.send_ollama", return_value="A brown horse stands near a fence.") as model:
