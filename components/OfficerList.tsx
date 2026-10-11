@@ -23,10 +23,10 @@ export default async function OfficerList() {
           className="editorial-card group relative min-h-[190px] p-7 text-left transition-all duration-300"
         >
           <div className="flex items-start justify-between gap-4">
-            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-brand-forest">
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-brand-forest">
               {officer.title}
             </p>
-            <span className="font-serif text-sm italic text-brand-fg-muted/60">{String(index + 1).padStart(2, '0')}</span>
+            <span className="font-serif text-sm italic text-brand-fg-muted">{String(index + 1).padStart(2, '0')}</span>
           </div>
 
           <div className="mt-8 h-px w-10 bg-brand-accent transition-all duration-300 group-hover:w-16" aria-hidden="true" />
@@ -35,7 +35,7 @@ export default async function OfficerList() {
             {officer.name}
           </p>
 
-          <p className="mt-4 text-[9px] font-bold uppercase tracking-[0.2em] text-brand-fg-muted">
+          <p className="mt-4 text-xs font-bold uppercase tracking-[0.12em] text-brand-fg-muted">
             {officer.founding ? 'Founding Member' : 'ASCA Leadership'}
           </p>
         </li>
