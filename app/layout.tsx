@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Poppins, Inter, JetBrains_Mono } from 'next/font/google'
+import { Poppins, Inter, JetBrains_Mono, Cormorant_Garamond } from 'next/font/google'
 import './globals.css'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
 import PwaInstallPrompt from '@/components/PwaInstallPrompt'
@@ -14,6 +14,7 @@ export const revalidate = 60
 const poppins = Poppins({ subsets: ['latin'], weight: ['400', '600', '700', '800'], variable: '--font-poppins' })
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const jetbrains = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains' })
+const cormorant = Cormorant_Garamond({ subsets: ['latin'], weight: ['500', '600', '700'], variable: '--font-cormorant' })
 
 export const metadata: Metadata = {
   applicationName: 'ASCA',
@@ -76,12 +77,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const rootTheme = await getRootThemeCss()
 
   return (
-    <html lang="en" className={`${poppins.variable} ${inter.variable} ${jetbrains.variable}`}>
+    <html lang="en" className={`${poppins.variable} ${inter.variable} ${jetbrains.variable} ${cormorant.variable}`}>
       <head>
         <style>{`
           :root {
             --font-poppins-family: ${poppins.style.fontFamily};
             --font-inter-family: ${inter.style.fontFamily};
+            --font-serif: ${cormorant.style.fontFamily};
             ${rootTheme.css}
           }
         `}</style>
