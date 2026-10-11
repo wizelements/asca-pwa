@@ -146,20 +146,11 @@ export default function ShareAscaCard({
   };
 
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-brand-border-subtle bg-brand-bg-elevated shadow-xl shadow-black/5">
+    <section className="overflow-hidden rounded-2xl border border-brand-forest/10 bg-white shadow-[0_18px_48px_rgba(34,48,38,.08)]">
       <div className="grid lg:grid-cols-[0.95fr_1.05fr]">
-        <div className="relative flex min-h-[30rem] items-center justify-center overflow-hidden bg-brand-forest p-7 sm:p-10">
-          <div
-            className="absolute -left-20 -top-20 h-64 w-64 rounded-full border border-white/10"
-            aria-hidden="true"
-          />
-          <div
-            className="absolute -bottom-28 -right-20 h-80 w-80 rounded-full border border-white/10"
-            aria-hidden="true"
-          />
-
+        <div className="relative flex min-h-[30rem] items-center justify-center overflow-hidden bg-[#17492c] p-7 sm:p-10">
           <div className="relative w-full max-w-sm text-center">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl bg-white p-2 shadow-lg">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 shadow-lg">
               <Image
                 src="/icons/icon-192.png"
                 alt={siteName}
@@ -170,14 +161,14 @@ export default function ShareAscaCard({
               />
             </div>
 
-            <p className="mt-5 text-xs font-bold uppercase tracking-[0.28em] text-brand-accent">
+            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.12em] text-brand-accent">
               {siteName}
             </p>
-            <h2 className="mt-2 font-display text-3xl font-extrabold text-white">
+            <h2 className="mt-2 font-serif text-4xl font-semibold text-white">
               {motto}
             </h2>
 
-            <div className="mx-auto mt-7 w-full max-w-[19rem] rounded-[1.75rem] bg-white p-4 shadow-2xl">
+            <div className="mx-auto mt-7 w-full max-w-[19rem] rounded-2xl bg-white p-4 shadow-xl">
               <Image
                 src="/qr/asca-site.svg"
                 alt={`QR code for the ${siteName} website`}
@@ -189,15 +180,15 @@ export default function ShareAscaCard({
             </div>
 
             <p className="mt-5 text-sm font-semibold text-white">{pageCopy.scanLabel}</p>
-            <p className="mt-1 break-all text-xs text-white/70">{siteUrl.replace(/^https?:\/\//, '')}</p>
+            <p className="mt-2 break-all text-sm text-white/90">{siteUrl.replace(/^https?:\/\//, '')}</p>
           </div>
         </div>
 
         <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-12">
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-brand-forest">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-forest">
             {pageCopy.label}
           </p>
-          <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-brand-fg-primary sm:text-4xl">
+          <h2 className="mt-3 font-serif text-4xl font-semibold tracking-tight text-brand-fg-primary sm:text-5xl">
             {pageCopy.title}
           </h2>
           <p className="mt-4 text-base leading-7 text-brand-fg-secondary">
