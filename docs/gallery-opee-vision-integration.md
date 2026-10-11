@@ -61,3 +61,11 @@ On a failed visual test, hold activation, investigate multimodal forwarding and/
 - Production promotion only after review of all of the above
 
 Source: `app/api/gallery/describe/route.ts`. Work branch: `fix/gallery-album-review-upload-20261011`; PR #15.
+## Hermes native image-routing repair (October 11, 2026)
+
+- An independently isolated Hermes branch fixed the Ollama Cloud model suffix lookup: the unrecognized gemma4:31b-cloud ID previously fell back to a non-native file-analysis path instead of passing image bytes to the vision model.
+- The fix checks the exact model ID first, then (only if unknown and provider is ollama-cloud) consults the trusted catalog metadata for the unsuffixed model. Unrecognized or explicitly disabled vision models still fail closed.
+- **Live evidence:** two synthetic image requests through the patched Hermes worktree correctly identified blue rectangle/white background and red circle/gray background; the second request included a misleading horse-and-pond album title.
+- **Patch:** https://github.com/wizelements/opee/pull/9 (draft, unmerged). Local Hermes commit 530affadb25bdc7e1867026d276b6c3cff2a504d. This does not modify the production Hermes gateway.
+- Four new regression tests passed. Two unrelated WebP/llama.cpp tests also failed in the pre-existing checkout when executed as part of the same larger test sequence; see OPEE PR for comparison.
+- The dedicated ASCA OPEE vision-only web worker is a separate component. Its real public HTTPS ingress, dedicated service credentials, and live worker-to-model caption certification remain unverified. **Do not present the Hermes CLI test as end-to-end ASCA integration.**
