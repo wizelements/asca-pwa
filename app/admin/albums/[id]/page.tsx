@@ -48,17 +48,17 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error('Unable to read this image. Use JPG, PNG, or WebP.'));
+    image.onerror = () => reject(new Error('The browser could not open this image. It may be damaged or unsupported; try exporting it as JPG or PNG.'));
     image.src = src;
   });
 }
 
 async function optimizeImage(file: File): Promise<string> {
   if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-    throw new Error(file.name + ': unsupported image format.');
+    throw new Error('This file is not a JPG, PNG or WebP photo. Convert it to a supported format and try again.');
   }
   if (file.size > MAX_UPLOAD_SIZE_BYTES) {
-    throw new Error(file.name + ': image is larger than 8 MB.');
+    throw new Error('The original photo exceeds 8 MB. Reduce its file size and select it again.');
   }
 
   const objectUrl = URL.createObjectURL(file);
@@ -457,7 +457,9 @@ export default function AdminAlbumEditPage() {
     const result = await res.json().catch(() => ({}));
     if (!res.ok) {
       if (uploaded.length) await Promise.all(uploaded.map((item) => deleteUnattachedAsset(item.mediaAssetId)));
-      const message = typeof result.error === 'string' ? result.error : 'Unable to save album.';
+      const details = result.error && typeof result.error === 'object' ? result.error : null;
+      const validationText = details ? [ ...(Array.isArray(details.formErrors) ? details.formErrors : []), ...Object.values(details.fieldErrors || {}).flat().filter((value): value is string => typeof value === 'string') ].join(' ') : '';
+      const message = typeof result.error === 'string' ? result.error : validationText || (res.status === 413 ? 'Too many photos or too much data at once. Save fewer photos at a time.' : res.status === 403 ? 'Your account cannot save albums. Ask an ASCA administrator to check your permissions.' : res.status >= 500 ? 'The site could not confirm this save. Check the album list before retrying to avoid duplicates.' : 'Unable to save this album. Check the form and try again.');
       throw new Error(message);
     }
 
@@ -476,7 +478,7 @@ export default function AdminAlbumEditPage() {
     setPhotoIssues([]);
     try {
       const result = await saveAlbum();
-      toast.success(isNew ? 'Album draft created' : 'Album changes saved');
+      toast.success(isNew ? 'Album and photos saved as a private draft. An administrator must review privacy and publish it.' : 'Photo and album changes saved. Publishing is a separate approval step.');
       if (isNew) router.replace('/admin/albums/' + result.id);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unable to save album.';
