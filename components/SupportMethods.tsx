@@ -39,10 +39,10 @@ export default function SupportMethods() {
       {methods.map((method, index) => (
         <article key={method.label} className="editorial-card p-7 text-left md:p-8">
           <div className="flex items-center justify-between gap-4">
-            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-brand-forest">
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-brand-forest">
               Direct Giving
             </p>
-            <span className="font-serif text-sm italic text-brand-fg-muted/60">{String(index + 1).padStart(2, '0')}</span>
+            <span className="font-serif text-sm italic text-brand-fg-muted">{String(index + 1).padStart(2, '0')}</span>
           </div>
           <h3 className="mt-7 font-serif text-2xl font-medium text-brand-fg-primary">
             {method.label}
