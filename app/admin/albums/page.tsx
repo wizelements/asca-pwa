@@ -209,9 +209,9 @@ export default function AdminAlbumsPage() {
                             </button>
                           )}
                           {isAdmin && album.status === 'draft' && (
-                            <button onClick={() => action(album.id, 'publish')} className="rounded-md bg-green-100 px-2.5 py-1 text-xs font-medium text-green-900 hover:bg-green-200">
-                              Publish
-                            </button>
+                            <Link href={'/admin/albums/' + album.id} className="rounded-md bg-green-100 px-2.5 py-1 text-xs font-medium text-green-900 hover:bg-green-200">
+                              Review &amp; publish
+                            </Link>
                           )}
                           {isAdmin && album.status !== 'archived' && (
                             <button onClick={() => action(album.id, 'archive')} className="rounded-md bg-admin-bg-subtle px-2.5 py-1 text-xs font-medium text-admin-fg-secondary hover:bg-admin-border-subtle">
