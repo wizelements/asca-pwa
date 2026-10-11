@@ -7,6 +7,7 @@ import MediaManager, { type ManagedMediaItem } from '@/components/gallery/MediaM
 import { useToast } from '@/components/admin/ToastProvider';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { slugify } from '@/lib/gallery/slug';
+import { isGenericAltText } from '@/lib/gallery/validation';
 
 interface Category {
   id: number;
@@ -25,6 +26,18 @@ interface PendingMedia {
   dataUrl: string;
   altText: string;
   caption: string;
+}
+
+function savedPhotoSignature(items: ManagedMediaItem[], cover: string | null): string {
+  return JSON.stringify({
+    cover,
+    items: items.map((item) => ({
+      id: item.mediaAssetId,
+      altText: item.altText,
+      caption: item.caption ?? null,
+      sortOrder: item.sortOrder,
+    })),
+  });
 }
 
 const MAX_UPLOAD_SIZE_BYTES = 8 * 1024 * 1024;
@@ -93,6 +106,7 @@ export default function AdminAlbumEditPage() {
   const [coverId, setCoverId] = useState<string | null>(null);
   const [media, setMedia] = useState<ManagedMediaItem[]>([]);
   const [originalMediaIds, setOriginalMediaIds] = useState<string[]>([]);
+  const [savedMediaSignature, setSavedMediaSignature] = useState('');
   const [newMedia, setNewMedia] = useState<PendingMedia[]>([]);
   const [preparingImages, setPreparingImages] = useState(false);
 
@@ -105,6 +119,18 @@ export default function AdminAlbumEditPage() {
     () => originalMediaIds.filter((mediaAssetId) => !media.some((item) => item.mediaAssetId === mediaAssetId)),
     [originalMediaIds, media]
   );
+  const hasUnsavedPhotoChanges = newMedia.length > 0 || savedPhotoSignature(media, coverId) !== savedMediaSignature;
+  const publicationBlockers = useMemo(() => {
+    const reasons: string[] = [];
+    if (privacyReviewStatus === 'pending') reasons.push('Privacy review is pending. An administrator must review permissions and approve this album.');
+    if (privacyReviewStatus === 'restricted') reasons.push('This album is restricted. Confirm permission before changing its privacy status.');
+    if (!media.length) reasons.push('Add at least one photo and save the album.');
+    if (!coverId || !media.some((item) => item.mediaAssetId === coverId)) reasons.push('Choose an attached cover photo, then save.');
+    if (media.some((item) => isGenericAltText(item.altText))) reasons.push('Every photo needs descriptive alt text. Update vague or missing descriptions and save.');
+    if (!categories.some((item) => String(item.id) === categoryId)) reasons.push('Choose an active album category and save.');
+    if (hasUnsavedPhotoChanges) reasons.push('Save the current photo edits before publishing.');
+    return reasons;
+  }, [privacyReviewStatus, media, coverId, categories, categoryId, hasUnsavedPhotoChanges]);
 
   useEffect(() => {
     void fetchCategories();
@@ -175,6 +201,7 @@ export default function AdminAlbumEditPage() {
     setCoverId(data.coverMediaAssetId || nextMedia[0]?.mediaAssetId || null);
     setMedia(nextMedia);
     setOriginalMediaIds(nextMedia.map((item) => item.mediaAssetId));
+    setSavedMediaSignature(savedPhotoSignature(nextMedia, data.coverMediaAssetId || nextMedia[0]?.mediaAssetId || null));
   };
 
   const fetchAlbum = async () => {
@@ -569,6 +596,13 @@ export default function AdminAlbumEditPage() {
           </div>
         </form>
 
+        {!isNew && !isAdmin && privacyReviewStatus === 'pending' && (
+          <p role="status" className="rounded-xl border border-admin-border-subtle bg-admin-bg-subtle p-4 text-sm text-admin-fg-secondary">
+            Your album may be saved as a draft. Only an administrator can approve the privacy review and publish it.
+            Save your photo descriptions, then ask an ASCA administrator to review the album.
+          </p>
+        )}
+
         {!isNew && isAdmin && (
           <section className="rounded-xl border border-admin-border-subtle bg-admin-surface p-5">
             <h2 className="text-lg font-bold text-admin-fg-primary">Review & publication</h2>
@@ -589,15 +623,31 @@ export default function AdminAlbumEditPage() {
               </div>
             </dl>
 
-            <div className="mt-5 flex flex-wrap gap-2">
-              <button type="button" disabled={saving} className="btn-admin-secondary" onClick={() => performAction('setPrivacy', { privacyReviewStatus: 'approved' })}>Approve privacy</button>
-              <button type="button" disabled={saving} className="btn-admin-secondary" onClick={() => performAction('setPrivacy', { privacyReviewStatus: 'not_required' })}>No privacy review needed</button>
-              <button type="button" disabled={saving} className="btn-admin-secondary" onClick={() => performAction('setPrivacy', { privacyReviewStatus: 'restricted' })}>Restrict</button>
+            {publicationBlockers.length > 0 ? (
+              <div role="status" className="mt-5 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
+                <p className="font-semibold">Before this album can be published:</p>
+                <ul className="mt-2 list-disc space-y-1 pl-5">
+                  {publicationBlockers.map((reason) => <li key={reason}>{reason}</li>)}
+                </ul>
+              </div>
+            ) : (
+              <p role="status" className="mt-5 text-sm font-semibold text-admin-fg-primary">
+                Privacy and photo requirements are satisfied. This saved album is ready to publish.
+              </p>
+            )}
+
+            <p className="mt-5 text-sm text-admin-fg-secondary">
+              Review consent and permissions before approving privacy. Save photo edits first; privacy actions reload the saved album.
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <button type="button" disabled={saving || hasUnsavedPhotoChanges} className="btn-admin-secondary" onClick={() => performAction('setPrivacy', { privacyReviewStatus: 'approved' })}>Approve privacy</button>
+              <button type="button" disabled={saving || hasUnsavedPhotoChanges} className="btn-admin-secondary" onClick={() => performAction('setPrivacy', { privacyReviewStatus: 'not_required' })}>No privacy review needed</button>
+              <button type="button" disabled={saving || hasUnsavedPhotoChanges} className="btn-admin-secondary" onClick={() => performAction('setPrivacy', { privacyReviewStatus: 'restricted' })}>Restrict</button>
             </div>
 
             <div className="mt-4 flex flex-wrap gap-2">
               {status !== 'published' && status !== 'archived' && (
-                <button type="button" disabled={saving} className="btn-admin-primary" onClick={() => performAction('publish')}>Publish album</button>
+                <button type="button" disabled={saving || publicationBlockers.length > 0} className="btn-admin-primary" onClick={() => performAction('publish')}>Publish album</button>
               )}
               {status === 'archived' ? (
                 <button type="button" disabled={saving} className="btn-admin-secondary" onClick={() => performAction('restore')}>Restore to draft</button>
