@@ -60,7 +60,7 @@ export default async function About() {
                 <p className="mt-6 text-base leading-8 text-brand-fg-secondary md:text-lg md:leading-9">
                   {siteText(copy, 'about.history.body')}
                 </p>
-                <div className="mt-8 flex items-center gap-4 text-[10px] font-bold uppercase tracking-[0.22em] text-brand-fg-muted">
+                <div className="mt-8 flex items-center gap-4 text-xs font-bold uppercase tracking-[0.12em] text-brand-fg-muted">
                   <span className="h-px w-10 bg-brand-accent" aria-hidden="true" />
                   Atlanta · Since 2020
                 </div>
@@ -100,13 +100,13 @@ export default async function About() {
         <section className="forest-luxe relative overflow-hidden py-24 text-white md:py-28">
           <div className="absolute inset-[14px] rounded-[1.5rem] border border-brand-accent/15" aria-hidden="true" />
           <div className="container relative z-10 max-w-4xl text-center">
-            <p className="heritage-rule justify-center text-[10px] font-bold uppercase tracking-[0.24em] text-brand-accent">
+            <p className="heritage-rule justify-center text-xs font-bold uppercase tracking-[0.12em] text-brand-accent">
               {siteText(copy, 'about.join.label')}
             </p>
             <h2 className="mt-7 font-serif text-4xl font-medium tracking-tight md:text-6xl">
               {siteText(copy, 'about.join.title')}
             </h2>
-            <p className="mx-auto mt-6 max-w-3xl text-base leading-8 text-white/72 md:text-lg md:leading-9">
+            <p className="mx-auto mt-6 max-w-3xl text-base leading-8 text-white/90 md:text-lg md:leading-9">
               {siteText(copy, 'about.join.body')}{' '}
               We meet on the {siteText(copy, 'shared.meeting.cadence')} at {siteText(copy, 'shared.meeting.time')} at{' '}
               {siteText(copy, 'shared.meeting.venue')}, {siteText(copy, 'shared.meeting.address')}.
