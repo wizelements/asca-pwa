@@ -127,7 +127,7 @@ export default async function Home() {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#0d1f14]/90 via-[#0d1f14]/20 to-transparent" />
                       <div className="absolute inset-x-0 bottom-0 z-10 p-6">
-                        <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.22em] text-brand-accent">ASCA Field Notes</p>
+                        <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-brand-accent">ASCA Field Notes</p>
                         <span className="font-serif text-2xl font-medium text-white">{album.title}</span>
                       </div>
                     </Link>
@@ -150,7 +150,7 @@ export default async function Home() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#0d1f14]/90 via-[#0d1f14]/20 to-transparent" />
                         <div className="absolute inset-x-0 bottom-0 z-10 p-6">
-                          <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.22em] text-brand-accent">ASCA Field Notes</p>
+                          <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-brand-accent">ASCA Field Notes</p>
                           <span className="font-serif text-2xl font-medium text-white">{activity.title}</span>
                         </div>
                       </Link>
@@ -184,13 +184,13 @@ export default async function Home() {
         <section className="forest-luxe relative overflow-hidden py-24 text-white md:py-28">
           <div className="absolute inset-[14px] rounded-[1.5rem] border border-brand-accent/15" aria-hidden="true" />
           <div className="container relative z-10 text-center">
-            <p className="heritage-rule justify-center text-[10px] font-bold uppercase tracking-[0.24em] text-brand-accent">
+            <p className="heritage-rule justify-center text-xs font-bold uppercase tracking-[0.12em] text-brand-accent">
               {siteText(copy, 'home.final.label')}
             </p>
             <h2 className="mx-auto mt-7 max-w-4xl font-serif text-4xl font-medium leading-tight tracking-tight md:text-6xl">
               {siteText(copy, 'home.final.title')}
             </h2>
-            <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-white/72 md:text-lg">
+            <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-white/90 md:text-lg">
               {siteText(copy, 'home.final.body')}
             </p>
             <div className="mt-9 flex flex-wrap justify-center gap-4">
