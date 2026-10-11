@@ -64,7 +64,7 @@ export default async function Home() {
           <div className="container max-w-5xl">
             <div className="mx-auto mb-10 max-w-2xl text-center">
               <p className="section-label">Gather · Ride · Serve</p>
-              <h2 className="font-serif text-3xl font-medium tracking-tight text-brand-fg-primary md:text-4xl">
+              <h2 className="font-serif text-3xl font-semibold tracking-tight text-brand-fg-primary md:text-4xl">
                 A club built around horses, fellowship, and standards that endure.
               </h2>
             </div>
@@ -89,7 +89,7 @@ export default async function Home() {
           <div className="container">
             <div className="mx-auto max-w-3xl text-center">
               <p className="section-label">{siteText(copy, 'home.purpose.label')}</p>
-              <h2 className="font-serif text-4xl font-medium tracking-tight text-brand-fg-primary md:text-5xl">
+              <h2 className="font-serif text-4xl font-semibold tracking-tight text-brand-fg-primary md:text-5xl">
                 {siteText(copy, 'home.purpose.title')}
               </h2>
               <div className="mx-auto mt-6 h-px w-20 bg-brand-accent" aria-hidden="true" />
@@ -102,7 +102,7 @@ export default async function Home() {
           <div className="container">
             <div className="mx-auto mb-14 max-w-3xl text-center">
               <p className="section-label">In the saddle · In the community</p>
-              <h2 className="font-serif text-4xl font-medium tracking-tight text-brand-fg-primary md:text-5xl">
+              <h2 className="font-serif text-4xl font-semibold tracking-tight text-brand-fg-primary md:text-5xl">
                 {siteText(copy, 'home.activities.title')}
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-brand-fg-secondary">
@@ -127,8 +127,7 @@ export default async function Home() {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#0d1f14]/90 via-[#0d1f14]/20 to-transparent" />
                       <div className="absolute inset-x-0 bottom-0 z-10 p-6">
-                        <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-brand-accent">ASCA Field Notes</p>
-                        <span className="font-serif text-2xl font-medium text-white">{album.title}</span>
+                        <span className="font-serif text-2xl font-semibold text-white">{album.title}</span>
                       </div>
                     </Link>
                   ))
@@ -150,8 +149,7 @@ export default async function Home() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#0d1f14]/90 via-[#0d1f14]/20 to-transparent" />
                         <div className="absolute inset-x-0 bottom-0 z-10 p-6">
-                          <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-brand-accent">ASCA Field Notes</p>
-                          <span className="font-serif text-2xl font-medium text-white">{activity.title}</span>
+                            <span className="font-serif text-2xl font-semibold text-white">{activity.title}</span>
                         </div>
                       </Link>
                     );
@@ -170,7 +168,7 @@ export default async function Home() {
           <div className="container max-w-4xl">
             <div className="editorial-card px-6 py-10 text-center sm:px-10 md:px-14 md:py-14">
               <p className="section-label">{siteText(copy, 'home.updates.label')}</p>
-              <h2 className="font-serif text-4xl font-medium tracking-tight text-brand-fg-primary md:text-5xl">
+              <h2 className="font-serif text-4xl font-semibold tracking-tight text-brand-fg-primary md:text-5xl">
                 {siteText(copy, 'home.updates.title')}
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-brand-fg-secondary">
@@ -182,12 +180,11 @@ export default async function Home() {
         </section>
 
         <section className="forest-luxe relative overflow-hidden py-24 text-white md:py-28">
-          <div className="absolute inset-[14px] rounded-[1.5rem] border border-brand-accent/15" aria-hidden="true" />
           <div className="container relative z-10 text-center">
             <p className="heritage-rule justify-center text-xs font-bold uppercase tracking-[0.12em] text-brand-accent">
               {siteText(copy, 'home.final.label')}
             </p>
-            <h2 className="mx-auto mt-7 max-w-4xl font-serif text-4xl font-medium leading-tight tracking-tight md:text-6xl">
+            <h2 className="mx-auto mt-7 max-w-4xl font-serif text-4xl font-semibold leading-tight tracking-tight md:text-6xl">
               {siteText(copy, 'home.final.title')}
             </h2>
             <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-white/90 md:text-lg">
