@@ -17,7 +17,7 @@ interface HorsesPageProps {
 }
 
 export const metadata: Metadata = {
-  title: 'Our Horses | ASCA',
+  title: 'Our Horses',
   description: 'Meet the horses of the Atlanta Saddle Club Association.',
 };
 
