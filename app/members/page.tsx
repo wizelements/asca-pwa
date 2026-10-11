@@ -99,7 +99,7 @@ export default async function Members() {
               {siteList(copy, 'members.reasons.items').map((reason, index) => (
                 <article key={reason} className="editorial-card group min-h-[165px] p-7">
                   <div className="flex items-center justify-between gap-4">
-                    <span className="font-serif text-sm italic text-brand-fg-muted/60">
+                    <span className="font-serif text-sm italic text-brand-fg-muted">
                       {String(index + 1).padStart(2, '0')}
                     </span>
                     <span className="h-px flex-1 bg-brand-accent/55" aria-hidden="true" />
@@ -123,14 +123,14 @@ export default async function Members() {
             <div className="grid grid-cols-1 gap-px overflow-hidden rounded-[1.5rem] border border-brand-forest/10 bg-brand-forest/10 sm:grid-cols-2 lg:grid-cols-3">
               {publicFacts.map((fact, index) => (
                 <article key={fact.label} className="bg-[#fbfaf6] p-7 md:p-8">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-brand-forest">
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-brand-forest">
                     {fact.label}
                   </p>
                   <div className="mt-5 h-px w-10 bg-brand-accent" aria-hidden="true" />
                   <p className="mt-5 font-serif text-2xl font-medium leading-snug text-brand-fg-primary">
                     {fact.value}
                   </p>
-                  <p className="mt-5 text-[9px] font-bold uppercase tracking-[0.2em] text-brand-fg-muted">
+                  <p className="mt-5 text-xs font-bold uppercase tracking-[0.12em] text-brand-fg-muted">
                     ASCA · {String(index + 1).padStart(2, '0')}
                   </p>
                 </article>
@@ -142,13 +142,13 @@ export default async function Members() {
         <section className="forest-luxe relative overflow-hidden py-24 text-white md:py-28">
           <div className="absolute inset-[14px] rounded-[1.5rem] border border-brand-accent/15" aria-hidden="true" />
           <div className="container relative z-10 max-w-4xl text-center">
-            <p className="heritage-rule justify-center text-[10px] font-bold uppercase tracking-[0.24em] text-brand-accent">
+            <p className="heritage-rule justify-center text-xs font-bold uppercase tracking-[0.12em] text-brand-accent">
               Membership
             </p>
             <h2 className="mt-7 font-serif text-4xl font-medium tracking-tight md:text-6xl">
               {siteText(copy, 'members.final.title')}
             </h2>
-            <p className="mx-auto mt-6 max-w-3xl text-base leading-8 text-white/72 md:text-lg md:leading-9">
+            <p className="mx-auto mt-6 max-w-3xl text-base leading-8 text-white/90 md:text-lg md:leading-9">
               {siteText(copy, 'members.final.body')}
             </p>
             <div className="mt-9 flex flex-wrap justify-center gap-4">
