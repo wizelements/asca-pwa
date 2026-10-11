@@ -47,7 +47,7 @@ export default async function HorsesPage({ searchParams }: HorsesPageProps) {
           title={siteText(copy, 'horses.hero.title')}
           subtitle={siteText(copy, 'horses.hero.subtitle')}
         />
-        <section className="bg-brand-bg-subtle py-20">
+        <section className="quiet-luxe py-24 md:py-28">
           <div className="container">
             <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Horses' }]} />
             {horses.length > 0 ? (
@@ -56,7 +56,7 @@ export default async function HorsesPage({ searchParams }: HorsesPageProps) {
                   <Link
                     key={horse.id}
                     href={`/horses/${horse.slug}`}
-                    className="group block overflow-hidden rounded-xl bg-brand-bg-elevated shadow-sm transition hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-forest focus-visible:ring-offset-2 motion-reduce:transition-none"
+                    className="media-luxe group block overflow-hidden bg-brand-bg-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-forest focus-visible:ring-offset-2"
                   >
                     {horse.primaryUrl ? (
                       <Image
@@ -64,16 +64,17 @@ export default async function HorsesPage({ searchParams }: HorsesPageProps) {
                         alt={horse.name}
                         width={600}
                         height={450}
-                        className="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none"
+                        className="aspect-[4/3] w-full object-cover transition-transform duration-700 group-hover:scale-[1.04] motion-reduce:transform-none motion-reduce:transition-none"
                         loading="lazy"
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
                     ) : (
                       <div className="aspect-[4/3] w-full bg-brand-bg-subtle" />
                     )}
-                    <div className="p-4">
-                      <h3 className="text-lg font-bold text-brand-fg-primary">{horse.name}</h3>
-                      {horse.description && <p className="mt-1 line-clamp-2 text-sm text-brand-fg-secondary">{horse.description}</p>}
+                    <div className="border-t border-brand-forest/10 p-5">
+                      <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-brand-forest">ASCA Horse</p>
+                      <h3 className="mt-2 font-serif text-2xl font-medium text-brand-fg-primary">{horse.name}</h3>
+                      {horse.description && <p className="mt-2 line-clamp-2 text-sm leading-6 text-brand-fg-secondary">{horse.description}</p>}
                     </div>
                   </Link>
                 ))}
