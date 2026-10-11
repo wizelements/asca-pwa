@@ -50,7 +50,7 @@ const sections = [
     label: 'Gallery albums',
     href: '/admin/albums',
     purpose: 'The canonical public photo-album system for ASCA activities.',
-    workflow: 'Create a draft, upload photos, write alt text/captions, choose a cover, save, complete privacy review, then publish. Archive instead of deleting when you only want to remove an album from public view.',
+    workflow: 'Create a draft, select photos and generate missing alt descriptions with AI or enter them manually, review descriptions, choose a cover and save. Admins must separately review photo permissions/privacy before publishing. The editor explains missing fields, upload failures and AI errors, with correction steps. Archive instead of deleting when you want to remove public content.',
     publicEffect: 'Published albums and featured albums appear publicly. Drafts, archived albums, and restricted content do not.',
   },
   {
