@@ -156,7 +156,7 @@ function AlbumCard({ album }: { album: AlbumRecord }) {
       href={`/gallery/${album.slug}`}
       className="media-luxe group block overflow-hidden bg-brand-bg-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-forest focus-visible:ring-offset-2"
     >
-      <div className="relative">
+      <div className="relative overflow-hidden">
       {album.coverUrl ? (
         <Image
           src={album.coverUrl}
@@ -170,7 +170,8 @@ function AlbumCard({ album }: { album: AlbumRecord }) {
       ) : (
         <div className="aspect-[4/3] w-full bg-brand-bg-subtle" />
       )}
-        <span aria-hidden="true" className="absolute bottom-3 right-3 rounded-full bg-black/70 px-2.5 py-1 text-xs font-medium text-white">{album.mediaCount} photos</span>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0d1f14]/28 via-transparent to-transparent" aria-hidden="true" />
+        <span aria-hidden="true" className="absolute bottom-3 right-3 rounded-full border border-white/15 bg-[#0d1f14]/72 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-sm">{album.mediaCount} photos</span>
         <span className="sr-only">{album.mediaCount} photos</span>
       </div>
       <div className="border-t border-brand-forest/10 p-5">
@@ -220,7 +221,7 @@ async function NewGallery({ selectedCategory, page }: { selectedCategory?: strin
             <Link
               href="/gallery"
               aria-current={!selectedCategory ? 'true' : undefined}
-              className={`flex min-h-[44px] shrink-0 snap-start items-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ${!selectedCategory ? 'bg-brand-forest text-white' : 'bg-brand-bg-elevated text-brand-fg-primary'}`}
+              className={`flex min-h-[44px] shrink-0 snap-start items-center whitespace-nowrap rounded-full border px-5 py-2 text-[11px] font-bold uppercase tracking-[0.12em] transition ${!selectedCategory ? 'border-brand-forest bg-brand-forest text-white' : 'border-brand-forest/10 bg-white text-brand-fg-primary hover:border-brand-forest/30'}`}
             >
               All
             </Link>
