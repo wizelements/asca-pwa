@@ -182,7 +182,10 @@ class Handler(BaseHTTPRequestHandler):
         finally:
             ACTIVE.release()
 
-    do_PUT = do_PATCH = do_DELETE = do_OPTIONS = do_POST_NOT_ALLOWED = None
+    def do_PUT(self) -> None:
+        self.reply(405, {"error": {"message": "Only photo descriptions are supported."}})
+
+    do_PATCH = do_DELETE = do_OPTIONS = do_PUT
 
 
 def main() -> None:
