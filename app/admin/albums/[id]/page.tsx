@@ -560,7 +560,7 @@ export default function AdminAlbumEditPage() {
             <div className="mt-5 space-y-5">
               <div>
                 <label className="block text-sm font-semibold text-admin-fg-secondary">Album title</label>
-                <input className="form-input mt-1" value={title} onChange={(event) => handleTitleChange(event.target.value)} required />
+                <input className="form-input mt-1" value={title} onChange={(event) => handleTitleChange(event.target.value)} />
               </div>
 
               <div>
@@ -571,7 +571,6 @@ export default function AdminAlbumEditPage() {
                     className="min-w-0 flex-1 border-0 bg-transparent px-1 py-2 text-sm text-admin-fg-primary outline-none"
                     value={slug}
                     onChange={(event) => { setSlugTouched(true); setSlug(slugify(event.target.value)); }}
-                    required
                     aria-label="Gallery page URL"
                   />
                 </div>
@@ -581,7 +580,7 @@ export default function AdminAlbumEditPage() {
               <div className="grid gap-5 md:grid-cols-2">
                 <div>
                   <label className="block text-sm font-semibold text-admin-fg-secondary">Category</label>
-                  <select className="form-input mt-1" value={categoryId} onChange={(event) => setCategoryId(event.target.value)} required>
+                  <select className="form-input mt-1" value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>
                     <option value="">Choose a category</option>
                     {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
                   </select>
