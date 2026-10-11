@@ -3,7 +3,7 @@ import { getDb } from '../../db.ts';
 
 export type DbClient = Pick<Client, 'execute'>;
 
-export function getDbClient(): DbClient {
+export function getDbClient(): Client {
   return getDb();
 }
 
