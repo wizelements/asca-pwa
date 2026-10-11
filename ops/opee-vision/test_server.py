@@ -106,6 +106,46 @@ class VisionWorkerTests(unittest.TestCase):
             self.assertEqual(status, 503)
             self.assertEqual(result["error"]["message"], "OPEE vision analysis is temporarily unavailable.")
 
+    def test_cloud_provider_model_is_restricted(self):
+        from io import BytesIO
+        from server import send_ollama
+        body = json.dumps({"message": {"content": "A blue rectangle on a white background."}}).encode()
+        with patch("server.urlopen") as transport:
+            transport.return_value.__enter__.return_value = BytesIO(body)
+            with patch.dict("server.os.environ", {"OPEE_VISION_MODEL": "gemma4:31b-cloud"}):
+                answer = send_ollama("Describe this picture.", PNG, "provider-token-never-logged")
+            self.assertIn("blue rectangle", answer)
+            sent = json.loads(transport.call_args.args[0].data)
+            self.assertEqual(sent["model"], "gemma4:31b-cloud")
+            self.assertEqual(sent["messages"][1]["images"], [PNG])
+            self.assertFalse(sent["messages"][0].get("tools"))
+            transport.reset_mock()
+            with patch.dict("server.os.environ", {"OPEE_VISION_MODEL": "unapproved-text-only-model"}):
+                with self.assertRaises(ValueError):
+                    send_ollama("Describe.", PNG, "provider-token-never-logged")
+            transport.assert_not_called()
+
+    def test_certification_rejects_vision_hallucination_and_accepts_grounded_output(self):
+        from certify import certify
+        from urllib.error import HTTPError
+        with patch("certify.request_description") as infer:
+            infer.side_effect = [
+                HTTPError("http://127.0.0.1:18886/v1/chat/completions", 401,
+                          "unauthorized", {}, None),
+                "A solid blue background fills the frame.",
+                "A red circle on a grey background.",
+            ]
+            self.assertFalse(certify("http://127.0.0.1:18886/v1/chat/completions", "synthetic"))
+            self.assertEqual(infer.call_count, 3)
+        with patch("certify.request_description") as infer:
+            infer.side_effect = [
+                HTTPError("http://127.0.0.1:18886/v1/chat/completions", 401,
+                          "unauthorized", {}, None),
+                "A blue rectangle on a white background.",
+                "A red circle on a gray background.",
+            ]
+            self.assertTrue(certify("http://127.0.0.1:18886/v1/chat/completions", "synthetic"))
+
     def test_rate_limit_is_bounded(self):
         with running() as url, patch("server.send_ollama", return_value="A brown horse stands near a fence.") as model:
             with __import__("server").LOCK:
