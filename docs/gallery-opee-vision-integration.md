@@ -41,6 +41,17 @@ The site has **no direct OpenAI API integration** for gallery descriptions and n
 - `ops/opee-vision/asca-vision.service`: least-privilege systemd unit template with separate credentials
 - `ops/opee-vision/caddy-snippet.caddy`: exact-path HTTPS ingress template, without modifying other OPEE routes
 - `.github/workflows/e2e.yml`: integration test gate
+## Visual grounding incident and mandatory certification (October 11, 2026)
+
+A live Hermes CLI test with a valid synthetic PNG returned an incorrect description. The verified PNG has white corners (255,255,255) and a blue rectangular center (25,85,238). Hermes's configured gemma4:31b Ollama Cloud route described a solid blue background and missed the white border in two requests. The cause may be a multimodal transport defect or model perception error; it is not verified. Vision model metadata and API health are not sufficient to certify accuracy.
+
+The dedicated image worker now pins cloud-qualified allowlisted vision identifiers (default gemma4:31b-cloud; optional qwen3-vl:235b-cloud). Direct worker-to-cloud image analysis has NOT been tested with real service credentials.
+
+Once an authorized operator installs the service and its secrets, run the Python file ops/opee-vision/certify.py using the systemd CREDENTIALS_DIRECTORY service secrets. Do not paste the secrets into commands, logs or chat.
+
+The certification script rejects invalid bearer credentials, evaluates a synthetic blue rectangle with a white background and a red circle on a gray background, includes a deliberately false album title (horses by a pond), and fails closed unless BOTH output descriptions show the visible colors and shape without invented horses or pond. A live 2/2 PASS and human inspection of a permitted real album image are mandatory before setting Vercel Preview OPEE_ASCA_VISION_URL / OPEE_ASCA_VISION_TOKEN.
+
+On a failed visual test, hold activation, investigate multimodal forwarding and/or select another approved vision model. Do not silently fall back to OpenAI or mark the gallery AI complete.
 ## Release proof
 
 - Vercel build success on the branch
