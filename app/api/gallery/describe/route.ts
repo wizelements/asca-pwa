@@ -69,8 +69,18 @@ export async function POST(request: NextRequest) {
       return jsonError(415, 'The photo could not be read. Try a standard JPG, PNG or WebP image, or enter the description yourself.');
     }
 
+    const attempts = await getDbClient().execute({
+      sql: "SELECT COUNT(*) AS total FROM activities WHERE type = 'gallery_ai_description_request' AND user = ? AND timestamp >= unixepoch() - 600",
+      args: [user.email],
+    });
+    if (Number(attempts.rows[0]?.total ?? 0) >= 60) {
+      return jsonError(429, 'You have reached the AI photo-description limit for now. Try again in 10 minutes, or enter the descriptions manually.');
+    }
+
     const key = process.env.OPENAI_API_KEY;
     if (!key) return jsonError(503, 'AI descriptions are not configured on this site. Please ask the site administrator to enable the feature, or enter descriptions manually.');
+
+    await logActivity('gallery_ai_description_request', 'Requested AI description of a gallery photo', user.email);
 
     const prompt = [
       'Write accessible alt text for this actual photograph on the Atlanta Saddle Club website.',
@@ -124,7 +134,6 @@ export async function POST(request: NextRequest) {
       return jsonError(422, 'AI could not create a reliable description for this photo. Please write a short description of what is visible.');
     }
 
-    await logActivity('gallery_ai_description', 'Suggested an album photo description for staff review', user.email);
     return NextResponse.json({ description, reviewRequired: true }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : '';
