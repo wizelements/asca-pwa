@@ -90,7 +90,9 @@ def vision_request(payload: object) -> tuple[str, str]:
 
 
 def send_ollama(prompt: str, image_b64: str, provider_key: str) -> str:
-    model = os.environ.get("OPEE_VISION_MODEL", "gemma4:31b")
+    model = os.environ.get("OPEE_VISION_MODEL", "gemma4:31b-cloud")
+    if model not in {"gemma4:31b-cloud", "qwen3-vl:235b-cloud"}:
+        raise ValueError("OPEE vision model is not on the approved vision-only allowlist.")
     instruction = (
         "You are OPEE's restricted photo accessibility specialist. You have no tools. "
         "Describe ONLY what is visible in the image. Use album context as a clue, "
