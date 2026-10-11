@@ -28,21 +28,21 @@ export default function AlbumDetailClient({ album, breadcrumbs, initialPhotoInde
 
   return (
     <>
-      <main className="min-h-screen bg-brand-bg-subtle py-10 md:py-16">
+      <main className="quiet-luxe min-h-screen py-12 md:py-20">
         <div className="container">
           <div className="mb-8">
             {breadcrumbs}
             <Link
               href="/gallery"
-              className="mb-5 inline-flex min-h-[44px] items-center rounded-lg px-3 text-sm font-semibold text-brand-forest hover:bg-brand-bg-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-forest"
+              className="mb-6 inline-flex min-h-[44px] items-center text-sm font-semibold text-brand-forest hover:text-brand-forest-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-forest"
             >
               ← Back to Gallery
             </Link>
 
             <p className="section-label">{album.category?.name || 'Gallery'}</p>
-            <h1 className="section-title">{album.title}</h1>
+            <h1 className="font-serif text-5xl font-semibold tracking-tight text-brand-fg-primary md:text-6xl">{album.title}</h1>
 
-            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-brand-fg-muted">
+            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-base text-brand-fg-secondary">
               {album.activityDate && <span>{album.activityDate.toLocaleDateString()}</span>}
               {album.location && <span>{album.location}</span>}
               <span>{images.length} {images.length === 1 ? 'photo' : 'photos'}</span>
@@ -56,9 +56,9 @@ export default function AlbumDetailClient({ album, breadcrumbs, initialPhotoInde
           </div>
 
           {album.relatedEvent && (
-            <aside className="mb-8 rounded-xl border border-brand-border-subtle bg-brand-bg-elevated p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-forest">Related event</p>
-              <h2 className="mt-1 text-lg font-bold text-brand-fg-primary">{album.relatedEvent.title}</h2>
+            <aside className="editorial-card mb-8 p-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-forest">Related event</p>
+              <h2 className="mt-2 font-serif text-2xl font-semibold text-brand-fg-primary">{album.relatedEvent.title}</h2>
               <p className="mt-1 text-sm text-brand-fg-secondary">{album.relatedEvent.date.toLocaleDateString()}</p>
               <Link href="/where-to-find-us" className="mt-3 inline-flex text-sm font-semibold text-brand-forest hover:underline">
                 View event calendar →
@@ -140,14 +140,14 @@ export default function AlbumDetailClient({ album, breadcrumbs, initialPhotoInde
 
           {images.length > 0 ? (
             <section aria-labelledby="all-photos-heading">
-              <h2 id="all-photos-heading" className="mb-6 text-2xl font-bold text-brand-fg-primary">
+              <h2 id="all-photos-heading" className="mb-6 font-serif text-3xl font-semibold text-brand-fg-primary">
                 {mosaic ? 'All photos' : 'Photos'}
               </h2>
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {album.media.map((item, index) => (
                   <figure
                     key={item.mediaAssetId}
-                    className="overflow-hidden rounded-xl bg-brand-bg-elevated shadow-sm transition hover:shadow-lg motion-reduce:transition-none"
+                    className="media-luxe overflow-hidden bg-brand-bg-elevated"
                   >
                     <button
                       type="button"
@@ -168,7 +168,7 @@ export default function AlbumDetailClient({ album, breadcrumbs, initialPhotoInde
                       </div>
                     </button>
                     {item.caption && (
-                      <figcaption className="p-3 text-sm leading-6 text-brand-fg-secondary">
+                      <figcaption className="p-4 text-base leading-7 text-brand-fg-secondary">
                         {item.caption}
                       </figcaption>
                     )}
@@ -177,7 +177,7 @@ export default function AlbumDetailClient({ album, breadcrumbs, initialPhotoInde
               </div>
             </section>
           ) : (
-            <p className="rounded-xl bg-brand-bg-elevated p-6 text-brand-fg-muted">No images are available in this album yet.</p>
+            <p className="editorial-card p-6 text-base text-brand-fg-secondary">No images are available in this album yet.</p>
           )}
 
           <div className="mt-12 flex flex-wrap gap-4 border-t border-brand-border-subtle pt-8">
