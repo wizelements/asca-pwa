@@ -38,7 +38,7 @@ export default async function About() {
           <div className="container max-w-5xl">
             <div className="mx-auto max-w-3xl text-center">
               <p className="section-label">{siteText(copy, 'about.intro.label')}</p>
-              <h2 className="font-serif text-4xl font-medium tracking-tight text-brand-fg-primary md:text-5xl">
+              <h2 className="font-serif text-4xl font-semibold tracking-tight text-brand-fg-primary md:text-5xl">
                 {siteText(copy, 'about.intro.title')}
               </h2>
               <div className="mx-auto mt-6 h-px w-20 bg-brand-accent" aria-hidden="true" />
@@ -54,16 +54,13 @@ export default async function About() {
             <div className="grid items-center gap-12 lg:grid-cols-[.9fr_1.1fr] lg:gap-16">
               <div className="order-2 lg:order-1">
                 <p className="section-label">Heritage</p>
-                <h2 className="font-serif text-4xl font-medium tracking-tight text-brand-fg-primary md:text-5xl">
+                <h2 className="font-serif text-4xl font-semibold tracking-tight text-brand-fg-primary md:text-5xl">
                   {siteText(copy, 'about.history.title')}
                 </h2>
                 <p className="mt-6 text-base leading-8 text-brand-fg-secondary md:text-lg md:leading-9">
                   {siteText(copy, 'about.history.body')}
                 </p>
-                <div className="mt-8 flex items-center gap-4 text-xs font-bold uppercase tracking-[0.12em] text-brand-fg-muted">
-                  <span className="h-px w-10 bg-brand-accent" aria-hidden="true" />
-                  Atlanta · Since 2020
-                </div>
+                <p className="mt-7 text-sm font-semibold text-brand-forest">Atlanta · Since 2020</p>
               </div>
 
               <div className="order-1 lg:order-2">
@@ -86,10 +83,10 @@ export default async function About() {
           <div className="container">
             <div className="mx-auto mb-14 max-w-3xl text-center">
               <p className="section-label">{siteText(copy, 'about.leadership.label')}</p>
-              <h2 className="font-serif text-4xl font-medium tracking-tight text-brand-fg-primary md:text-5xl">
+              <h2 className="font-serif text-4xl font-semibold tracking-tight text-brand-fg-primary md:text-5xl">
                 {siteText(copy, 'about.leadership.title')}
               </h2>
-              <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-brand-fg-secondary md:text-base">
+              <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-brand-fg-secondary">
                 Leadership shaped by horsemanship, service, and responsibility to the community.
               </p>
             </div>
@@ -98,12 +95,11 @@ export default async function About() {
         </section>
 
         <section className="forest-luxe relative overflow-hidden py-24 text-white md:py-28">
-          <div className="absolute inset-[14px] rounded-[1.5rem] border border-brand-accent/15" aria-hidden="true" />
           <div className="container relative z-10 max-w-4xl text-center">
-            <p className="heritage-rule justify-center text-xs font-bold uppercase tracking-[0.12em] text-brand-accent">
+            <p className="section-label text-brand-accent">
               {siteText(copy, 'about.join.label')}
             </p>
-            <h2 className="mt-7 font-serif text-4xl font-medium tracking-tight md:text-6xl">
+            <h2 className="mt-7 font-serif text-4xl font-semibold tracking-tight md:text-6xl">
               {siteText(copy, 'about.join.title')}
             </h2>
             <p className="mx-auto mt-6 max-w-3xl text-base leading-8 text-white/90 md:text-lg md:leading-9">
