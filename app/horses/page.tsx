@@ -72,7 +72,7 @@ export default async function HorsesPage({ searchParams }: HorsesPageProps) {
                       <div className="aspect-[4/3] w-full bg-brand-bg-subtle" />
                     )}
                     <div className="border-t border-brand-forest/10 p-5">
-                      <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-brand-forest">ASCA Horse</p>
+                      <p className="text-xs font-bold uppercase tracking-[0.12em] text-brand-forest">ASCA Horse</p>
                       <h3 className="mt-2 font-serif text-2xl font-medium text-brand-fg-primary">{horse.name}</h3>
                       {horse.description && <p className="mt-2 line-clamp-2 text-sm leading-6 text-brand-fg-secondary">{horse.description}</p>}
                     </div>
