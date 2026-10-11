@@ -38,13 +38,13 @@ export default function GalleryCard({
       )}
       <div className="absolute inset-x-0 bottom-0 z-10 p-6 text-white">
         {category && (
-          <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.22em] text-brand-accent">
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-brand-accent">
             {category}
           </p>
         )}
         <h3 className="font-serif text-2xl font-medium leading-tight">{title}</h3>
         {description && (
-          <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/72">{description}</p>
+          <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/90">{description}</p>
         )}
       </div>
     </article>
