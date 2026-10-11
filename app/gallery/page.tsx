@@ -171,11 +171,11 @@ function AlbumCard({ album }: { album: AlbumRecord }) {
         <div className="aspect-[4/3] w-full bg-brand-bg-subtle" />
       )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#0d1f14]/28 via-transparent to-transparent" aria-hidden="true" />
-        <span aria-hidden="true" className="absolute bottom-3 right-3 rounded-full border border-white/15 bg-[#0d1f14]/72 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-sm">{album.mediaCount} photos</span>
+        <span aria-hidden="true" className="absolute bottom-3 right-3 rounded-full border border-white/15 bg-[#0d1f14]/72 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-white backdrop-blur-sm">{album.mediaCount} photos</span>
         <span className="sr-only">{album.mediaCount} photos</span>
       </div>
       <div className="border-t border-brand-forest/10 p-5">
-        <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-brand-forest">
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-brand-forest">
           {album.category?.name || 'Gallery'}
         </p>
         <h3 className="mt-2 font-serif text-2xl font-medium text-brand-fg-primary">{album.title}</h3>
@@ -221,7 +221,7 @@ async function NewGallery({ selectedCategory, page }: { selectedCategory?: strin
             <Link
               href="/gallery"
               aria-current={!selectedCategory ? 'true' : undefined}
-              className={`flex min-h-[44px] shrink-0 snap-start items-center whitespace-nowrap rounded-full border px-5 py-2 text-[11px] font-bold uppercase tracking-[0.12em] transition ${!selectedCategory ? 'border-brand-forest bg-brand-forest text-white' : 'border-brand-forest/10 bg-white text-brand-fg-primary hover:border-brand-forest/30'}`}
+              className={`flex min-h-[44px] shrink-0 snap-start items-center whitespace-nowrap rounded-full border px-5 py-2 text-xs font-bold uppercase tracking-[0.12em] transition ${!selectedCategory ? 'border-brand-forest bg-brand-forest text-white' : 'border-brand-forest/10 bg-white text-brand-fg-primary hover:border-brand-forest/30'}`}
             >
               All
             </Link>
@@ -230,7 +230,7 @@ async function NewGallery({ selectedCategory, page }: { selectedCategory?: strin
                 key={cat.slug}
                 href={`/gallery?category=${encodeURIComponent(cat.slug)}`}
                 aria-current={selectedCategory === cat.slug ? 'true' : undefined}
-                className={`flex min-h-[44px] shrink-0 snap-start items-center whitespace-nowrap rounded-full border px-5 py-2 text-[11px] font-bold uppercase tracking-[0.12em] transition ${selectedCategory === cat.slug ? 'border-brand-forest bg-brand-forest text-white' : 'border-brand-forest/10 bg-white text-brand-fg-primary hover:border-brand-forest/30'}`}
+                className={`flex min-h-[44px] shrink-0 snap-start items-center whitespace-nowrap rounded-full border px-5 py-2 text-xs font-bold uppercase tracking-[0.12em] transition ${selectedCategory === cat.slug ? 'border-brand-forest bg-brand-forest text-white' : 'border-brand-forest/10 bg-white text-brand-fg-primary hover:border-brand-forest/30'}`}
               >
                 {cat.name}
               </Link>
