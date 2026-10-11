@@ -12,7 +12,7 @@ WorkingDirectory=/opt/opee/asca-vision
 ExecStart=/usr/bin/python3 /opt/opee/asca-vision/server.py
 Environment=PYTHONDONTWRITEBYTECODE=1
 Environment=OPEE_VISION_PORT=18886
-Environment=OPEE_VISION_MODEL=gemma4:31b
+Environment=OPEE_VISION_MODEL=gemma4:31b-cloud
 # These must be provisioned by the system administrator to a root-owned
 # credentials directory; neither credential may be put in code or log output.
 LoadCredential=asca-vision-token:/etc/opee/asca-vision/asca-vision-token
