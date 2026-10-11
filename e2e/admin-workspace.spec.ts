@@ -201,6 +201,10 @@ test.describe('authenticated admin client workspace', () => {
     await page.goto('/admin/albums/new');
     await expect(page.getByRole('heading', { name: 'Create gallery album' })).toBeVisible();
 
+    const createDraft = page.getByRole('button', { name: 'Create draft & upload photos' });
+    await createDraft.click();
+    await expect(page.locator('[role="alert"]').filter({ hasText: 'Add an album title before saving.' })).toBeVisible();
+
     const details = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Album details' }) });
     await details.locator('input').first().fill('ASCA E2E Description Review');
     await details.locator('select').first().selectOption({ index: 1 });
@@ -213,7 +217,6 @@ test.describe('authenticated admin client workspace', () => {
     });
     await expect(page.getByText('saddle-club.png')).toBeVisible();
 
-    const createDraft = page.getByRole('button', { name: 'Create draft & upload photos' });
     await createDraft.click();
     await expect(page.locator('[role="alert"]').filter({ hasText: 'Some new photos need descriptions before upload.' })).toBeVisible();
     await expect(page).toHaveURL(/\/admin\/albums\/new$/);
