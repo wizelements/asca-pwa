@@ -32,10 +32,10 @@ function CompactEventCard({ event, onSelect }: { event: AscaEvent; onSelect: (ev
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex-1">
           <CategoryBadge category={event.category} />
-          <h3 className="mt-4 font-serif text-xl font-medium text-brand-fg-primary">{event.title}</h3>
+          <h3 className="mt-4 font-serif text-2xl font-semibold text-brand-fg-primary">{event.title}</h3>
           <p className="mt-1 text-sm font-semibold text-brand-forest">{formatEventDateRange(event)}</p>
           {event.description && (
-            <p className="mt-2 line-clamp-2 text-sm text-brand-fg-secondary">{event.description}</p>
+            <p className="mt-2 line-clamp-2 text-base leading-7 text-brand-fg-secondary">{event.description}</p>
           )}
         </div>
         <button
@@ -77,7 +77,7 @@ function MobileDayDrawer({
         Events for {day.toLocaleDateString('en-US', { month: 'long', day: 'numeric', timeZone: 'UTC' })}
       </h4>
       {dayEvents.length === 0 ? (
-        <p className="mt-2 text-sm text-brand-fg-secondary">No events on this day.</p>
+        <p className="mt-2 text-base leading-7 text-brand-fg-secondary">No events on this day.</p>
       ) : (
         <ul className="mt-3 space-y-3">
           {dayEvents.map((event) => (
@@ -159,10 +159,10 @@ export default function EventCalendar({ events }: EventCalendarProps) {
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-brand-forest">Plan the month</p>
-            <h2 id="calendar-controls-heading" className="font-serif text-3xl font-medium text-brand-fg-primary">
+            <h2 id="calendar-controls-heading" className="font-serif text-3xl font-semibold text-brand-fg-primary">
               Event Calendar
             </h2>
-            <p className="mt-1 text-sm text-brand-fg-secondary">
+            <p className="mt-1 text-base leading-7 text-brand-fg-secondary">
               Filter by ASCA-hosted events, events ASCA attends, and sponsored outreach.
             </p>
           </div>
@@ -213,7 +213,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
             >
               →
             </button>
-            <h3 className="min-w-[10rem] text-center font-serif text-xl font-medium text-brand-fg-primary md:text-2xl" aria-live="polite">
+            <h3 className="min-w-[10rem] text-center font-serif text-2xl font-semibold text-brand-fg-primary md:text-2xl" aria-live="polite">
               {monthLabel}
             </h3>
           </div>
@@ -360,7 +360,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-accent">Next Event</p>
             <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
-                <h2 id="next-event-heading" className="font-serif text-3xl font-medium">{nextEvent.title}</h2>
+                <h2 id="next-event-heading" className="font-serif text-3xl font-semibold">{nextEvent.title}</h2>
                 <div className="mt-3">
                   <CategoryBadge category={nextEvent.category} />
                 </div>
@@ -391,9 +391,9 @@ export default function EventCalendar({ events }: EventCalendarProps) {
         <div className="mb-5 flex items-end justify-between gap-3">
           <div>
             <p className="section-label">Monthly List</p>
-            <h2 id="events-by-month-heading" className="mb-0 font-serif text-4xl font-medium tracking-tight text-brand-fg-primary">Events by Month</h2>
+            <h2 id="events-by-month-heading" className="mb-0 font-serif text-4xl font-semibold tracking-tight text-brand-fg-primary">Events by Month</h2>
           </div>
-          <p className="text-sm text-brand-fg-muted">{displayEvents.length} known-date events</p>
+          <p className="text-base text-brand-fg-secondary">{displayEvents.length} known-date events</p>
         </div>
         <CalendarListView
           events={displayEvents}
@@ -410,7 +410,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
       >
         <p className="section-label">Dates Pending</p>
         <h2 id="tba-events-heading" className="section-title mb-3">Date TBA</h2>
-        <p className="mb-5 max-w-2xl text-sm text-brand-fg-secondary">
+        <p className="mb-5 max-w-2xl text-base leading-7 text-brand-fg-secondary">
           These events are confirmed as ASCA-interest activities, but the dates are not finalized yet.
           They are intentionally not placed on the month calendar until dates are confirmed.
         </p>
@@ -421,7 +421,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-brand-fg-secondary">No TBA events match the current filters.</p>
+          <p className="text-base leading-7 text-brand-fg-secondary">No TBA events match the current filters.</p>
         )}
       </section>
 
@@ -444,11 +444,11 @@ function EventDetailsPanel({
   return (
     <div className="space-y-4">
       <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-forest">Selected Event</p>
-      <h3 id="event-details-heading" className="mt-2 font-serif text-3xl font-medium text-brand-fg-primary">
+      <h3 id="event-details-heading" className="mt-2 font-serif text-3xl font-semibold text-brand-fg-primary">
         {event.title}
       </h3>
       <CategoryBadge category={event.category} />
-      <dl className="mt-3 grid grid-cols-1 gap-3 text-sm text-brand-fg-secondary">
+      <dl className="mt-3 grid grid-cols-1 gap-3 text-base leading-7 text-brand-fg-secondary">
         <div>
           <dt className="font-semibold text-brand-fg-primary">Date</dt>
           <dd>{formatEventDateRange(event)}</dd>
@@ -467,7 +467,7 @@ function EventDetailsPanel({
         )}
       </dl>
       {event.description && (
-        <p className="text-sm leading-relaxed text-brand-fg-secondary">{event.description}</p>
+        <p className="text-base leading-7 text-brand-fg-secondary">{event.description}</p>
       )}
       <button
         type="button"
