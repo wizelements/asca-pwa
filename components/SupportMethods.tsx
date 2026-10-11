@@ -36,18 +36,15 @@ export default function SupportMethods() {
 
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-      {methods.map((method, index) => (
+      {methods.map((method) => (
         <article key={method.label} className="editorial-card p-7 text-left md:p-8">
-          <div className="flex items-center justify-between gap-4">
-            <p className="text-xs font-bold uppercase tracking-[0.12em] text-brand-forest">
-              Direct Giving
-            </p>
-            <span className="font-serif text-sm italic text-brand-fg-muted">{String(index + 1).padStart(2, '0')}</span>
-          </div>
-          <h3 className="mt-7 font-serif text-2xl font-medium text-brand-fg-primary">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-forest">
+            Direct Giving
+          </p>
+          <h3 className="mt-5 font-serif text-3xl font-semibold text-brand-fg-primary">
             {method.label}
           </h3>
-          <div className="mt-5 h-px w-12 bg-brand-accent" aria-hidden="true" />
+          <div className="mt-5 h-px w-10 bg-brand-accent" aria-hidden="true" />
           <p className="mt-5 break-words text-base font-semibold tracking-wide text-brand-forest">{method.handle}</p>
         </article>
       ))}
