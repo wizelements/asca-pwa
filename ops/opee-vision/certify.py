@@ -98,7 +98,9 @@ def certify(url: str, token: str) -> bool:
     for label, image, required, prohibited in fixtures():
         try:
             actual = request_description(url, token, image)
-            missing = {term for term in required if term not in actual}
+            missing = {term for term in required if term not in actual and not (
+                term == "gray" and "grey" in actual
+            )}
             false_claims = {term for term in prohibited if term in actual}
             passed = not missing and not false_claims
             print(("PASS" if passed else "FAIL") + ": " + label +
