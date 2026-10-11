@@ -1,0 +1,42 @@
+[Unit]
+Description=OPEE ASCA photo descriptions (vision-only)
+Documentation=https://github.com/wizelements/asca-pwa/blob/main/docs/gallery-opee-vision-integration.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+DynamicUser=yes
+User=asca-vision
+WorkingDirectory=/opt/opee/asca-vision
+ExecStart=/usr/bin/python3 /opt/opee/asca-vision/server.py
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=OPEE_VISION_PORT=18886
+Environment=OPEE_VISION_MODEL=gemma4:31b
+# These must be provisioned by the system administrator to a root-owned
+# credentials directory; neither credential may be put in code or log output.
+LoadCredential=asca-vision-token:/etc/opee/asca-vision/asca-vision-token
+LoadCredential=ollama-api-key:/etc/opee/asca-vision/ollama-api-key
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectHome=yes
+ProtectSystem=strict
+ProtectProc=invisible
+ProtectControlGroups=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+UMask=0077
+TasksMax=24
+MemoryMax=300M
+CPUQuota=40%
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
