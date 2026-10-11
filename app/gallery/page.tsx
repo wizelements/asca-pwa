@@ -99,12 +99,12 @@ function LegacyGallery({
         subtitle={siteText(copy, 'gallery.hero.subtitle')}
       />
 
-      <section className="bg-brand-bg-subtle py-20">
+      <section className="quiet-luxe py-24 md:py-28">
         <div className="container">
           <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Gallery' }]} />
           <div className="text-center">
             <p className="section-label">{selectedCategory ? selectedCategory : 'Gallery'}</p>
-            <h2 className="section-title">
+            <h2 className="font-serif text-4xl font-medium tracking-tight text-brand-fg-primary md:text-5xl">
               {selectedCategory ? `${selectedCategory} Photos` : 'Captured Moments'}
             </h2>
           </div>
@@ -113,7 +113,7 @@ function LegacyGallery({
             <div key={category} className="mt-12">
               {!selectedCategory && (
                 <div className="mb-4 flex items-center justify-between">
-                  <h3 className="text-2xl font-bold text-brand-fg-primary">{category}</h3>
+                  <h3 className="font-serif text-3xl font-medium text-brand-fg-primary">{category}</h3>
                   <Link
                     href={`/gallery?category=${encodeURIComponent(category)}`}
                     className="text-sm font-semibold text-brand-forest hover:underline"
@@ -154,7 +154,7 @@ function AlbumCard({ album }: { album: AlbumRecord }) {
   return (
     <Link
       href={`/gallery/${album.slug}`}
-      className="group block overflow-hidden rounded-xl bg-brand-bg-elevated shadow-sm transition hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-forest focus-visible:ring-offset-2 motion-reduce:transition-none"
+      className="media-luxe group block overflow-hidden bg-brand-bg-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-forest focus-visible:ring-offset-2"
     >
       <div className="relative">
       {album.coverUrl ? (
@@ -163,7 +163,7 @@ function AlbumCard({ album }: { album: AlbumRecord }) {
           alt={album.title}
           width={600}
           height={450}
-          className="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none"
+          className="aspect-[4/3] w-full object-cover transition-transform duration-700 group-hover:scale-[1.04] motion-reduce:transform-none motion-reduce:transition-none"
           loading="lazy"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
@@ -173,11 +173,11 @@ function AlbumCard({ album }: { album: AlbumRecord }) {
         <span aria-hidden="true" className="absolute bottom-3 right-3 rounded-full bg-black/70 px-2.5 py-1 text-xs font-medium text-white">{album.mediaCount} photos</span>
         <span className="sr-only">{album.mediaCount} photos</span>
       </div>
-      <div className="p-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-brand-forest">
+      <div className="border-t border-brand-forest/10 p-5">
+        <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-brand-forest">
           {album.category?.name || 'Gallery'}
         </p>
-        <h3 className="mt-1 text-lg font-bold text-brand-fg-primary">{album.title}</h3>
+        <h3 className="mt-2 font-serif text-2xl font-medium text-brand-fg-primary">{album.title}</h3>
         {album.summary && <p className="mt-1 line-clamp-2 text-sm text-brand-fg-secondary">{album.summary}</p>}
         {album.activityDate && (
           <p className="mt-1 text-xs text-brand-fg-muted">{album.activityDate.toLocaleDateString()}</p>
@@ -213,7 +213,7 @@ async function NewGallery({ selectedCategory, page }: { selectedCategory?: strin
     <>
       <Hero image={hero.src} imageAlt={hero.alt} title={siteText(copy, 'gallery.hero.title')} subtitle={siteText(copy, 'gallery.hero.subtitle')} />
 
-      <section className="bg-brand-bg-subtle py-20">
+      <section className="quiet-luxe py-24 md:py-28">
         <div className="container">
           <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Gallery' }]} />
           <div className="mb-8 flex snap-x items-center gap-2 overflow-x-auto py-2 md:flex-wrap md:gap-3">
@@ -229,7 +229,7 @@ async function NewGallery({ selectedCategory, page }: { selectedCategory?: strin
                 key={cat.slug}
                 href={`/gallery?category=${encodeURIComponent(cat.slug)}`}
                 aria-current={selectedCategory === cat.slug ? 'true' : undefined}
-                className={`flex min-h-[44px] shrink-0 snap-start items-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ${selectedCategory === cat.slug ? 'bg-brand-forest text-white' : 'bg-brand-bg-elevated text-brand-fg-primary'}`}
+                className={`flex min-h-[44px] shrink-0 snap-start items-center whitespace-nowrap rounded-full border px-5 py-2 text-[11px] font-bold uppercase tracking-[0.12em] transition ${selectedCategory === cat.slug ? 'border-brand-forest bg-brand-forest text-white' : 'border-brand-forest/10 bg-white text-brand-fg-primary hover:border-brand-forest/30'}`}
               >
                 {cat.name}
               </Link>
