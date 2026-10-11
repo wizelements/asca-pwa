@@ -22,6 +22,7 @@ export default async function Members() {
     getCachedActiveMemberCount().catch(() => null),
     getCachedSiteContent(),
   ]);
+
   const publicFacts = [
     { label: 'Years in operation', value: siteText(copy, 'members.fact.years') },
     { label: 'Members', value: activeMemberCount !== null ? String(activeMemberCount) : '—' },
@@ -31,6 +32,7 @@ export default async function Members() {
     { label: 'Black Cowboy Heritage Festival', value: siteText(copy, 'members.fact.festival') },
     { label: 'Trots for Tots Breakfast with Santa', value: siteText(copy, 'members.fact.tots') },
   ];
+
   const hero = getManagedImage(images, 'members.hero');
   const communityOne = getManagedImage(images, 'members.community.1');
   const communityTwo = getManagedImage(images, 'members.community.2');
@@ -46,97 +48,121 @@ export default async function Members() {
           subtitle={siteText(copy, 'members.hero.subtitle')}
         />
 
-        {/* Main copy */}
-        <section className="py-16">
-          <div className="container max-w-3xl text-center">
-            <p className="section-label">{siteText(copy, 'members.intro.label')}</p>
-            <h2 className="section-title">{siteText(copy, 'members.intro.title')}</h2>
-            <p className="text-lg leading-relaxed text-brand-fg-secondary">
-              {siteText(copy, 'members.intro.body1')}
-            </p>
-            <p className="mt-4 text-lg leading-relaxed text-brand-fg-secondary">
-              {siteText(copy, 'members.intro.body2')}
-            </p>
-            <div className="mt-10 grid grid-cols-2 gap-4">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
-                <ManagedImage
-                  src={communityOne.src}
-                  alt={communityOne.alt}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 50vw, 33vw"
-                />
+        <section className="quiet-luxe py-24 md:py-28">
+          <div className="container">
+            <div className="grid gap-12 lg:grid-cols-[.9fr_1.1fr] lg:items-center lg:gap-16">
+              <div>
+                <p className="section-label">{siteText(copy, 'members.intro.label')}</p>
+                <h2 className="font-serif text-4xl font-medium tracking-tight text-brand-fg-primary md:text-5xl">
+                  {siteText(copy, 'members.intro.title')}
+                </h2>
+                <div className="mt-6 h-px w-16 bg-brand-accent" aria-hidden="true" />
+                <p className="mt-7 text-base leading-8 text-brand-fg-secondary md:text-lg md:leading-9">
+                  {siteText(copy, 'members.intro.body1')}
+                </p>
+                <p className="mt-5 text-base leading-8 text-brand-fg-secondary">
+                  {siteText(copy, 'members.intro.body2')}
+                </p>
               </div>
-              <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
-                <ManagedImage
-                  src={communityTwo.src}
-                  alt={communityTwo.alt}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 50vw, 33vw"
-                />
+
+              <div className="grid grid-cols-2 gap-4">
+                {[communityOne, communityTwo].map((image, index) => (
+                  <div
+                    key={image.slot}
+                    className={`media-luxe relative overflow-hidden ${index === 0 ? 'aspect-[4/5] translate-y-5' : 'aspect-[4/5]'}`}
+                  >
+                    <ManagedImage
+                      src={image.src}
+                      alt={image.alt}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 1024px) 50vw, 25vw"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0d1f14]/28 via-transparent to-transparent" aria-hidden="true" />
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </section>
 
-        {/* Why Members Join */}
-        <section className="bg-brand-bg-subtle py-16">
+        <section className="border-y border-brand-forest/10 bg-brand-bg-subtle py-24 md:py-28">
           <div className="container">
-            <div className="mb-10 text-center">
+            <div className="mx-auto mb-14 max-w-3xl text-center">
               <p className="section-label">{siteText(copy, 'members.reasons.label')}</p>
-              <h2 className="section-title">{siteText(copy, 'members.reasons.title')}</h2>
+              <h2 className="font-serif text-4xl font-medium tracking-tight text-brand-fg-primary md:text-5xl">
+                {siteText(copy, 'members.reasons.title')}
+              </h2>
             </div>
+
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {siteList(copy, 'members.reasons.items').map((reason) => (
-                <div key={reason} className="card flex items-center gap-3">
-                  <span className="h-2.5 w-2.5 flex-shrink-0 rounded-full bg-brand-forest" aria-hidden="true" />
-                  <span className="text-brand-fg-primary">{reason}</span>
-                </div>
+              {siteList(copy, 'members.reasons.items').map((reason, index) => (
+                <article key={reason} className="editorial-card group min-h-[165px] p-7">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="font-serif text-sm italic text-brand-fg-muted/60">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <span className="h-px flex-1 bg-brand-accent/55" aria-hidden="true" />
+                  </div>
+                  <p className="mt-7 font-serif text-2xl font-medium leading-tight text-brand-fg-primary">{reason}</p>
+                </article>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Fun Facts */}
-        <section className="py-16">
+        <section className="py-24 md:py-28">
           <div className="container">
-            <div className="mb-10 text-center">
+            <div className="mx-auto mb-14 max-w-3xl text-center">
               <p className="section-label">{siteText(copy, 'members.facts.label')}</p>
-              <h2 className="section-title">{siteText(copy, 'members.facts.title')}</h2>
+              <h2 className="font-serif text-4xl font-medium tracking-tight text-brand-fg-primary md:text-5xl">
+                {siteText(copy, 'members.facts.title')}
+              </h2>
             </div>
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {publicFacts.map((fact) => (
-                <div key={fact.label} className="card">
-                  <p className="text-sm font-semibold uppercase tracking-[0.16em] text-brand-forest">
+
+            <div className="grid grid-cols-1 gap-px overflow-hidden rounded-[1.5rem] border border-brand-forest/10 bg-brand-forest/10 sm:grid-cols-2 lg:grid-cols-3">
+              {publicFacts.map((fact, index) => (
+                <article key={fact.label} className="bg-[#fbfaf6] p-7 md:p-8">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-brand-forest">
                     {fact.label}
                   </p>
-                  <p className="mt-2 text-brand-fg-secondary">{fact.value}</p>
-                </div>
+                  <div className="mt-5 h-px w-10 bg-brand-accent" aria-hidden="true" />
+                  <p className="mt-5 font-serif text-2xl font-medium leading-snug text-brand-fg-primary">
+                    {fact.value}
+                  </p>
+                  <p className="mt-5 text-[9px] font-bold uppercase tracking-[0.2em] text-brand-fg-muted">
+                    ASCA · {String(index + 1).padStart(2, '0')}
+                  </p>
+                </article>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Closing CTA */}
-        <section className="bg-brand-forest py-16 text-white">
-          <div className="container max-w-3xl text-center">
-            <h2 className="mb-4 text-3xl font-bold md:text-4xl">{siteText(copy, 'members.final.title')}</h2>
-            <p className="text-lg leading-relaxed text-amber-100">
+        <section className="forest-luxe relative overflow-hidden py-24 text-white md:py-28">
+          <div className="absolute inset-[14px] rounded-[1.5rem] border border-brand-accent/15" aria-hidden="true" />
+          <div className="container relative z-10 max-w-4xl text-center">
+            <p className="heritage-rule justify-center text-[10px] font-bold uppercase tracking-[0.24em] text-brand-accent">
+              Membership
+            </p>
+            <h2 className="mt-7 font-serif text-4xl font-medium tracking-tight md:text-6xl">
+              {siteText(copy, 'members.final.title')}
+            </h2>
+            <p className="mx-auto mt-6 max-w-3xl text-base leading-8 text-white/72 md:text-lg md:leading-9">
               {siteText(copy, 'members.final.body')}
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
+            <div className="mt-9 flex flex-wrap justify-center gap-4">
               <Link href="/where-to-find-us" className="btn-accent">
                 {siteText(copy, 'members.final.eventsCta')}
               </Link>
-              <Link href="/share" className="btn-secondary border-white text-white hover:bg-white/10">
+              <Link href="/share" className="btn-secondary border-white/45 text-white hover:bg-white/10">
                 {siteText(copy, 'members.final.shareCta')}
               </Link>
               <a
                 href={MEMBERSHIP_APPLICATION_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-secondary border-white text-white hover:bg-white/10"
+                className="btn-secondary border-white/45 text-white hover:bg-white/10"
               >
                 {siteText(copy, 'members.final.applyCta')}
               </a>
