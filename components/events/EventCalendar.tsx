@@ -28,11 +28,11 @@ function CategoryBadge({ category }: { category: AscaEventCategory }) {
 
 function CompactEventCard({ event, onSelect }: { event: AscaEvent; onSelect: (event: AscaEvent) => void }) {
   return (
-    <article className="rounded-xl border border-brand-border-subtle bg-brand-bg-elevated p-4 shadow-sm">
+    <article className="editorial-card p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex-1">
           <CategoryBadge category={event.category} />
-          <h3 className="mt-3 text-lg font-bold text-brand-fg-primary">{event.title}</h3>
+          <h3 className="mt-4 font-serif text-xl font-medium text-brand-fg-primary">{event.title}</h3>
           <p className="mt-1 text-sm font-semibold text-brand-forest">{formatEventDateRange(event)}</p>
           {event.description && (
             <p className="mt-2 line-clamp-2 text-sm text-brand-fg-secondary">{event.description}</p>
@@ -71,7 +71,7 @@ function MobileDayDrawer({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
-      className="mt-4 rounded-2xl border border-brand-border-subtle bg-brand-bg-elevated p-4 shadow-sm lg:hidden"
+      className="editorial-card mt-4 p-4 lg:hidden"
     >
       <h4 className="text-sm font-bold uppercase tracking-wide text-brand-forest">
         Events for {day.toLocaleDateString('en-US', { month: 'long', day: 'numeric', timeZone: 'UTC' })}
@@ -153,12 +153,13 @@ export default function EventCalendar({ events }: EventCalendarProps) {
   return (
     <div className="space-y-10">
       <section
-        className="rounded-2xl border border-brand-border-subtle bg-brand-bg-elevated p-5 shadow-sm md:p-8"
+        className="editorial-card p-5 md:p-8"
         aria-labelledby="calendar-controls-heading"
       >
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 id="calendar-controls-heading" className="text-2xl font-bold text-brand-fg-primary">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-brand-forest">Plan the month</p>
+            <h2 id="calendar-controls-heading" className="font-serif text-3xl font-medium text-brand-fg-primary">
               Event Calendar
             </h2>
             <p className="mt-1 text-sm text-brand-fg-secondary">
@@ -192,7 +193,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
           </div>
         </div>
 
-        <div className="sticky top-2 z-20 mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-border-subtle bg-brand-bg-subtle/95 p-3 shadow-sm backdrop-blur">
+        <div className="sticky top-2 z-20 mt-7 flex flex-wrap items-center justify-between gap-3 rounded-[1rem] border border-brand-forest/10 bg-[rgba(250,249,244,.95)] p-3 shadow-[0_12px_30px_rgba(37,50,39,.06)] backdrop-blur-xl">
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -212,7 +213,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
             >
               →
             </button>
-            <h3 className="min-w-[10rem] text-center text-lg font-bold text-brand-fg-primary md:text-xl" aria-live="polite">
+            <h3 className="min-w-[10rem] text-center font-serif text-xl font-medium text-brand-fg-primary md:text-2xl" aria-live="polite">
               {monthLabel}
             </h3>
           </div>
@@ -313,7 +314,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
           </div>
 
           <aside
-            className="order-2 hidden rounded-2xl border border-brand-border-subtle bg-brand-bg-subtle p-5 xl:block"
+            className="order-2 hidden rounded-[1.4rem] border border-brand-forest/10 bg-[#f5f3eb] p-6 shadow-[inset_0_0_0_1px_rgba(255,255,255,.65)] xl:block"
             aria-labelledby="event-details-heading"
           >
             {selectedEvent ? (
@@ -341,7 +342,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
 
       {nextEvent && (
         <section
-          className="relative overflow-hidden rounded-2xl border border-brand-forest/20 bg-brand-forest p-6 text-white shadow-sm"
+          className="forest-luxe relative overflow-hidden p-7 text-white"
           aria-labelledby="next-event-heading"
         >
           {nextEventBackground && (
@@ -359,7 +360,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-accent">Next Event</p>
             <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
-                <h2 id="next-event-heading" className="text-2xl font-bold">{nextEvent.title}</h2>
+                <h2 id="next-event-heading" className="font-serif text-3xl font-medium">{nextEvent.title}</h2>
                 <div className="mt-3">
                   <CategoryBadge category={nextEvent.category} />
                 </div>
@@ -390,7 +391,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
         <div className="mb-5 flex items-end justify-between gap-3">
           <div>
             <p className="section-label">Monthly List</p>
-            <h2 id="events-by-month-heading" className="section-title mb-0">Events by Month</h2>
+            <h2 id="events-by-month-heading" className="mb-0 font-serif text-4xl font-medium tracking-tight text-brand-fg-primary">Events by Month</h2>
           </div>
           <p className="text-sm text-brand-fg-muted">{displayEvents.length} known-date events</p>
         </div>
@@ -405,7 +406,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
 
       <section
         aria-labelledby="tba-events-heading"
-        className="rounded-2xl border border-brand-border-subtle bg-brand-bg-subtle p-6"
+        className="editorial-card p-7"
       >
         <p className="section-label">Dates Pending</p>
         <h2 id="tba-events-heading" className="section-title mb-3">Date TBA</h2>
@@ -443,7 +444,7 @@ function EventDetailsPanel({
   return (
     <div className="space-y-4">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-forest">Selected Event</p>
-      <h3 id="event-details-heading" className="mt-2 text-2xl font-bold text-brand-fg-primary">
+      <h3 id="event-details-heading" className="mt-2 font-serif text-3xl font-medium text-brand-fg-primary">
         {event.title}
       </h3>
       <CategoryBadge category={event.category} />
