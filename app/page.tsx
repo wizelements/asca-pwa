@@ -24,7 +24,6 @@ const ACTIVITY_SLOTS: SiteImageSlot[] = [
   'home.activity.fellowship',
 ];
 
-/** Map an activity card title to a gallery category slug used in /gallery?category=<slug>. */
 const ACTIVITY_CATEGORY_MAP: Record<string, string> = {
   'Trail Rides': 'Trail Rides',
   'Community Outreach': 'Community Outreach',
@@ -45,10 +44,10 @@ export default async function Home() {
     isPublicPreviewEnabled() ? getFeaturedAlbums(6) : Promise.resolve([]),
     getCachedSiteContent(),
   ]);
+
   const hero = getManagedImage(images, 'home.hero');
   const activityHighlights = ACTIVITY_SLOTS.map((slot) => getManagedImage(images, slot));
   const useAlbums = featuredAlbums.length > 0;
-
 
   return (
     <>
@@ -61,11 +60,18 @@ export default async function Home() {
           subtitle={identity.heroDescription}
         />
 
-        {/* Meeting callout + primary CTAs */}
-        <section className="py-16">
-          <div className="container max-w-4xl">
+        <section className="quiet-luxe py-20 md:py-24">
+          <div className="container max-w-5xl">
+            <div className="mx-auto mb-10 max-w-2xl text-center">
+              <p className="section-label">Gather · Ride · Serve</p>
+              <h2 className="font-serif text-3xl font-medium tracking-tight text-brand-fg-primary md:text-4xl">
+                A club built around horses, fellowship, and standards that endure.
+              </h2>
+            </div>
+
             <MeetingCallout />
-            <div className="mt-8 flex flex-col flex-wrap items-center justify-center gap-4 sm:flex-row">
+
+            <div className="mt-9 flex flex-col flex-wrap items-center justify-center gap-3 sm:flex-row">
               <Link href="/where-to-find-us" className="btn-primary">
                 {siteText(copy, 'home.cta.meeting')}
               </Link>
@@ -79,41 +85,51 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* Connect / Learn / Give */}
-        <section id="connect" className="scroll-mt-24 bg-brand-bg-subtle py-20">
+        <section id="connect" className="scroll-mt-24 border-y border-brand-forest/10 bg-brand-bg-subtle py-24 md:py-28">
           <div className="container">
-            <p className="section-label text-center">{siteText(copy, 'home.purpose.label')}</p>
-            <h2 className="section-title text-center">{siteText(copy, 'home.purpose.title')}</h2>
+            <div className="mx-auto max-w-3xl text-center">
+              <p className="section-label">{siteText(copy, 'home.purpose.label')}</p>
+              <h2 className="font-serif text-4xl font-medium tracking-tight text-brand-fg-primary md:text-5xl">
+                {siteText(copy, 'home.purpose.title')}
+              </h2>
+              <div className="mx-auto mt-6 h-px w-20 bg-brand-accent" aria-hidden="true" />
+            </div>
             <ConnectLearnGiveCards />
           </div>
         </section>
 
-        {/* Our Latest Activities (replaces old blog section) */}
-        <section className="py-20">
+        <section className="py-24 md:py-28">
           <div className="container">
-            <h2 className="section-title text-center">{siteText(copy, 'home.activities.title')}</h2>
-            <p className="mx-auto mb-12 max-w-2xl text-center text-brand-fg-secondary">
-              {siteText(copy, 'home.activities.body')}
-            </p>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mx-auto mb-14 max-w-3xl text-center">
+              <p className="section-label">In the saddle · In the community</p>
+              <h2 className="font-serif text-4xl font-medium tracking-tight text-brand-fg-primary md:text-5xl">
+                {siteText(copy, 'home.activities.title')}
+              </h2>
+              <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-brand-fg-secondary">
+                {siteText(copy, 'home.activities.body')}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {useAlbums
                 ? featuredAlbums.map((album) => (
                     <Link
                       key={album.id}
                       href={`/gallery/${album.slug}`}
-                      className="group relative block aspect-[4/3] overflow-hidden rounded-xl"
+                      className="media-luxe group relative block aspect-[4/3] overflow-hidden"
                     >
                       <Image
                         src={album.coverUrl || '/images/gallery/placeholder.svg'}
                         alt={album.title}
                         fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.045]"
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                      <span className="absolute bottom-4 left-4 text-base font-semibold text-white">
-                        {album.title}
-                      </span>
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0d1f14]/90 via-[#0d1f14]/20 to-transparent" />
+                      <div className="absolute inset-x-0 bottom-0 z-10 p-6">
+                        <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.22em] text-brand-accent">ASCA Field Notes</p>
+                        <span className="font-serif text-2xl font-medium text-white">{album.title}</span>
+                      </div>
                     </Link>
                   ))
                 : activityHighlights.map((activity) => {
@@ -123,24 +139,26 @@ export default async function Home() {
                       <Link
                         key={activity.slot}
                         href={href}
-                        className="group relative block aspect-[4/3] overflow-hidden rounded-xl"
+                        className="media-luxe group relative block aspect-[4/3] overflow-hidden"
                       >
                         <ManagedImage
                           src={activity.src}
                           alt={activity.alt}
                           fill
-                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.045]"
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                        <span className="absolute bottom-4 left-4 text-base font-semibold text-white">
-                          {activity.title}
-                        </span>
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0d1f14]/90 via-[#0d1f14]/20 to-transparent" />
+                        <div className="absolute inset-x-0 bottom-0 z-10 p-6">
+                          <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.22em] text-brand-accent">ASCA Field Notes</p>
+                          <span className="font-serif text-2xl font-medium text-white">{activity.title}</span>
+                        </div>
                       </Link>
                     );
                   })}
             </div>
-            <div className="mt-10 text-center">
+
+            <div className="mt-12 text-center">
               <Link href="/gallery" className="btn-secondary">
                 {siteText(copy, 'home.activities.cta')}
               </Link>
@@ -148,30 +166,35 @@ export default async function Home() {
           </div>
         </section>
 
-
-
-        {/* Stay Up to Date on our Events */}
-        <section id="event-updates" className="scroll-mt-24 py-20">
-          <div className="container max-w-3xl text-center">
-            <p className="section-label">{siteText(copy, 'home.updates.label')}</p>
-            <h2 className="section-title">{siteText(copy, 'home.updates.title')}</h2>
-            <p className="mx-auto max-w-2xl text-brand-fg-secondary">
-              {siteText(copy, 'home.updates.body')}
-            </p>
-            <EventUpdatesForm />
+        <section id="event-updates" className="quiet-luxe scroll-mt-24 border-y border-brand-forest/10 py-24 md:py-28">
+          <div className="container max-w-4xl">
+            <div className="editorial-card px-6 py-10 text-center sm:px-10 md:px-14 md:py-14">
+              <p className="section-label">{siteText(copy, 'home.updates.label')}</p>
+              <h2 className="font-serif text-4xl font-medium tracking-tight text-brand-fg-primary md:text-5xl">
+                {siteText(copy, 'home.updates.title')}
+              </h2>
+              <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-brand-fg-secondary">
+                {siteText(copy, 'home.updates.body')}
+              </p>
+              <EventUpdatesForm />
+            </div>
           </div>
         </section>
 
-        {/* Membership CTA */}
-        <section className="bg-brand-forest py-20 text-white">
-          <div className="container text-center">
-            <p className="section-label text-brand-accent">{siteText(copy, 'home.final.label')}</p>
-            <h2 className="text-3xl font-bold md:text-4xl">{siteText(copy, 'home.final.title')}</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-amber-100">
+        <section className="forest-luxe relative overflow-hidden py-24 text-white md:py-28">
+          <div className="absolute inset-[14px] rounded-[1.5rem] border border-brand-accent/15" aria-hidden="true" />
+          <div className="container relative z-10 text-center">
+            <p className="heritage-rule justify-center text-[10px] font-bold uppercase tracking-[0.24em] text-brand-accent">
+              {siteText(copy, 'home.final.label')}
+            </p>
+            <h2 className="mx-auto mt-7 max-w-4xl font-serif text-4xl font-medium leading-tight tracking-tight md:text-6xl">
+              {siteText(copy, 'home.final.title')}
+            </h2>
+            <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-white/72 md:text-lg">
               {siteText(copy, 'home.final.body')}
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Link href="/get-involved" className="btn-secondary border-white text-white hover:bg-white/10">
+            <div className="mt-9 flex flex-wrap justify-center gap-4">
+              <Link href="/get-involved" className="btn-secondary border-white/45 text-white hover:bg-white/10">
                 {siteText(copy, 'home.final.cta')}
               </Link>
             </div>
