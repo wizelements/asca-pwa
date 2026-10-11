@@ -18,34 +18,35 @@ export default function GalleryCard({
   const isInlineImage = image.startsWith('data:');
 
   return (
-    <div className="card overflow-hidden">
+    <article className="media-luxe group relative overflow-hidden bg-brand-bg-elevated">
       {image && (
-        <div className="relative h-56 w-full">
+        <div className="relative aspect-[4/3] w-full overflow-hidden">
           {isInlineImage ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={image} alt={alt || title} className="h-full w-full rounded-lg object-cover" />
+            <img src={image} alt={alt || title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
           ) : (
             <Image
               src={image}
               alt={alt || title}
               fill
-              className="rounded-lg object-cover"
+              className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           )}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0d1f14]/88 via-[#0d1f14]/18 to-transparent" />
         </div>
       )}
-      <div className="mt-5">
-        <h3 className="text-lg font-bold text-brand-fg-primary">{title}</h3>
+      <div className="absolute inset-x-0 bottom-0 z-10 p-6 text-white">
         {category && (
-          <span className="mt-3 inline-flex rounded-full bg-brand-bg-soft px-3 py-1 text-xs uppercase tracking-[0.2em] text-brand-fg-secondary">
+          <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.22em] text-brand-accent">
             {category}
-          </span>
+          </p>
         )}
+        <h3 className="font-serif text-2xl font-medium leading-tight">{title}</h3>
         {description && (
-          <p className="mt-4 text-sm text-brand-fg-secondary line-clamp-2">{description}</p>
+          <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/72">{description}</p>
         )}
       </div>
-    </div>
+    </article>
   );
 }
