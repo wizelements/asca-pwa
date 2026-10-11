@@ -170,6 +170,8 @@ class Handler(BaseHTTPRequestHandler):
         if not ACTIVE.acquire(blocking=False):
             return self.reply(429, {"error": {"message": "OPEE is at capacity."}})
         try:
+            # Bound a client's body-transfer time; auth never starts unlimited threads.
+            self.connection.settimeout(12)
             payload = json.loads(self.rfile.read(size))
             context, image_b64 = vision_request(payload)
             try:
@@ -179,6 +181,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.reply(200, {"choices": [{"message": {"role": "assistant", "content": answer}}]})
         except (ValueError, TypeError, UnicodeError, json.JSONDecodeError) as exc:
             return self.reply(400, {"error": {"message": str(exc)[:180]}})
+        except (TimeoutError, OSError):
+            return self.reply(408, {"error": {"message": "The photo upload did not complete. Try selecting the photo again."}})
         finally:
             ACTIVE.release()
 
