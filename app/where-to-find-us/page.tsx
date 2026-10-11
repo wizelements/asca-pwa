@@ -24,12 +24,11 @@ export default async function WhereToFindUs() {
       <Header />
       <main className="min-h-screen bg-brand-bg-body">
         <section className="forest-luxe relative overflow-hidden py-20 text-white md:py-28">
-          <div className="absolute inset-[14px] rounded-[1.5rem] border border-brand-accent/15" aria-hidden="true" />
           <div className="container relative z-10 max-w-4xl text-center">
-            <p className="heritage-rule justify-center text-xs font-bold uppercase tracking-[0.12em] text-brand-accent">
+            <p className="section-label text-brand-accent">
               {siteText(copy, 'calendar.label')}
             </p>
-            <h1 className="mt-7 font-serif text-5xl font-medium tracking-tight md:text-7xl">
+            <h1 className="mt-7 font-serif text-5xl font-semibold tracking-tight md:text-7xl">
               {siteText(copy, 'calendar.title')}
             </h1>
             <p className="mx-auto mt-6 max-w-3xl text-base leading-8 text-white/90 md:text-lg md:leading-9">
@@ -42,7 +41,7 @@ export default async function WhereToFindUs() {
           <div className="container">
             <div className="mb-8 flex items-center gap-4">
               <span className="h-px w-12 bg-brand-accent" aria-hidden="true" />
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-brand-fg-muted">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-fg-muted">
                 Rides · Meetings · Outreach · Community
               </p>
             </div>
