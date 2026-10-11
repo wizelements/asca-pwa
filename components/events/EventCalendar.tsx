@@ -158,7 +158,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
       >
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-brand-forest">Plan the month</p>
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-brand-forest">Plan the month</p>
             <h2 id="calendar-controls-heading" className="font-serif text-3xl font-medium text-brand-fg-primary">
               Event Calendar
             </h2>
@@ -357,7 +357,7 @@ export default function EventCalendar({ events }: EventCalendarProps) {
             </div>
           )}
           <div className="relative">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-accent">Next Event</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-accent">Next Event</p>
             <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
                 <h2 id="next-event-heading" className="font-serif text-3xl font-medium">{nextEvent.title}</h2>
@@ -443,7 +443,7 @@ function EventDetailsPanel({
 }) {
   return (
     <div className="space-y-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-forest">Selected Event</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-forest">Selected Event</p>
       <h3 id="event-details-heading" className="mt-2 font-serif text-3xl font-medium text-brand-fg-primary">
         {event.title}
       </h3>
