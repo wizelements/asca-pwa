@@ -41,6 +41,8 @@ jobs:
         run: |
           cp e2e.db gallery-restore-test.db
           TURSO_DATABASE_URL=file:gallery-restore-test.db TURSO_AUTH_TOKEN='' node scripts/restore-gallery-backup.mjs tests/fixtures/gallery-backup-v2.json --apply
+      - name: Run OPEE vision-only security tests
+        run: python3 -m unittest discover -s ops/opee-vision -p 'test_*.py' -v
       - name: Run gallery API authorization and integrity tests
         run: pnpm test:api
       - name: Run gallery service and migration tests
