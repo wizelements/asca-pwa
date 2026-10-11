@@ -128,6 +128,8 @@ class VisionWorkerTests(unittest.TestCase):
     def test_certification_rejects_vision_hallucination_and_accepts_grounded_output(self):
         from certify import certify
         from urllib.error import HTTPError
+        from contextlib import redirect_stdout
+        from io import StringIO
         with patch("certify.request_description") as infer:
             infer.side_effect = [
                 HTTPError("http://127.0.0.1:18886/v1/chat/completions", 401,
@@ -135,7 +137,10 @@ class VisionWorkerTests(unittest.TestCase):
                 "A solid blue background fills the frame.",
                 "A red circle on a grey background.",
             ]
-            self.assertFalse(certify("http://127.0.0.1:18886/v1/chat/completions", "synthetic"))
+            report = StringIO()
+            with redirect_stdout(report):
+                self.assertFalse(certify("http://127.0.0.1:18886/v1/chat/completions", "synthetic"))
+            self.assertIn("HOLD", report.getvalue())
             self.assertEqual(infer.call_count, 3)
         with patch("certify.request_description") as infer:
             infer.side_effect = [
@@ -144,7 +149,10 @@ class VisionWorkerTests(unittest.TestCase):
                 "A blue rectangle on a white background.",
                 "A red circle on a gray background.",
             ]
-            self.assertTrue(certify("http://127.0.0.1:18886/v1/chat/completions", "synthetic"))
+            report = StringIO()
+            with redirect_stdout(report):
+                self.assertTrue(certify("http://127.0.0.1:18886/v1/chat/completions", "synthetic"))
+            self.assertIn("PASS (2 images", report.getvalue())
 
     def test_rate_limit_is_bounded(self):
         with running() as url, patch("server.send_ollama", return_value="A brown horse stands near a fence.") as model:
