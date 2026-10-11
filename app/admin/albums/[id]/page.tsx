@@ -122,6 +122,7 @@ export default function AdminAlbumEditPage() {
   const hasUnsavedPhotoChanges = newMedia.length > 0 || savedPhotoSignature(media, coverId) !== savedMediaSignature;
   const publicationBlockers = useMemo(() => {
     const reasons: string[] = [];
+    if (status === 'archived') reasons.push('Restore this album to draft before publishing.');
     if (privacyReviewStatus === 'pending') reasons.push('Privacy review is pending. An administrator must review permissions and approve this album.');
     if (privacyReviewStatus === 'restricted') reasons.push('This album is restricted. Confirm permission before changing its privacy status.');
     if (!media.length) reasons.push('Add at least one photo and save the album.');
@@ -130,7 +131,7 @@ export default function AdminAlbumEditPage() {
     if (!categories.some((item) => String(item.id) === categoryId)) reasons.push('Choose an active album category and save.');
     if (hasUnsavedPhotoChanges) reasons.push('Save the current photo edits before publishing.');
     return reasons;
-  }, [privacyReviewStatus, media, coverId, categories, categoryId, hasUnsavedPhotoChanges]);
+  }, [status, privacyReviewStatus, media, coverId, categories, categoryId, hasUnsavedPhotoChanges]);
 
   useEffect(() => {
     void fetchCategories();
