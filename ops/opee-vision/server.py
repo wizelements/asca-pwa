@@ -121,6 +121,33 @@ def send_ollama(prompt: str, image_b64: str, provider_key: str) -> str:
     return answer.strip()
 
 
+
+class BoundedThreadingHTTPServer(ThreadingHTTPServer):
+    """Prevent unauthenticated clients from consuming unbounded worker threads."""
+    daemon_threads = True
+    request_queue_size = 8
+
+    def __init__(self, *args, **kwargs):
+        self._request_slots = threading.BoundedSemaphore(16)
+        super().__init__(*args, **kwargs)
+
+    def process_request(self, request, client_address):
+        if not self._request_slots.acquire(blocking=False):
+            self.shutdown_request(request)
+            return
+        try:
+            super().process_request(request, client_address)
+        except BaseException:
+            self._request_slots.release()
+            raise
+
+    def process_request_thread(self, request, client_address):
+        try:
+            super().process_request_thread(request, client_address)
+        finally:
+            self._request_slots.release()
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "ASCA-OPEE-Vision"
     sys_version = ""
@@ -142,7 +169,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         if self.path != "/healthz":
             return self.reply(404, {"error": {"message": "Not found"}})
-        return self.reply(200, {"status": "ready", "service": "opee-asca-vision"})
+        return self.reply(200, {"status": "listening", "service": "opee-asca-vision", "modelCertification": "requires-live-check"})
 
     def do_POST(self) -> None:
         if self.path != "/v1/chat/completions":
@@ -198,7 +225,7 @@ def main() -> None:
     # Fail closed on missing service credentials before opening the socket.
     credentials()
     host, port = "127.0.0.1", int(os.environ.get("OPEE_VISION_PORT", "18886"))
-    server = ThreadingHTTPServer((host, port), Handler)
+    server = BoundedThreadingHTTPServer((host, port), Handler)
     server.daemon_threads = True
     server.serve_forever(poll_interval=0.25)
 
