@@ -658,6 +658,7 @@ export default function AdminAlbumEditPage() {
               </label>
             </div>
 
+            {newMedia.length > 0 && <p id="album-photo-description-help" className="mt-3 text-sm text-admin-fg-secondary">Every photo needs a meaningful description before it can be uploaded. Generate missing descriptions with AI or describe the image yourself.</p>}
             {(newMedia.length > 0 || media.some((item) => isGenericAltText(item.altText))) && (
               <div className="mt-4 rounded-lg border border-admin-border-subtle bg-admin-bg-subtle p-4">
                 <div className="flex flex-wrap items-center gap-3">
@@ -686,7 +687,7 @@ export default function AdminAlbumEditPage() {
                         value={item.altText}
                         onChange={(event) => setNewMedia((current) => current.map((entry, entryIndex) => entryIndex === index ? { ...entry, altText: event.target.value } : entry))}
                         placeholder="Describe what is visible in this photo"
-                        required
+                        aria-describedby="album-photo-description-help"
                       />
                     </label>
                     <label className="mt-3 block text-sm font-semibold text-admin-fg-secondary">
