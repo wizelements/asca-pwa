@@ -203,7 +203,7 @@ test.describe('authenticated admin client workspace', () => {
 
     const createDraft = page.getByRole('button', { name: 'Create draft & upload photos' });
     await createDraft.click();
-    await expect(page.locator('[role="alert"]').filter({ hasText: 'Add an album title before saving.' })).toBeVisible();
+    await expect(page.locator('div[role="alert"].rounded-xl').filter({ hasText: 'Add an album title before saving.' })).toBeVisible();
 
     const details = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Album details' }) });
     await details.locator('input').first().fill('ASCA E2E Description Review');
@@ -218,7 +218,7 @@ test.describe('authenticated admin client workspace', () => {
     await expect(page.getByText('saddle-club.png')).toBeVisible();
 
     await createDraft.click();
-    await expect(page.locator('[role="alert"]').filter({ hasText: 'Some new photos need descriptions before upload.' })).toBeVisible();
+    await expect(page.locator('div[role="alert"].rounded-xl').filter({ hasText: 'Some new photos need descriptions before upload.' })).toBeVisible();
     await expect(page).toHaveURL(/\/admin\/albums\/new$/);
 
     await page.route('**/api/gallery/describe', async (route) => {
@@ -230,7 +230,7 @@ test.describe('authenticated admin client workspace', () => {
     });
     const aiButton = page.getByRole('button', { name: /Generate missing descriptions with AI/ });
     await aiButton.click();
-    await expect(page.locator('[role="alert"]').filter({ hasText: 'AI descriptions are not configured' })).toBeVisible();
+    await expect(page.locator('div[role="alert"].rounded-xl').filter({ hasText: 'AI descriptions are not configured' })).toBeVisible();
     await page.unroute('**/api/gallery/describe');
 
     await page.route('**/api/gallery/describe', async (route) => {
