@@ -9,6 +9,8 @@
 
   body {
     @apply antialiased bg-brand-bg-body text-brand-fg-primary font-sans;
+    --brand-accent: #c2a35f;
+    --brand-accent-muted: #d3bd82;
     background: #fbfaf6;
   }
 
@@ -36,12 +38,12 @@
 
   .btn-primary {
     @apply btn text-white;
-    background: var(--brand-button);
+    background: #1d5b37;
     box-shadow: 0 10px 24px rgba(22, 61, 36, .14);
   }
 
   .btn-primary:hover {
-    background: var(--brand-button-hover);
+    background: #17492c;
     transform: translateY(-1px);
     box-shadow: 0 14px 30px rgba(22, 61, 36, .18);
   }
