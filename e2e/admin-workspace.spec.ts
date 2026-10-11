@@ -195,4 +195,55 @@ test.describe('authenticated admin client workspace', () => {
     await expect(page.getByText(/dynamic records such as Events, Gallery Albums, Horses, Members/i)).toBeVisible();
   });
 
+  test('album upload explains missing descriptions and offers AI suggestions without auto-publishing', async ({ page }) => {
+    await signIn(page);
+    await markTourCompleteAndClose(page);
+    await page.goto('/admin/albums/new');
+    await expect(page.getByRole('heading', { name: 'Create gallery album' })).toBeVisible();
+
+    const details = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Album details' }) });
+    await details.locator('input').first().fill('ASCA E2E Description Review');
+    await details.locator('select').first().selectOption({ index: 1 });
+
+    const smallPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+    await page.locator('input[type="file"]').setInputFiles({
+      name: 'saddle-club.png',
+      mimeType: 'image/png',
+      buffer: smallPng,
+    });
+    await expect(page.getByText('saddle-club.png')).toBeVisible();
+
+    const createDraft = page.getByRole('button', { name: 'Create draft & upload photos' });
+    await createDraft.click();
+    await expect(page.getByRole('alert')).toContainText('Some new photos need descriptions before upload.');
+    await expect(page).toHaveURL(/\/admin\/albums\/new$/);
+
+    await page.route('**/api/gallery/describe', async (route) => {
+      await route.fulfill({
+        status: 503,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'AI descriptions are not configured on this site. Please ask the site administrator to enable the feature, or enter descriptions manually.' }),
+      });
+    });
+    const aiButton = page.getByRole('button', { name: /Generate missing descriptions with AI/ });
+    await aiButton.click();
+    await expect(page.getByRole('alert')).toContainText('AI descriptions are not configured');
+    await page.unroute('**/api/gallery/describe');
+
+    await page.route('**/api/gallery/describe', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ description: 'Saddle club riders gathered beside horses along a wooded trail.', reviewRequired: true }),
+      });
+    });
+    await aiButton.click();
+    await expect(page.getByPlaceholder('Describe what is visible in this photo')).toHaveValue('Saddle club riders gathered beside horses along a wooded trail.');
+
+    await createDraft.click();
+    await expect(page).toHaveURL(/\/admin\/albums\/\d+$/);
+    await expect(page.getByText('Privacy review is pending. An administrator must review permissions and approve this album.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Publish album' })).toBeDisabled();
+  });
+
 });
