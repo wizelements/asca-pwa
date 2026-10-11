@@ -667,7 +667,7 @@ export default function AdminAlbumEditPage() {
                   {describing && <span role="status" className="text-sm text-admin-fg-secondary">{descriptionProgress}</span>}
                 </div>
                 <p className="mt-2 text-xs leading-5 text-admin-fg-secondary">
-                  ASCA's OPEE assistant processes only photos needing descriptions together with the album title, category and summary. Use only when you have permission to process these photos. Suggestions are editable, may be inaccurate, and must be checked before saving and publishing. Existing descriptions are never replaced.
+                  ASCA sends only photos needing descriptions, plus their album title, category and summary, to the restricted OPEE assistant. OPEE may use an external cloud vision model to analyze them. Use only when you have permission to process these photos. Suggestions are editable, may be inaccurate, and must be checked before saving and publishing. Existing descriptions are never replaced.
                 </p>
               </div>
             )}
