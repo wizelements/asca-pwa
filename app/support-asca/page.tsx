@@ -76,7 +76,7 @@ export default async function SupportAsca() {
                 </p>
               </div>
               <article className="editorial-card p-8 md:p-10">
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-brand-forest">
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-brand-forest">
                   What your support sustains
                 </p>
                 <BulletList items={siteList(copy, 'support.reasons.items')} />
@@ -104,7 +104,7 @@ export default async function SupportAsca() {
           <div className="container max-w-5xl">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <article className="editorial-card p-8 md:p-10">
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-brand-forest">Participation</p>
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-brand-forest">Participation</p>
                 <h2 className="mt-5 font-serif text-3xl font-medium text-brand-fg-primary">
                   {siteText(copy, 'support.other.title')}
                 </h2>
@@ -113,7 +113,7 @@ export default async function SupportAsca() {
               </article>
 
               <article className="editorial-card p-8 md:p-10">
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-brand-forest">Current priorities</p>
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-brand-forest">Current priorities</p>
                 <h2 className="mt-5 font-serif text-3xl font-medium text-brand-fg-primary">
                   {siteText(copy, 'support.needs.title')}
                 </h2>
@@ -146,7 +146,7 @@ export default async function SupportAsca() {
 
         <section className="forest-luxe py-20 text-white md:py-24">
           <div className="container max-w-3xl text-center">
-            <p className="heritage-rule justify-center text-[10px] font-bold uppercase tracking-[0.24em] text-brand-accent">
+            <p className="heritage-rule justify-center text-xs font-bold uppercase tracking-[0.12em] text-brand-accent">
               With gratitude
             </p>
             <p className="mx-auto mt-7 max-w-2xl font-serif text-2xl font-medium leading-relaxed md:text-3xl">
