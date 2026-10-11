@@ -53,7 +53,7 @@ export default async function Members() {
             <div className="grid gap-12 lg:grid-cols-[.9fr_1.1fr] lg:items-center lg:gap-16">
               <div>
                 <p className="section-label">{siteText(copy, 'members.intro.label')}</p>
-                <h2 className="font-serif text-4xl font-medium tracking-tight text-brand-fg-primary md:text-5xl">
+                <h2 className="font-serif text-4xl font-semibold tracking-tight text-brand-fg-primary md:text-5xl">
                   {siteText(copy, 'members.intro.title')}
                 </h2>
                 <div className="mt-6 h-px w-16 bg-brand-accent" aria-hidden="true" />
@@ -90,21 +90,16 @@ export default async function Members() {
           <div className="container">
             <div className="mx-auto mb-14 max-w-3xl text-center">
               <p className="section-label">{siteText(copy, 'members.reasons.label')}</p>
-              <h2 className="font-serif text-4xl font-medium tracking-tight text-brand-fg-primary md:text-5xl">
+              <h2 className="font-serif text-4xl font-semibold tracking-tight text-brand-fg-primary md:text-5xl">
                 {siteText(copy, 'members.reasons.title')}
               </h2>
             </div>
 
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {siteList(copy, 'members.reasons.items').map((reason, index) => (
-                <article key={reason} className="editorial-card group min-h-[165px] p-7">
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="font-serif text-sm italic text-brand-fg-muted">
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                    <span className="h-px flex-1 bg-brand-accent/55" aria-hidden="true" />
-                  </div>
-                  <p className="mt-7 font-serif text-2xl font-medium leading-tight text-brand-fg-primary">{reason}</p>
+              {siteList(copy, 'members.reasons.items').map((reason) => (
+                <article key={reason} className="editorial-card min-h-[150px] p-7">
+                  <div className="h-px w-10 bg-brand-accent" aria-hidden="true" />
+                  <p className="mt-6 font-serif text-2xl font-semibold leading-tight text-brand-fg-primary">{reason}</p>
                 </article>
               ))}
             </div>
@@ -115,23 +110,20 @@ export default async function Members() {
           <div className="container">
             <div className="mx-auto mb-14 max-w-3xl text-center">
               <p className="section-label">{siteText(copy, 'members.facts.label')}</p>
-              <h2 className="font-serif text-4xl font-medium tracking-tight text-brand-fg-primary md:text-5xl">
+              <h2 className="font-serif text-4xl font-semibold tracking-tight text-brand-fg-primary md:text-5xl">
                 {siteText(copy, 'members.facts.title')}
               </h2>
             </div>
 
             <div className="grid grid-cols-1 gap-px overflow-hidden rounded-[1.5rem] border border-brand-forest/10 bg-brand-forest/10 sm:grid-cols-2 lg:grid-cols-3">
-              {publicFacts.map((fact, index) => (
+              {publicFacts.map((fact) => (
                 <article key={fact.label} className="bg-[#fbfaf6] p-7 md:p-8">
                   <p className="text-xs font-bold uppercase tracking-[0.12em] text-brand-forest">
                     {fact.label}
                   </p>
                   <div className="mt-5 h-px w-10 bg-brand-accent" aria-hidden="true" />
-                  <p className="mt-5 font-serif text-2xl font-medium leading-snug text-brand-fg-primary">
+                  <p className="mt-5 font-serif text-2xl font-semibold leading-snug text-brand-fg-primary">
                     {fact.value}
-                  </p>
-                  <p className="mt-5 text-xs font-bold uppercase tracking-[0.12em] text-brand-fg-muted">
-                    ASCA · {String(index + 1).padStart(2, '0')}
                   </p>
                 </article>
               ))}
@@ -140,12 +132,11 @@ export default async function Members() {
         </section>
 
         <section className="forest-luxe relative overflow-hidden py-24 text-white md:py-28">
-          <div className="absolute inset-[14px] rounded-[1.5rem] border border-brand-accent/15" aria-hidden="true" />
           <div className="container relative z-10 max-w-4xl text-center">
-            <p className="heritage-rule justify-center text-xs font-bold uppercase tracking-[0.12em] text-brand-accent">
+            <p className="section-label text-brand-accent">
               Membership
             </p>
-            <h2 className="mt-7 font-serif text-4xl font-medium tracking-tight md:text-6xl">
+            <h2 className="mt-7 font-serif text-4xl font-semibold tracking-tight md:text-6xl">
               {siteText(copy, 'members.final.title')}
             </h2>
             <p className="mx-auto mt-6 max-w-3xl text-base leading-8 text-white/90 md:text-lg md:leading-9">
