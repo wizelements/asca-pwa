@@ -86,10 +86,10 @@ export default async function GetInvolved() {
               {cards.map((card) => (
                 <article key={card.title} className="editorial-card group flex min-h-[300px] flex-col p-8 md:p-10">
                   <div className="flex items-start justify-between gap-4">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-brand-forest">
+                    <p className="text-xs font-bold uppercase tracking-[0.12em] text-brand-forest">
                       A way into ASCA
                     </p>
-                    <span className="font-serif text-sm italic text-brand-fg-muted/60">{card.numeral}</span>
+                    <span className="font-serif text-sm italic text-brand-fg-muted">{card.numeral}</span>
                   </div>
                   <div className="mt-8 h-px w-12 bg-brand-accent transition-all duration-300 group-hover:w-20" aria-hidden="true" />
                   <h3 className="mt-6 font-serif text-3xl font-medium leading-tight text-brand-fg-primary">
@@ -103,14 +103,14 @@ export default async function GetInvolved() {
                       href={card.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-7 inline-flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.16em] text-brand-forest hover:text-brand-forest-muted"
+                      className="mt-7 inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[0.16em] text-brand-forest hover:text-brand-forest-muted"
                     >
                       {card.cta} <span aria-hidden="true">→</span>
                     </a>
                   ) : (
                     <Link
                       href={card.href}
-                      className="mt-7 inline-flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.16em] text-brand-forest hover:text-brand-forest-muted"
+                      className="mt-7 inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[0.16em] text-brand-forest hover:text-brand-forest-muted"
                     >
                       {card.cta} <span aria-hidden="true">→</span>
                     </Link>
@@ -145,7 +145,7 @@ export default async function GetInvolved() {
 
         <section className="forest-luxe py-16 text-white md:py-20">
           <div className="container max-w-3xl text-center">
-            <p className="heritage-rule justify-center text-[10px] font-bold uppercase tracking-[0.24em] text-brand-accent">
+            <p className="heritage-rule justify-center text-xs font-bold uppercase tracking-[0.12em] text-brand-accent">
               Next step
             </p>
             <p className="mx-auto mt-6 max-w-2xl font-serif text-2xl font-medium leading-relaxed md:text-3xl">
