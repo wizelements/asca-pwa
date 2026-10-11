@@ -225,12 +225,12 @@ test.describe('authenticated admin client workspace', () => {
       await route.fulfill({
         status: 503,
         contentType: 'application/json',
-        body: JSON.stringify({ error: 'AI descriptions are not configured on this site. Please ask the site administrator to enable the feature, or enter descriptions manually.' }),
+        body: JSON.stringify({ error: 'Automatic photo descriptions are not connected yet. Ask the ASCA site administrator to enable OPEE, or enter descriptions manually.' }),
       });
     });
-    const aiButton = page.getByRole('button', { name: /Generate missing descriptions with AI/ });
+    const aiButton = page.getByRole('button', { name: /Generate missing descriptions with OPEE/ });
     await aiButton.click();
-    await expect(page.locator('div[role="alert"].rounded-xl').filter({ hasText: 'AI descriptions are not configured' })).toBeVisible();
+    await expect(page.locator('div[role="alert"].rounded-xl').filter({ hasText: 'Automatic photo descriptions are not connected yet' })).toBeVisible();
     await page.unroute('**/api/gallery/describe');
 
     await page.route('**/api/gallery/describe', async (route) => {
