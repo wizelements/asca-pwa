@@ -104,7 +104,7 @@ class VisionWorkerTests(unittest.TestCase):
         with running() as url, patch("server.send_ollama", side_effect=URLError("unavailable")):
             status, result = post(url, BODY)
             self.assertEqual(status, 503)
-            self.assertNotIn("unavailable", json.dumps(result))
+            self.assertEqual(result["error"]["message"], "OPEE vision analysis is temporarily unavailable.")
 
     def test_rate_limit_is_bounded(self):
         with running() as url, patch("server.send_ollama", return_value="A brown horse stands near a fence.") as model:
