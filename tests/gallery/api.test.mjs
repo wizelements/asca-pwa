@@ -383,21 +383,30 @@ describe('Gallery API authorization and integrity', () => {
     const viewer = await POST(req({ ...photoRequest, headers: authHeaders(viewerToken) }));
     assert.equal(viewer.status, 403);
 
-    const oldKey = process.env.OPENAI_API_KEY;
+    const oldUrl = process.env.OPEE_ASCA_VISION_URL;
+    const oldToken = process.env.OPEE_ASCA_VISION_TOKEN;
     const oldFetch = globalThis.fetch;
     try {
-      delete process.env.OPENAI_API_KEY;
+      delete process.env.OPEE_ASCA_VISION_URL;
+      delete process.env.OPEE_ASCA_VISION_TOKEN;
       const missingConfig = await POST(req(photoRequest));
       assert.equal(missingConfig.status, 503);
-      assert.match((await missingConfig.json()).error, /not configured/i);
+      assert.match((await missingConfig.json()).error, /not connected/i);
 
-      process.env.OPENAI_API_KEY = 'synthetic-test-key';
+      process.env.OPEE_ASCA_VISION_URL = 'https://vision.opee.invalid/v1/chat/completions';
+      process.env.OPEE_ASCA_VISION_TOKEN = 'synthetic-test-token';
+      const malformedUrl = process.env.OPEE_ASCA_VISION_URL;
+      process.env.OPEE_ASCA_VISION_URL = 'http://127.0.0.1:18790/v1/chat/completions';
+      const insecureConfig = await POST(req(photoRequest));
+      assert.equal(insecureConfig.status, 503);
+      process.env.OPEE_ASCA_VISION_URL = malformedUrl;
       let called = 0;
       globalThis.fetch = async (url, options) => {
-        assert.equal(url, 'https://api.openai.com/v1/chat/completions');
-        assert.equal(options.headers.Authorization, 'Bearer synthetic-test-key');
+        assert.equal(url, 'https://vision.opee.invalid/v1/chat/completions');
+        assert.equal(options.headers.Authorization, 'Bearer synthetic-test-token');
         const payload = JSON.parse(options.body);
-        assert.equal(payload.store, false);
+        assert.equal(payload.stream, false);
+        assert.equal(payload.model, undefined); // OPEE makes its own model-selection decision
         assert.ok(payload.messages[1].content[0].text.includes('ASCA Trail Ride'));
         assert.ok(payload.messages[1].content[1].image_url.url.startsWith('data:image/png;base64,'));
         called++;
@@ -410,6 +419,7 @@ describe('Gallery API authorization and integrity', () => {
       const suggestion = await response.json();
       assert.match(suggestion.description, /participants standing beside horses/);
       assert.equal(suggestion.reviewRequired, true);
+      assert.equal(suggestion.provider, 'opee');
       assert.equal(called, 1);
 
       // AI-generated text is only returned to an editor; it never approves or publishes.
@@ -420,8 +430,10 @@ describe('Gallery API authorization and integrity', () => {
       assert.equal(String(draft.rows[0].privacy_review_status), 'pending');
     } finally {
       globalThis.fetch = oldFetch;
-      if (oldKey === undefined) delete process.env.OPENAI_API_KEY;
-      else process.env.OPENAI_API_KEY = oldKey;
+      if (oldUrl === undefined) delete process.env.OPEE_ASCA_VISION_URL;
+      else process.env.OPEE_ASCA_VISION_URL = oldUrl;
+      if (oldToken === undefined) delete process.env.OPEE_ASCA_VISION_TOKEN;
+      else process.env.OPEE_ASCA_VISION_TOKEN = oldToken;
     }
   });
 
