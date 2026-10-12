@@ -8,6 +8,9 @@ import { getSiteUrl } from '@/lib/site-url';
 import AlbumDetailClient from './AlbumDetailClient';
 import Breadcrumbs from '@/components/gallery/Breadcrumbs';
 
+// An album may be unpublished or have its privacy clearance revoked at any time.
+export const dynamic = 'force-dynamic';
+
 interface AlbumDetailPageProps {
   params: Promise<{ slug: string }>;
   searchParams?: Promise<{ photo?: string }>;
