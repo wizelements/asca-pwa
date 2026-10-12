@@ -194,5 +194,27 @@ test.describe('authenticated admin client workspace', () => {
     await expect(page.getByRole('link', { name: /View public page/ }).first()).toBeVisible();
     await expect(page.getByText(/dynamic records such as Events, Gallery Albums, Horses, Members/i)).toBeVisible();
   });
+  test('album inventory reconciles public visibility, separate legacy media, and search', async ({ page }) => {
+    await signIn(page);
+    await markTourCompleteAndClose(page);
+    await page.goto('/admin/albums');
+
+    await expect(page.getByRole('heading', { name: 'Gallery albums' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Public site visibility' })).toBeVisible();
+    await expect(page.getByText('E2E Trail Ride')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Live — view album' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Review older gallery photos' })).toHaveAttribute('href', '/admin/gallery');
+    await expect(page.getByRole('option', { name: 'Every album (including trash)' })).toHaveCount(1);
+
+    await page.getByRole('searchbox', { name: 'Search album title, category, or slug' }).fill('not-an-existing-album-2026');
+    await expect(page.getByText('0 matching record(s)')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'No albums match this filter' })).toBeVisible();
+
+    await page.getByRole('searchbox', { name: 'Search album title, category, or slug' }).fill('E2E Trail Ride');
+    await expect(page.getByText('1 matching record(s)')).toBeVisible();
+    await expect(page.getByText('E2E Trail Ride')).toBeVisible();
+  });
+
+
 
 });
