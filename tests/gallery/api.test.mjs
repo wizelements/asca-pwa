@@ -164,6 +164,85 @@ describe('Gallery API authorization and integrity', () => {
     assert.ok(data.some((album) => album.slug === 'draft-album'));
   });
 
+  it('reconciles the admin inventory with live eligibility, search, trash, and legacy photos', async () => {
+    const { GET } = await importApi('albums');
+    // Old flat-gallery photos are not albums; the inventory must count them separately.
+    await client.execute({
+      sql: "INSERT INTO gallery_images (title, description, category, image, alt, sort_order, published, uploaded_at) VALUES ('Old photo', '', 'Trail Rides', 'old.jpg', 'A rider', 0, 1, unixepoch())",
+      args: [],
+    });
+    await client.execute({
+      sql: "INSERT INTO activity_albums (title, slug, category_id, status, privacy_review_status, sort_order, created_at, updated_at, deleted_at) VALUES ('Recovered Old Album', 'recovered-old-album', ?, 'archived', 'pending', 0, unixepoch(), unixepoch(), unixepoch())",
+      args: [categoryId],
+    });
+    try {
+      const editor = await GET(req({ headers: authHeaders(editorToken) }));
+      assert.equal(editor.status, 200);
+      const editorAlbums = await editor.json();
+      assert.ok(editorAlbums.some(album => album.slug === 'draft-album'));
+      assert.ok(!editorAlbums.some(album => album.slug === 'recovered-old-album'));
+      assert.equal(editorAlbums.find(album => album.slug === 'published-album').visibility.eligible, true);
+      const blocked = editorAlbums.find(album => album.slug === 'draft-album');
+      assert.equal(blocked.visibility.eligible, false);
+      assert.ok(blocked.visibility.reasons.some(reason => /not published/i.test(reason)));
+      assert.ok(blocked.visibility.reasons.some(reason => /privacy/i.test(reason)));
+
+      const admin = await GET(req({
+        url: 'http://localhost/api/gallery/albums?status=all&pageSize=50',
+        headers: authHeaders(adminToken),
+      }));
+      assert.equal(admin.status, 200);
+      assert.ok((await admin.json()).some(album => album.slug === 'recovered-old-album'));
+      assert.equal(admin.headers.get('X-Trash-Count'), '1');
+      assert.equal(admin.headers.get('X-Legacy-Photo-Count'), '1');
+      assert.equal(admin.headers.get('X-Public-Album-Count'), '1');
+
+      const privateViewer = await GET(req({
+        url: 'http://localhost/api/gallery/albums?status=all',
+        headers: authHeaders(viewerToken),
+      }));
+      assert.equal(privateViewer.status, 200);
+      assert.deepEqual((await privateViewer.json()).map(album => album.slug), ['published-album']);
+
+      const searched = await GET(req({
+        url: 'http://localhost/api/gallery/albums?search=draft&pageSize=1',
+        headers: authHeaders(editorToken),
+      }));
+      assert.equal(searched.status, 200);
+      assert.equal(searched.headers.get('X-Total-Count'), '1');
+      assert.equal((await searched.json())[0].slug, 'draft-album');
+
+      const literalWildcard = await GET(req({
+        url: 'http://localhost/api/gallery/albums?search=%25',
+        headers: authHeaders(editorToken),
+      }));
+      assert.equal(literalWildcard.status, 200);
+      assert.equal((await literalWildcard.json()).length, 0);
+    } finally {
+      await client.execute({ sql: "DELETE FROM activity_albums WHERE slug = 'recovered-old-album'", args: [] });
+      await client.execute({ sql: "DELETE FROM gallery_images WHERE title = 'Old photo'", args: [] });
+    }
+  });
+
+  it('explains published album missing its linked cover instead of labeling it live', async () => {
+    await seedAsset(client, 'asset-unattached-cover');
+    await client.execute({
+      sql: "INSERT INTO activity_albums (title, slug, category_id, cover_media_asset_id, status, privacy_review_status, sort_order, created_at, updated_at, deleted_at) VALUES ('Broken Cover Album', 'broken-cover-album', ?, 'asset-unattached-cover', 'published', 'approved', 0, unixepoch(), unixepoch(), NULL)",
+      args: [categoryId],
+    });
+    try {
+      const { GET } = await importApi('albums');
+      const response = await GET(req({ headers: authHeaders(adminToken) }));
+      assert.equal(response.status, 200);
+      const album = (await response.json()).find(row => row.slug === 'broken-cover-album');
+      assert.equal(album.coverAttached, false);
+      assert.equal(album.visibility.eligible, false);
+      assert.ok(album.visibility.reasons.some(reason => /cover photo/i.test(reason)));
+    } finally {
+      await client.execute({ sql: "DELETE FROM activity_albums WHERE slug = 'broken-cover-album'", args: [] });
+    }
+  });
+
   it('rejects oversized and unsupported media uploads', async () => {
     const { POST } = await importApi('media');
     const oversized = await POST(req({
@@ -369,4 +448,73 @@ describe('Gallery API authorization and integrity', () => {
     const data = await response.json();
     assert.match(data.error, /still in use/i);
   });
+  it('suggests grounded photo alt text but never bypasses privacy review', async () => {
+    const { POST } = await importApi('describe');
+    const photoRequest = {
+      method: 'POST',
+      url: 'http://localhost/api/gallery/describe',
+      headers: authHeaders(editorToken),
+      body: {
+        dataUrl: DATA_URL,
+        context: { title: 'ASCA Trail Ride', category: 'Trail Rides', summary: 'A riding day' },
+      },
+    };
+    const viewer = await POST(req({ ...photoRequest, headers: authHeaders(viewerToken) }));
+    assert.equal(viewer.status, 403);
+
+    const oldUrl = process.env.OPEE_ASCA_VISION_URL;
+    const oldToken = process.env.OPEE_ASCA_VISION_TOKEN;
+    const oldFetch = globalThis.fetch;
+    try {
+      delete process.env.OPEE_ASCA_VISION_URL;
+      delete process.env.OPEE_ASCA_VISION_TOKEN;
+      const missingConfig = await POST(req(photoRequest));
+      assert.equal(missingConfig.status, 503);
+      assert.match((await missingConfig.json()).error, /not connected/i);
+
+      process.env.OPEE_ASCA_VISION_URL = 'https://vision.opee.invalid/v1/chat/completions';
+      process.env.OPEE_ASCA_VISION_TOKEN = 'synthetic-test-token';
+      const malformedUrl = process.env.OPEE_ASCA_VISION_URL;
+      process.env.OPEE_ASCA_VISION_URL = 'http://127.0.0.1:18790/v1/chat/completions';
+      const insecureConfig = await POST(req(photoRequest));
+      assert.equal(insecureConfig.status, 503);
+      process.env.OPEE_ASCA_VISION_URL = malformedUrl;
+      let called = 0;
+      globalThis.fetch = async (url, options) => {
+        assert.equal(url, 'https://vision.opee.invalid/v1/chat/completions');
+        assert.equal(options.headers.Authorization, 'Bearer synthetic-test-token');
+        const payload = JSON.parse(options.body);
+        assert.equal(payload.stream, false);
+        assert.equal(payload.model, undefined); // OPEE makes its own model-selection decision
+        assert.ok(payload.messages[1].content[0].text.includes('ASCA Trail Ride'));
+        assert.ok(payload.messages[1].content[1].image_url.url.startsWith('data:image/png;base64,'));
+        called++;
+        return new Response(JSON.stringify({
+          choices: [{ message: { content: 'Saddle club participants standing beside horses on a sunlit trail.' } }],
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      };
+      const response = await POST(req(photoRequest));
+      assert.equal(response.status, 200);
+      const suggestion = await response.json();
+      assert.match(suggestion.description, /participants standing beside horses/);
+      assert.equal(suggestion.reviewRequired, true);
+      assert.equal(suggestion.provider, 'opee');
+      assert.equal(called, 1);
+
+      // AI-generated text is only returned to an editor; it never approves or publishes.
+      const draft = await client.execute({
+        sql: "SELECT status, privacy_review_status FROM activity_albums WHERE slug = 'editor-attempt'",
+      });
+      assert.equal(String(draft.rows[0].status), 'draft');
+      assert.equal(String(draft.rows[0].privacy_review_status), 'pending');
+    } finally {
+      globalThis.fetch = oldFetch;
+      if (oldUrl === undefined) delete process.env.OPEE_ASCA_VISION_URL;
+      else process.env.OPEE_ASCA_VISION_URL = oldUrl;
+      if (oldToken === undefined) delete process.env.OPEE_ASCA_VISION_TOKEN;
+      else process.env.OPEE_ASCA_VISION_TOKEN = oldToken;
+    }
+  });
+
+
 });

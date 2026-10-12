@@ -18,6 +18,9 @@ import Breadcrumbs from '@/components/gallery/Breadcrumbs';
 import PublicEmptyState from '@/components/gallery/PublicEmptyState';
 import { getCachedSiteContent, siteText, type SiteContentValues } from '@/lib/site-content';
 
+// Reconcile directly with the authoritative album database on each public request.
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: { absolute: 'Photo Gallery | ASCA' },
   description: 'Photos from ASCA events, trail rides, and community activities. See our horses, riders, and members in action.',

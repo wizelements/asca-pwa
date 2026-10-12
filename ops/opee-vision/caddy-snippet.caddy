@@ -1,0 +1,12 @@
+# Insert *inside the existing HTTPS site block*, before the default
+# "handle { respond 404 }" route. Do not use a wildcard /v1/* proxy.
+# This exact ASCA path is the only public surface for the image-only worker.
+handle /asca-vision/v1/chat/completions {
+    uri strip_prefix /asca-vision
+    reverse_proxy 127.0.0.1:18886 {
+        transport http {
+            dial_timeout 3s
+            response_header_timeout 47s
+        }
+    }
+}

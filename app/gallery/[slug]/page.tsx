@@ -8,6 +8,9 @@ import { getSiteUrl } from '@/lib/site-url';
 import AlbumDetailClient from './AlbumDetailClient';
 import Breadcrumbs from '@/components/gallery/Breadcrumbs';
 
+// Newly published, archived and privacy-restricted albums must be reflected on the next request.
+export const dynamic = 'force-dynamic';
+
 interface AlbumDetailPageProps {
   params: Promise<{ slug: string }>;
   searchParams?: Promise<{ photo?: string }>;

@@ -7,6 +7,7 @@ import MediaManager, { type ManagedMediaItem } from '@/components/gallery/MediaM
 import { useToast } from '@/components/admin/ToastProvider';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { slugify } from '@/lib/gallery/slug';
+import { isGenericAltText } from '@/lib/gallery/validation';
 
 interface Category {
   id: number;
@@ -27,6 +28,18 @@ interface PendingMedia {
   caption: string;
 }
 
+function savedPhotoSignature(items: ManagedMediaItem[], cover: string | null): string {
+  return JSON.stringify({
+    cover,
+    items: items.map((item) => ({
+      id: item.mediaAssetId,
+      altText: item.altText,
+      caption: item.caption ?? null,
+      sortOrder: item.sortOrder,
+    })),
+  });
+}
+
 const MAX_UPLOAD_SIZE_BYTES = 8 * 1024 * 1024;
 const MAX_OUTPUT_DIMENSION = 1800;
 const JPEG_QUALITY = 0.84;
@@ -35,17 +48,17 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error('Unable to read this image. Use JPG, PNG, or WebP.'));
+    image.onerror = () => reject(new Error('The browser could not open this image. It may be damaged or unsupported; try exporting it as JPG or PNG.'));
     image.src = src;
   });
 }
 
 async function optimizeImage(file: File): Promise<string> {
   if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-    throw new Error(file.name + ': unsupported image format.');
+    throw new Error('This file is not a JPG, PNG or WebP photo. Convert it to a supported format and try again.');
   }
   if (file.size > MAX_UPLOAD_SIZE_BYTES) {
-    throw new Error(file.name + ': image is larger than 8 MB.');
+    throw new Error('The original photo exceeds 8 MB. Reduce its file size and select it again.');
   }
 
   const objectUrl = URL.createObjectURL(file);
@@ -93,18 +106,37 @@ export default function AdminAlbumEditPage() {
   const [coverId, setCoverId] = useState<string | null>(null);
   const [media, setMedia] = useState<ManagedMediaItem[]>([]);
   const [originalMediaIds, setOriginalMediaIds] = useState<string[]>([]);
+  const [savedMediaSignature, setSavedMediaSignature] = useState('');
   const [newMedia, setNewMedia] = useState<PendingMedia[]>([]);
   const [preparingImages, setPreparingImages] = useState(false);
+  const [describing, setDescribing] = useState(false);
+  const [descriptionProgress, setDescriptionProgress] = useState('');
+  const [photoIssues, setPhotoIssues] = useState<string[]>([]);
 
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!isNew);
   const [error, setError] = useState('');
 
   const pageTitle = isNew ? 'Create gallery album' : 'Edit gallery album';
+  const missingDescriptionCount = newMedia.filter((item) => isGenericAltText(item.altText)).length +
+    media.filter((item) => isGenericAltText(item.altText)).length;
   const removedMediaIds = useMemo(
     () => originalMediaIds.filter((mediaAssetId) => !media.some((item) => item.mediaAssetId === mediaAssetId)),
     [originalMediaIds, media]
   );
+  const hasUnsavedPhotoChanges = newMedia.length > 0 || savedPhotoSignature(media, coverId) !== savedMediaSignature;
+  const publicationBlockers = useMemo(() => {
+    const reasons: string[] = [];
+    if (status === 'archived') reasons.push('Restore this album to draft before publishing.');
+    if (privacyReviewStatus === 'pending') reasons.push('Privacy review is pending. An administrator must review permissions and approve this album.');
+    if (privacyReviewStatus === 'restricted') reasons.push('This album is restricted. Confirm permission before changing its privacy status.');
+    if (!media.length) reasons.push('Add at least one photo and save the album.');
+    if (!coverId || !media.some((item) => item.mediaAssetId === coverId)) reasons.push('Choose an attached cover photo, then save.');
+    if (media.some((item) => isGenericAltText(item.altText))) reasons.push('Some photos need specific descriptions. Use Generate missing descriptions or edit their alt text and save.');
+    if (!categories.some((item) => String(item.id) === categoryId)) reasons.push('Choose an active album category and save.');
+    if (hasUnsavedPhotoChanges) reasons.push('Save the current photo edits before publishing.');
+    return reasons;
+  }, [status, privacyReviewStatus, media, coverId, categories, categoryId, hasUnsavedPhotoChanges]);
 
   useEffect(() => {
     void fetchCategories();
@@ -175,6 +207,7 @@ export default function AdminAlbumEditPage() {
     setCoverId(data.coverMediaAssetId || nextMedia[0]?.mediaAssetId || null);
     setMedia(nextMedia);
     setOriginalMediaIds(nextMedia.map((item) => item.mediaAssetId));
+    setSavedMediaSignature(savedPhotoSignature(nextMedia, data.coverMediaAssetId || nextMedia[0]?.mediaAssetId || null));
   };
 
   const fetchAlbum = async () => {
@@ -203,23 +236,103 @@ export default function AdminAlbumEditPage() {
   const handleFiles = async (files: FileList | null) => {
     if (!files?.length) return;
     setPreparingImages(true);
+    setPhotoIssues([]);
     try {
-      const selected = Array.from(files);
-      const prepared = await Promise.all(
-        selected.map(async (file, index) => ({
-          key: file.name + '-' + file.lastModified + '-' + index,
+      const outcomes = await Promise.allSettled(
+        Array.from(files).map(async (file, index) => ({
+          key: file.name + '-' + file.lastModified + '-' + index + '-' + Date.now(),
           name: file.name,
           dataUrl: await optimizeImage(file),
           altText: '',
           caption: '',
         }))
       );
-      setNewMedia((current) => [...current, ...prepared]);
-      toast.success(prepared.length + (prepared.length === 1 ? ' image ready to add' : ' images ready to add'));
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Unable to prepare images.');
+      const prepared: PendingMedia[] = [];
+      const issues: string[] = [];
+      outcomes.forEach((outcome, index) => {
+        if (outcome.status === 'fulfilled') prepared.push(outcome.value);
+        else issues.push(files[index].name + ': ' + (outcome.reason instanceof Error ? outcome.reason.message : 'The photo could not be read.'));
+      });
+      if (prepared.length) {
+        setNewMedia((current) => [...current, ...prepared]);
+        toast.success(prepared.length + ' photo(s) prepared locally. Generate or enter descriptions, then select Save to upload.');
+      }
+      if (issues.length) {
+        setPhotoIssues(issues);
+        toast.error(issues.length + ' photo(s) could not be prepared. See details below.');
+      }
+    } catch {
+      setPhotoIssues(['The browser could not prepare these photos. Try selecting fewer photos or smaller JPG, PNG or WebP files.']);
     } finally {
       setPreparingImages(false);
+    }
+  };
+
+  const generateMissingDescriptions = async () => {
+    if (describing || preparingImages || saving) return;
+    const targets = [
+      ...media.filter((item) => isGenericAltText(item.altText)).map((item, index) => ({
+        kind: 'saved' as const, id: item.mediaAssetId, label: 'Saved photo ' + (index + 1),
+      })),
+      ...newMedia.filter((item) => isGenericAltText(item.altText)).map((item) => ({
+        kind: 'new' as const, id: item.key, label: item.name, dataUrl: item.dataUrl,
+      })),
+    ];
+    if (!targets.length) {
+      toast.success('Every photo already has a description. Review the text for accuracy before publishing.');
+      return;
+    }
+    if (!title.trim()) {
+      setPhotoIssues(['Enter the album title first so AI descriptions can use the right context.']);
+      return;
+    }
+    setDescribing(true);
+    setPhotoIssues([]);
+    const issues: string[] = [];
+    let completed = 0;
+    try {
+      // Limit a single bulk action: keeps provider costs and timeouts bounded.
+      const selected = targets.slice(0, 20);
+      for (const [index, item] of selected.entries()) {
+        setDescriptionProgress('Describing photo ' + (index + 1) + ' of ' + selected.length + '…');
+        try {
+          const response = await request('/api/gallery/describe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ...(item.kind === 'new' ? { dataUrl: item.dataUrl } : { albumId, mediaAssetId: item.id }),
+              context: { title: title.trim(), category: categories.find((category) => String(category.id) === categoryId)?.name, summary: summary.trim().slice(0, 500) },
+            }),
+          });
+          const body = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(typeof body.error === 'string' ? body.error : 'AI was unable to describe this photo.');
+          if (typeof body.description !== 'string' || isGenericAltText(body.description)) {
+            throw new Error('AI did not return a useful description. Add one manually.');
+          }
+          if (item.kind === 'new') {
+            setNewMedia((current) => current.map((entry) => entry.key === item.id && isGenericAltText(entry.altText)
+              ? { ...entry, altText: body.description } : entry));
+          } else {
+            setMedia((current) => current.map((entry) => entry.mediaAssetId === item.id && isGenericAltText(entry.altText)
+              ? { ...entry, altText: body.description } : entry));
+          }
+          completed++;
+        } catch (error) {
+          const detail = error instanceof Error ? error.message : 'Unable to generate a description.';
+          issues.push(item.label + ': ' + detail);
+          // Stop after a configuration or authorization failure; repeating cannot help.
+          if (/not connected|OPEE needs|session expired|cannot edit/i.test(detail)) break;
+        }
+      }
+      if (targets.length > selected.length) issues.push('Only 20 photos are processed at a time. Use the button again to describe the remaining photos.');
+      if (completed) toast.success(completed + ' AI description(s) suggested. Check accuracy and save the album.');
+      if (issues.length) {
+        setPhotoIssues(issues);
+        toast.error('Some descriptions need attention. See the specific reasons below.');
+      }
+    } finally {
+      setDescribing(false);
+      setDescriptionProgress('');
     }
   };
 
@@ -229,8 +342,8 @@ export default function AdminAlbumEditPage() {
 
   const uploadNewMedia = async (): Promise<ManagedMediaItem[]> => {
     if (!newMedia.length) return [];
-    const missingAlt = newMedia.find((item) => !item.altText.trim());
-    if (missingAlt) throw new Error('Add descriptive alt text for every new image before saving.');
+    const missingAlt = newMedia.find((item) => isGenericAltText(item.altText));
+    if (missingAlt) throw new Error('"' + missingAlt.name + '" needs a meaningful photo description. Select Generate missing descriptions with OPEE or type what is visible.');
 
     const results = await Promise.allSettled(
       newMedia.map(async (item, index) => {
@@ -240,7 +353,16 @@ export default function AdminAlbumEditPage() {
           body: JSON.stringify({ dataUrl: item.dataUrl }),
         });
         const body = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error('Image ' + (index + 1) + ': ' + (body.error || res.statusText));
+        if (!res.ok) {
+          const cause = typeof body.error === 'string' ? body.error : '';
+          const advice = res.status === 413 ? 'Try a smaller photo.'
+            : res.status === 429 ? 'Too many uploads. Retry in a few minutes.'
+            : res.status === 401 ? 'Sign in again, then retry.'
+            : res.status === 403 ? 'Your account needs gallery editor permission.'
+            : res.status >= 500 ? 'The site could not save this photo. Try again shortly.'
+            : cause || 'The site rejected this image.';
+          throw new Error('Photo ' + (index + 1) + ' (' + item.name + '): ' + advice);
+        }
         return {
           mediaAssetId: body.id,
           url: body.url,
@@ -260,7 +382,7 @@ export default function AdminAlbumEditPage() {
 
     if (errors.length) {
       await Promise.all(uploaded.map((item) => deleteUnattachedAsset(item.mediaAssetId)));
-      throw new Error(errors.join('; '));
+      throw new Error('The upload was not completed. ' + errors.join(' ') + ' Your selected photos remain in the editor. Check the album before trying again.');
     }
     return uploaded;
   };
@@ -277,11 +399,14 @@ export default function AdminAlbumEditPage() {
   });
 
   const saveAlbum = async (): Promise<any> => {
-    if (!title.trim()) throw new Error('Album title is required.');
-    if (!slug.trim()) throw new Error('Page URL is required.');
-    if (!categoryId) throw new Error('Choose a category.');
-    if (media.some((item) => !item.altText.trim())) {
-      throw new Error('Every existing image needs descriptive alt text before saving.');
+    if (!title.trim()) throw new Error('Add an album title before saving.');
+    if (!slug.trim()) throw new Error('Add an album page address. Normally this is created from the album title.');
+    if (!categoryId) throw new Error('Choose a category for this album before saving.');
+    if (media.some((item) => isGenericAltText(item.altText))) {
+      throw new Error('Some saved photos have missing or vague descriptions. Select Generate missing descriptions with OPEE or describe what is visible in each photo.');
+    }
+    if (newMedia.some((item) => isGenericAltText(item.altText))) {
+      throw new Error('Some new photos need descriptions before upload. Select Generate missing descriptions or add them manually. Photos have not been uploaded yet.');
     }
 
     const uploaded = await uploadNewMedia();
@@ -332,7 +457,9 @@ export default function AdminAlbumEditPage() {
     const result = await res.json().catch(() => ({}));
     if (!res.ok) {
       if (uploaded.length) await Promise.all(uploaded.map((item) => deleteUnattachedAsset(item.mediaAssetId)));
-      const message = typeof result.error === 'string' ? result.error : 'Unable to save album.';
+      const details = result.error && typeof result.error === 'object' ? result.error : null;
+      const validationText = details ? [ ...(Array.isArray(details.formErrors) ? details.formErrors : []), ...Object.values(details.fieldErrors || {}).flat().filter((value): value is string => typeof value === 'string') ].join(' ') : '';
+      const message = typeof result.error === 'string' ? result.error : validationText || (res.status === 413 ? 'Too many photos or too much data at once. Save fewer photos at a time.' : res.status === 403 ? 'Your account cannot save albums. Ask an ASCA administrator to check your permissions.' : res.status >= 500 ? 'The site could not confirm this save. Check the album list before retrying to avoid duplicates.' : 'Unable to save this album. Check the form and try again.');
       throw new Error(message);
     }
 
@@ -348,9 +475,10 @@ export default function AdminAlbumEditPage() {
     event.preventDefault();
     setSaving(true);
     setError('');
+    setPhotoIssues([]);
     try {
       const result = await saveAlbum();
-      toast.success(isNew ? 'Album draft created' : 'Album changes saved');
+      toast.success(isNew ? 'Album and photos saved as a private draft. An administrator must review privacy and publish it.' : 'Photo and album changes saved. Publishing is a separate approval step.');
       if (isNew) router.replace('/admin/albums/' + result.id);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unable to save album.';
@@ -411,7 +539,16 @@ export default function AdminAlbumEditPage() {
       <div className="max-w-4xl space-y-6">
         {error && (
           <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-800">
-            {error}
+            <p>Album not saved: {error}</p>
+            <p className="mt-2 font-normal">You can correct the issue here without starting over. Review existing albums before uploading the same photos again.</p>
+          </div>
+        )}
+        {photoIssues.length > 0 && (
+          <div role="alert" className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
+            <p className="font-semibold">Photos needing attention</p>
+            <ul className="mt-2 list-disc space-y-1 pl-5">
+              {photoIssues.map((issue, index) => <li key={index}>{issue}</li>)}
+            </ul>
           </div>
         )}
 
@@ -423,7 +560,7 @@ export default function AdminAlbumEditPage() {
             <div className="mt-5 space-y-5">
               <div>
                 <label className="block text-sm font-semibold text-admin-fg-secondary">Album title</label>
-                <input className="form-input mt-1" value={title} onChange={(event) => handleTitleChange(event.target.value)} required />
+                <input className="form-input mt-1" value={title} onChange={(event) => handleTitleChange(event.target.value)} />
               </div>
 
               <div>
@@ -434,7 +571,6 @@ export default function AdminAlbumEditPage() {
                     className="min-w-0 flex-1 border-0 bg-transparent px-1 py-2 text-sm text-admin-fg-primary outline-none"
                     value={slug}
                     onChange={(event) => { setSlugTouched(true); setSlug(slugify(event.target.value)); }}
-                    required
                     aria-label="Gallery page URL"
                   />
                 </div>
@@ -444,7 +580,7 @@ export default function AdminAlbumEditPage() {
               <div className="grid gap-5 md:grid-cols-2">
                 <div>
                   <label className="block text-sm font-semibold text-admin-fg-secondary">Category</label>
-                  <select className="form-input mt-1" value={categoryId} onChange={(event) => setCategoryId(event.target.value)} required>
+                  <select className="form-input mt-1" value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>
                     <option value="">Choose a category</option>
                     {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
                   </select>
@@ -503,7 +639,7 @@ export default function AdminAlbumEditPage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h2 className="text-lg font-bold text-admin-fg-primary">Add photos</h2>
-                <p className="mt-1 text-sm text-admin-fg-secondary">Choose several JPG, PNG, or WebP photos at once. They are prepared locally first and are only uploaded and attached when you save the album.</p>
+                <p className="mt-1 text-sm text-admin-fg-secondary">Choose JPG, PNG or WebP files, up to 8 MB each. They are prepared on this device first; no photos are uploaded until you save the album. Add descriptions before saving.</p>
               </div>
               <label className="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-lg border border-admin-border-subtle px-4 text-sm font-semibold text-admin-fg-primary hover:bg-admin-bg-subtle">
                 {preparingImages ? 'Preparing…' : 'Choose photos'}
@@ -521,6 +657,20 @@ export default function AdminAlbumEditPage() {
               </label>
             </div>
 
+            {newMedia.length > 0 && <p id="album-photo-description-help" className="mt-3 text-sm text-admin-fg-secondary">Every photo needs a meaningful description before it can be uploaded. Generate missing descriptions with OPEE or describe the image yourself.</p>}
+            {(newMedia.length > 0 || media.some((item) => isGenericAltText(item.altText))) && (
+              <div className="mt-4 rounded-lg border border-admin-border-subtle bg-admin-bg-subtle p-4">
+                <div className="flex flex-wrap items-center gap-3">
+                  <button type="button" className="btn-admin-secondary" disabled={describing || saving || preparingImages || missingDescriptionCount === 0} onClick={() => void generateMissingDescriptions()}>
+                    {describing ? 'Generating descriptions…' : 'Generate missing descriptions with OPEE (' + missingDescriptionCount + ')'}
+                  </button>
+                  {describing && <span role="status" className="text-sm text-admin-fg-secondary">{descriptionProgress}</span>}
+                </div>
+                <p className="mt-2 text-xs leading-5 text-admin-fg-secondary">
+                  ASCA sends only photos needing descriptions, plus their album title, category and summary, to the restricted OPEE assistant. OPEE may use an external cloud vision model to analyze them. Use only when you have permission to process these photos. Suggestions are editable, may be inaccurate, and must be checked before saving and publishing. Existing descriptions are never replaced.
+                </p>
+              </div>
+            )}
             {newMedia.length > 0 && (
               <div className="mt-5 grid gap-4 md:grid-cols-2">
                 {newMedia.map((item, index) => (
@@ -536,7 +686,7 @@ export default function AdminAlbumEditPage() {
                         value={item.altText}
                         onChange={(event) => setNewMedia((current) => current.map((entry, entryIndex) => entryIndex === index ? { ...entry, altText: event.target.value } : entry))}
                         placeholder="Describe what is visible in this photo"
-                        required
+                        aria-describedby="album-photo-description-help"
                       />
                     </label>
                     <label className="mt-3 block text-sm font-semibold text-admin-fg-secondary">
@@ -562,12 +712,19 @@ export default function AdminAlbumEditPage() {
           </section>
 
           <div className="flex flex-wrap gap-3">
-            <button type="submit" disabled={saving || preparingImages} className="btn-admin-primary">
-              {saving ? 'Saving…' : isNew ? 'Create draft' : 'Save changes'}
+            <button type="submit" disabled={saving || preparingImages || describing} className="btn-admin-primary">
+              {saving ? 'Uploading and saving…' : isNew ? 'Create draft & upload photos' : 'Save photos and changes'}
             </button>
             <button type="button" className="btn-admin-secondary" onClick={() => router.push('/admin/albums')}>Back to albums</button>
           </div>
         </form>
+
+        {!isNew && !isAdmin && privacyReviewStatus === 'pending' && (
+          <p role="status" className="rounded-xl border border-admin-border-subtle bg-admin-bg-subtle p-4 text-sm text-admin-fg-secondary">
+            Your album may be saved as a draft. Only an administrator can approve the privacy review and publish it.
+            Save your photo descriptions, then ask an ASCA administrator to review the album.
+          </p>
+        )}
 
         {!isNew && isAdmin && (
           <section className="rounded-xl border border-admin-border-subtle bg-admin-surface p-5">
@@ -589,15 +746,31 @@ export default function AdminAlbumEditPage() {
               </div>
             </dl>
 
-            <div className="mt-5 flex flex-wrap gap-2">
-              <button type="button" disabled={saving} className="btn-admin-secondary" onClick={() => performAction('setPrivacy', { privacyReviewStatus: 'approved' })}>Approve privacy</button>
-              <button type="button" disabled={saving} className="btn-admin-secondary" onClick={() => performAction('setPrivacy', { privacyReviewStatus: 'not_required' })}>No privacy review needed</button>
-              <button type="button" disabled={saving} className="btn-admin-secondary" onClick={() => performAction('setPrivacy', { privacyReviewStatus: 'restricted' })}>Restrict</button>
+            {publicationBlockers.length > 0 ? (
+              <div role="status" className="mt-5 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
+                <p className="font-semibold">Before this album can be published:</p>
+                <ul className="mt-2 list-disc space-y-1 pl-5">
+                  {publicationBlockers.map((reason) => <li key={reason}>{reason}</li>)}
+                </ul>
+              </div>
+            ) : (
+              <p role="status" className="mt-5 text-sm font-semibold text-admin-fg-primary">
+                Privacy and photo requirements are satisfied. This saved album is ready to publish.
+              </p>
+            )}
+
+            <p className="mt-5 text-sm text-admin-fg-secondary">
+              Review consent and permissions before approving privacy. Save photo edits first; privacy actions reload the saved album.
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <button type="button" disabled={saving || hasUnsavedPhotoChanges} className="btn-admin-secondary" onClick={() => performAction('setPrivacy', { privacyReviewStatus: 'approved' })}>Approve privacy</button>
+              <button type="button" disabled={saving || hasUnsavedPhotoChanges} className="btn-admin-secondary" onClick={() => performAction('setPrivacy', { privacyReviewStatus: 'not_required' })}>No privacy review needed</button>
+              <button type="button" disabled={saving || hasUnsavedPhotoChanges} className="btn-admin-secondary" onClick={() => performAction('setPrivacy', { privacyReviewStatus: 'restricted' })}>Restrict</button>
             </div>
 
             <div className="mt-4 flex flex-wrap gap-2">
               {status !== 'published' && status !== 'archived' && (
-                <button type="button" disabled={saving} className="btn-admin-primary" onClick={() => performAction('publish')}>Publish album</button>
+                <button type="button" disabled={saving || publicationBlockers.length > 0} className="btn-admin-primary" onClick={() => performAction('publish')}>Publish album</button>
               )}
               {status === 'archived' ? (
                 <button type="button" disabled={saving} className="btn-admin-secondary" onClick={() => performAction('restore')}>Restore to draft</button>

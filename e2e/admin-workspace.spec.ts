@@ -195,4 +195,79 @@ test.describe('authenticated admin client workspace', () => {
     await expect(page.getByText(/dynamic records such as Events, Gallery Albums, Horses, Members/i)).toBeVisible();
   });
 
+  test('album inventory reconciles public visibility, separate legacy media, and search', async ({ page }) => {
+    await signIn(page);
+    await markTourCompleteAndClose(page);
+    await page.goto('/admin/albums');
+
+    await expect(page.getByRole('heading', { name: 'Gallery albums' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Public site visibility' })).toBeVisible();
+    await expect(page.getByText('E2E Trail Ride')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Live — view album' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Review older gallery photos' })).toHaveAttribute('href', '/admin/gallery');
+    await expect(page.getByRole('option', { name: 'Every album (including trash)' })).toHaveCount(1);
+
+    await page.getByRole('searchbox', { name: 'Search album title, category, or slug' }).fill('not-an-existing-album-2026');
+    await expect(page.getByText('0 matching record(s)')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'No albums match this filter' })).toBeVisible();
+
+    await page.getByRole('searchbox', { name: 'Search album title, category, or slug' }).fill('E2E Trail Ride');
+    await expect(page.getByText('1 matching record(s)')).toBeVisible();
+    await expect(page.getByText('E2E Trail Ride')).toBeVisible();
+  });
+
+  test('album upload explains missing descriptions and offers AI suggestions without auto-publishing', async ({ page }) => {
+    await signIn(page);
+    await markTourCompleteAndClose(page);
+    await page.goto('/admin/albums/new');
+    await expect(page.getByRole('heading', { name: 'Create gallery album' })).toBeVisible();
+
+    const createDraft = page.getByRole('button', { name: 'Create draft & upload photos' });
+    await createDraft.click();
+    await expect(page.locator('div[role="alert"].rounded-xl').filter({ hasText: 'Add an album title before saving.' })).toBeVisible();
+
+    const details = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Album details' }) });
+    await details.locator('input').first().fill('ASCA E2E Description Review');
+    await details.locator('select').first().selectOption({ index: 1 });
+
+    const smallPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+    await page.locator('input[type="file"]').setInputFiles({
+      name: 'saddle-club.png',
+      mimeType: 'image/png',
+      buffer: smallPng,
+    });
+    await expect(page.getByText('saddle-club.png')).toBeVisible();
+
+    await createDraft.click();
+    await expect(page.locator('div[role="alert"].rounded-xl').filter({ hasText: 'Some new photos need descriptions before upload.' })).toBeVisible();
+    await expect(page).toHaveURL(/\/admin\/albums\/new$/);
+
+    await page.route('**/api/gallery/describe', async (route) => {
+      await route.fulfill({
+        status: 503,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'Automatic photo descriptions are not connected yet. Ask the ASCA site administrator to enable OPEE, or enter descriptions manually.' }),
+      });
+    });
+    const aiButton = page.getByRole('button', { name: /Generate missing descriptions with OPEE/ });
+    await aiButton.click();
+    await expect(page.locator('div[role="alert"].rounded-xl').filter({ hasText: 'Automatic photo descriptions are not connected yet' })).toBeVisible();
+    await page.unroute('**/api/gallery/describe');
+
+    await page.route('**/api/gallery/describe', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ description: 'Saddle club riders gathered beside horses along a wooded trail.', reviewRequired: true }),
+      });
+    });
+    await aiButton.click();
+    await expect(page.getByPlaceholder('Describe what is visible in this photo')).toHaveValue('Saddle club riders gathered beside horses along a wooded trail.');
+
+    await createDraft.click();
+    await expect(page).toHaveURL(/\/admin\/albums\/\d+$/);
+    await expect(page.getByText('Privacy review is pending. An administrator must review permissions and approve this album.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Publish album' })).toBeDisabled();
+  });
+
 });
