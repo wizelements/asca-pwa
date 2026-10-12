@@ -186,7 +186,7 @@ export default function AdminAlbumsPage() {
           {galleryEnabled
             ? 'The public site uses albums. Records marked Not on site below show why they have not appeared.'
             : 'The public website is still using the older gallery display; eligible albums need the album gallery activated to appear.'}
-          {' '}<Link href="/admin/gallery" className="font-semibold underline">Review older gallery photos</Link>.
+          {' '}<Link href="/admin/gallery" className="font-semibold underline">Review older gallery photos</Link>, or <Link href="/admin/legacy-review" className="font-semibold underline">review historical photos awaiting classification</Link>.
           {isAdmin && counts.trash > 0 && <> {counts.trash} album(s) are in trash; select Every album or Trash below to find them.</>}
         </p>
       </div>
