@@ -36,6 +36,8 @@ export interface AlbumRecord {
   location: string | null;
   summary: string | null;
   coverMediaAssetId: string | null;
+  /** True if the chosen cover is linked to this album. Used to explain public visibility. */
+  coverAttached?: boolean;
   featured: boolean;
   status: ActivityAlbumStatus;
   privacyReviewStatus: PrivacyReviewStatus;
@@ -104,6 +106,7 @@ function rowToAlbum(row: Record<string, unknown>, category?: ActivityCategoryRec
     location: row.location == null ? null : String(row.location),
     summary: row.summary == null ? null : String(row.summary),
     coverMediaAssetId: coverId,
+    coverAttached: Boolean(row.cover_attached),
     featured: Boolean(row.featured),
     status: String(row.status) as ActivityAlbumStatus,
     privacyReviewStatus: String(row.privacy_review_status) as PrivacyReviewStatus,
@@ -121,7 +124,8 @@ function selectColumns(): string {
   return [
     'SELECT a.*, c.name as category_name, c.slug as category_slug, c.active as category_active,',
     '       (SELECT COUNT(*) FROM album_media_assets WHERE album_id = a.id) as media_count,',
-    '       (SELECT updated_at FROM media_assets WHERE id = a.cover_media_asset_id) as cover_updated_at',
+    '       (SELECT updated_at FROM media_assets WHERE id = a.cover_media_asset_id) as cover_updated_at,',
+    '       EXISTS (SELECT 1 FROM album_media_assets cover_rel WHERE cover_rel.album_id = a.id AND cover_rel.media_asset_id = a.cover_media_asset_id) as cover_attached',
     'FROM activity_albums a',
     'LEFT JOIN activity_categories c ON a.category_id = c.id',
   ].join('\n');
@@ -562,6 +566,7 @@ export function isAlbumPubliclyEligible(album: AlbumRecord | AlbumDetail): { eli
   if (!album.categoryId || !album.category?.active) reasons.push('Category is missing or inactive.');
   if (album.mediaCount === 0) reasons.push('Album has no media.');
   if (!album.coverMediaAssetId) reasons.push('Album has no cover image.');
+  else if (album.coverAttached === false) reasons.push('Cover photo is no longer attached to this album.');
   if (
     album.coverMediaAssetId &&
     'media' in album &&
