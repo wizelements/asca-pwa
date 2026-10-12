@@ -300,14 +300,39 @@ export async function countPublicAlbums(categorySlug?: string): Promise<number> 
   return Number(result.rows[0]?.c ?? 0);
 }
 
-export async function countAdminAlbums(filters?: { status?: ActivityAlbumStatus; categoryId?: number; deleted?: boolean }): Promise<number> {
+export interface AdminAlbumFilters {
+  status?: ActivityAlbumStatus;
+  categoryId?: number;
+  deleted?: boolean;
+  includeDeleted?: boolean;
+  search?: string;
+}
+
+function adminSearchCondition(filters?: AdminAlbumFilters): { condition: string; args: string[] } {
+  const term = (filters?.search || '').trim().slice(0, 100);
+  // Parameterized, and escape user-supplied SQL LIKE wildcards so searches
+  // mean what the editor typed rather than broadening the result set.
+  if (!term) return { condition: '', args: [] };
+  const pattern = '%' + term.replace(/[\\%_]/g, '\\export async function countAdminAlbums(filters?: { status?: ActivityAlbumStatus; categoryId?: number; deleted?: boolean }): Promise<number> {') + '%';
+  return {
+    condition: "(a.title LIKE ? ESCAPE '\\' OR a.slug LIKE ? ESCAPE '\\' OR c.name LIKE ? ESCAPE '\\')",
+    args: [pattern, pattern, pattern],
+  };
+}
+
+export async function countAdminAlbums(filters?: AdminAlbumFilters): Promise<number> {
   const db = getDbClient();
-  const where: string[] = [filters?.deleted ? 'deleted_at IS NOT NULL' : 'deleted_at IS NULL'];
+  const where: string[] = filters?.includeDeleted
+    ? []
+    : [filters?.deleted ? 'a.deleted_at IS NOT NULL' : 'a.deleted_at IS NULL'];
   const args: (string | number)[] = [];
-  if (filters?.status) { where.push('status = ?'); args.push(filters.status); }
-  if (filters?.categoryId) { where.push('category_id = ?'); args.push(filters.categoryId); }
+  if (filters?.status) { where.push('a.status = ?'); args.push(filters.status); }
+  if (filters?.categoryId) { where.push('a.category_id = ?'); args.push(filters.categoryId); }
+  const search = adminSearchCondition(filters);
+  if (search.condition) { where.push(search.condition); args.push(...search.args); }
   const result = await db.execute({
-    sql: 'SELECT COUNT(*) as c FROM activity_albums WHERE ' + where.join(' AND '),
+    sql: 'SELECT COUNT(*) as c FROM activity_albums a LEFT JOIN activity_categories c ON a.category_id = c.id' +
+      (where.length ? ' WHERE ' + where.join(' AND ') : ''),
     args,
   });
   return Number(result.rows[0]?.c ?? 0);
@@ -353,18 +378,22 @@ export async function getAlbumDetailBySlug(slug: string): Promise<AlbumDetail | 
 }
 
 export async function getAdminAlbums(
-  filters?: { status?: ActivityAlbumStatus; categoryId?: number; deleted?: boolean },
+  filters?: AdminAlbumFilters,
   limit?: number,
   offset?: number
 ): Promise<AlbumRecord[]> {
   const db = getDbClient();
-  const where: string[] = [filters?.deleted ? 'a.deleted_at IS NOT NULL' : 'a.deleted_at IS NULL'];
+  const where: string[] = filters?.includeDeleted
+    ? []
+    : [filters?.deleted ? 'a.deleted_at IS NOT NULL' : 'a.deleted_at IS NULL'];
   const args: (string | number)[] = [];
   if (filters?.status) { where.push('a.status = ?'); args.push(filters.status); }
   if (filters?.categoryId) { where.push('a.category_id = ?'); args.push(filters.categoryId); }
+  const search = adminSearchCondition(filters);
+  if (search.condition) { where.push(search.condition); args.push(...search.args); }
 
-  let sql = selectColumns() + '\nWHERE ' + where.join(' AND ') +
-    '\nORDER BY a.status, a.featured DESC, a.sort_order, a.created_at DESC';
+  let sql = selectColumns() + (where.length ? '\nWHERE ' + where.join(' AND ') : '') +
+    '\nORDER BY a.deleted_at IS NOT NULL, a.status, a.featured DESC, a.sort_order, a.created_at DESC';
   if (limit !== undefined) { sql += '\nLIMIT ?'; args.push(limit); }
   if (offset !== undefined) { sql += '\nOFFSET ?'; args.push(offset); }
 
