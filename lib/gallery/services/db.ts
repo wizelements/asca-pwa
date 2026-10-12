@@ -1,22 +1,25 @@
 import { createClient, type Client } from '@libsql/client/http';
 import { getDb } from '../../db.ts';
 
-export type DbClient = Client;
+export type DbClient = Pick<Client, 'execute'>;
 
-export function getDbClient(): DbClient {
+export function getDbClient(): Client {
   return getDb();
 }
 
-export async function withTransaction<T>(fn: (tx: Client) => Promise<T>): Promise<T> {
-  const db = getDbClient();
-  await db.execute('BEGIN');
+export async function withTransaction<T>(fn: (tx: DbClient) => Promise<T>): Promise<T> {
+  // A BEGIN sent via db.execute() cannot hold a transaction across HTTP calls.
+  // Use the driver's dedicated transaction session for every multi-step mutation.
+  const tx = await getDbClient().transaction('write');
   try {
-    const result = await fn(db);
-    await db.execute('COMMIT');
+    const result = await fn(tx);
+    await tx.commit();
     return result;
   } catch (error) {
-    await db.execute('ROLLBACK').catch(() => {});
+    await tx.rollback().catch(() => {});
     throw error;
+  } finally {
+    await tx.close();
   }
 }
 
