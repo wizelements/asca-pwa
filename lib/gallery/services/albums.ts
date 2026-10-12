@@ -313,7 +313,7 @@ function adminSearchCondition(filters?: AdminAlbumFilters): { condition: string;
   // Parameterized, and escape user-supplied SQL LIKE wildcards so searches
   // mean what the editor typed rather than broadening the result set.
   if (!term) return { condition: '', args: [] };
-  const pattern = '%' + term.replace(/[\\%_]/g, '\\export async function countAdminAlbums(filters?: { status?: ActivityAlbumStatus; categoryId?: number; deleted?: boolean }): Promise<number> {') + '%';
+  const pattern = '%' + term.replace(/[\\%_]/g, '\\$&') + '%';
   return {
     condition: "(a.title LIKE ? ESCAPE '\\' OR a.slug LIKE ? ESCAPE '\\' OR c.name LIKE ? ESCAPE '\\')",
     args: [pattern, pattern, pattern],
