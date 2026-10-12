@@ -50,7 +50,7 @@ const sections = [
     label: 'Gallery albums',
     href: '/admin/albums',
     purpose: 'The canonical public photo-album system for ASCA activities.',
-    workflow: 'Create a draft, select photos and generate missing alt descriptions with AI or enter them manually, review descriptions, choose a cover and save. Admins must separately review photo permissions/privacy before publishing. The editor explains missing fields, upload failures and AI errors, with correction steps. Archive instead of deleting when you want to remove public content.',
+    workflow: 'Use the Gallery albums inventory to see all active records, search by title or category, check the Public site visibility column for exact blockers, and select Every album (including trash) when a record seems missing. Older single-photo records are separate under Legacy gallery archive and may need review under Legacy review. Create a draft, add photos and alt text, choose a cover, then have an admin clear privacy and publish; verify the public gallery link. Archiving and trash do not automatically restore or publish records.',
     publicEffect: 'Published albums and featured albums appear publicly. Drafts, archived albums, and restricted content do not.',
   },
   {
