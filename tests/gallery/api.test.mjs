@@ -164,6 +164,86 @@ describe('Gallery API authorization and integrity', () => {
     assert.ok(data.some((album) => album.slug === 'draft-album'));
   });
 
+  it('reconciles the admin inventory with live eligibility, search, trash, and legacy photos', async () => {
+    const { GET } = await importApi('albums');
+    // Old flat-gallery photos are not albums; the inventory must count them separately.
+    await client.execute({
+      sql: "INSERT INTO gallery_images (title, description, category, image, alt, sort_order, published, uploaded_at) VALUES ('Old photo', '', 'Trail Rides', 'old.jpg', 'A rider', 0, 1, unixepoch())",
+      args: [],
+    });
+    await client.execute({
+      sql: "INSERT INTO activity_albums (title, slug, category_id, status, privacy_review_status, sort_order, created_at, updated_at, deleted_at) VALUES ('Recovered Old Album', 'recovered-old-album', ?, 'archived', 'pending', 0, unixepoch(), unixepoch(), unixepoch())",
+      args: [categoryId],
+    });
+    try {
+      const editor = await GET(req({ headers: authHeaders(editorToken) }));
+      assert.equal(editor.status, 200);
+      const editorAlbums = await editor.json();
+      assert.ok(editorAlbums.some(album => album.slug === 'draft-album'));
+      assert.ok(!editorAlbums.some(album => album.slug === 'recovered-old-album'));
+      assert.equal(editorAlbums.find(album => album.slug === 'published-album').visibility.eligible, true);
+      const blocked = editorAlbums.find(album => album.slug === 'draft-album');
+      assert.equal(blocked.visibility.eligible, false);
+      assert.ok(blocked.visibility.reasons.some(reason => /not published/i.test(reason)));
+      assert.ok(blocked.visibility.reasons.some(reason => /privacy/i.test(reason)));
+
+      const admin = await GET(req({
+        url: 'http://localhost/api/gallery/albums?status=all&pageSize=50',
+        headers: authHeaders(adminToken),
+      }));
+      assert.equal(admin.status, 200);
+      assert.ok((await admin.json()).some(album => album.slug === 'recovered-old-album'));
+      assert.equal(admin.headers.get('X-Trash-Count'), '1');
+      assert.equal(admin.headers.get('X-Legacy-Photo-Count'), '1');
+      assert.equal(admin.headers.get('X-Public-Album-Count'), '1');
+
+      const privateViewer = await GET(req({
+        url: 'http://localhost/api/gallery/albums?status=all',
+        headers: authHeaders(viewerToken),
+      }));
+      assert.equal(privateViewer.status, 200);
+      assert.deepEqual((await privateViewer.json()).map(album => album.slug), ['published-album']);
+
+      const searched = await GET(req({
+        url: 'http://localhost/api/gallery/albums?search=draft&pageSize=1',
+        headers: authHeaders(editorToken),
+      }));
+      assert.equal(searched.status, 200);
+      assert.equal(searched.headers.get('X-Total-Count'), '1');
+      assert.equal((await searched.json())[0].slug, 'draft-album');
+
+      const literalWildcard = await GET(req({
+        url: 'http://localhost/api/gallery/albums?search=%25',
+        headers: authHeaders(editorToken),
+      }));
+      assert.equal(literalWildcard.status, 200);
+      assert.equal((await literalWildcard.json()).length, 0);
+    } finally {
+      await client.execute({ sql: "DELETE FROM activity_albums WHERE slug = 'recovered-old-album'", args: [] });
+      await client.execute({ sql: "DELETE FROM gallery_images WHERE title = 'Old photo'", args: [] });
+    }
+  });
+
+  it('explains published album missing its linked cover instead of labeling it live', async () => {
+    await seedAsset(client, 'asset-unattached-cover');
+    await client.execute({
+      sql: "INSERT INTO activity_albums (title, slug, category_id, cover_media_asset_id, status, privacy_review_status, sort_order, created_at, updated_at, deleted_at) VALUES ('Broken Cover Album', 'broken-cover-album', ?, 'asset-unattached-cover', 'published', 'approved', 0, unixepoch(), unixepoch(), NULL)",
+      args: [categoryId],
+    });
+    try {
+      const { GET } = await importApi('albums');
+      const response = await GET(req({ headers: authHeaders(adminToken) }));
+      assert.equal(response.status, 200);
+      const album = (await response.json()).find(row => row.slug === 'broken-cover-album');
+      assert.equal(album.coverAttached, false);
+      assert.equal(album.visibility.eligible, false);
+      assert.ok(album.visibility.reasons.some(reason => /cover photo/i.test(reason)));
+    } finally {
+      await client.execute({ sql: "DELETE FROM activity_albums WHERE slug = 'broken-cover-album'", args: [] });
+    }
+  });
+
+
   it('rejects oversized and unsupported media uploads', async () => {
     const { POST } = await importApi('media');
     const oversized = await POST(req({

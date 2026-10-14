@@ -21,8 +21,11 @@ import {
   countPublicAlbums,
   countAdminAlbums,
   isAlbumPubliclyEligible,
+  type AdminAlbumFilters,
 } from '@/lib/gallery/services/albums';
 import { getCategoryBySlug, getCategoryById } from '@/lib/gallery/services/categories';
+import { getDbClient } from '@/lib/gallery/services/db';
+import { isPublicPreviewEnabled } from '@/lib/gallery/feature-state';
 import { invalidateAlbumPublicSurfaces, invalidateAlbums } from '@/lib/gallery/services/cache';
 import type { ActivityAlbumStatus } from '@/lib/gallery/types';
 import { albumInputSchema, albumMediaInputSchema } from '@/lib/gallery/validation';
@@ -66,6 +69,38 @@ function publicEnough(album: Parameters<typeof isAlbumPubliclyEligible>[0]): boo
   return isAlbumPubliclyEligible(album).eligible;
 }
 
+// All visibility diagnostics stay behind editor authorization. Returning them
+// here means the admin inventory and the actual public SQL use the same rules.
+async function adminAlbumList(
+  filters: AdminAlbumFilters,
+  pageSize: number,
+  offset: number,
+  includeTrashCounts: boolean
+) {
+  const [albums, total, publiclyEligible, inventoryTotal, trashTotal, legacyResult] = await Promise.all([
+    getAdminAlbums(filters, pageSize, offset),
+    countAdminAlbums(filters),
+    countPublicAlbums(),
+    countAdminAlbums(includeTrashCounts ? { includeDeleted: true } : {}),
+    includeTrashCounts ? countAdminAlbums({ deleted: true }) : Promise.resolve(0),
+    getDbClient().execute({ sql: 'SELECT COUNT(*) AS total FROM gallery_images', args: [] }),
+  ]);
+  return NextResponse.json(albums.map(album => ({
+    ...album,
+    visibility: isAlbumPubliclyEligible(album),
+  })), {
+    headers: {
+      'Cache-Control': 'private, no-store',
+      'X-Total-Count': String(total),
+      'X-Public-Album-Count': String(publiclyEligible),
+      'X-Inventory-Count': String(inventoryTotal),
+      'X-Trash-Count': String(trashTotal),
+      'X-Legacy-Photo-Count': String(legacyResult.rows[0]?.total ?? 0),
+      'X-Album-Gallery-Enabled': String(isPublicPreviewEnabled()),
+    },
+  });
+}
+
 export async function GET(request: NextRequest) {
   try {
     const user = await requireAuth(request);
@@ -74,9 +109,12 @@ export async function GET(request: NextRequest) {
     const categorySlug = searchParams.get('category');
     const statusParam = searchParams.get('status');
     const id = searchParams.get('id');
-    const page = Math.max(1, Number(searchParams.get('page') || '1'));
-    const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') || '24')));
+    const rawPage = Number(searchParams.get('page') || '1');
+    const rawPageSize = Number(searchParams.get('pageSize') || '24');
+    const page = Number.isSafeInteger(rawPage) ? Math.max(1, rawPage) : 1;
+    const pageSize = Number.isSafeInteger(rawPageSize) ? Math.min(100, Math.max(1, rawPageSize)) : 24;
     const offset = (page - 1) * pageSize;
+    const search = searchParams.get('search')?.trim().slice(0, 100) || undefined;
 
     if (id && /^\d+$/.test(id)) {
       const album = await getAlbumDetailById(Number(id), statusParam === 'trash' && canAdmin(user));
@@ -98,11 +136,7 @@ export async function GET(request: NextRequest) {
 
     if (statusParam === 'trash') {
       if (!canAdmin(user)) return forbidden();
-      const [albums, total] = await Promise.all([
-        getAdminAlbums({ deleted: true }, pageSize, offset),
-        countAdminAlbums({ deleted: true }),
-      ]);
-      return NextResponse.json(albums, { headers: { 'X-Total-Count': String(total) } });
+      return adminAlbumList({ deleted: true, search }, pageSize, offset, true);
     }
 
     if (categorySlug) {
@@ -110,11 +144,7 @@ export async function GET(request: NextRequest) {
       if (!category) return NextResponse.json({ error: 'Category not found' }, { status: 404 });
 
       if (canEdit(user)) {
-        const [albums, total] = await Promise.all([
-          getAdminAlbums({ categoryId: category.id }, pageSize, offset),
-          countAdminAlbums({ categoryId: category.id }),
-        ]);
-        return NextResponse.json(albums, { headers: { 'X-Total-Count': String(total) } });
+        return adminAlbumList({ categoryId: category.id, search }, pageSize, offset, canAdmin(user));
       }
 
       const [albums, total] = await Promise.all([
@@ -137,11 +167,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(albums, { headers: { 'X-Total-Count': String(total) } });
     }
 
-    const [albums, total] = await Promise.all([
-      getAdminAlbums({ status }, pageSize, offset),
-      countAdminAlbums({ status }),
-    ]);
-    return NextResponse.json(albums, { headers: { 'X-Total-Count': String(total) } });
+    return adminAlbumList(
+      { status, includeDeleted: statusParam === 'all' && canAdmin(user), search },
+      pageSize,
+      offset,
+      canAdmin(user)
+    );
   } catch (error: any) {
     console.error('[ALBUMS GET]', error);
     if (error.message === 'Unauthorized') {
