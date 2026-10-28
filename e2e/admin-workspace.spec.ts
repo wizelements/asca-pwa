@@ -150,6 +150,40 @@ test.describe('authenticated admin client workspace', () => {
     await expect(page.getByRole('button', { name: 'No changes to save' })).toBeDisabled();
   });
 
+  test('monthly meeting venue changes persist and reach the public homepage and About page', async ({ page }) => {
+    await signIn(page);
+    await markTourCompleteAndClose(page);
+
+    const original = await page.request.get('/api/site-content');
+    expect(original.ok()).toBeTruthy();
+    const existing = (await original.json()).values || {};
+    const oldVenue = existing['shared.meeting.venue'] || 'Piccadilly';
+    const newVenue = 'E2E Verification Meeting Place';
+
+    try {
+      await page.goto('/admin/meeting');
+      await page.getByRole('textbox', { name: 'Venue' }).fill(newVenue);
+      await expect(page.getByRole('button', { name: 'Save monthly meeting' })).toBeEnabled();
+      await page.getByRole('button', { name: 'Save monthly meeting' }).click();
+      await expect(page.getByText(/Monthly meeting saved/)).toBeVisible();
+
+      const current = await page.request.get('/api/site-content');
+      expect((await current.json()).values['shared.meeting.venue']).toBe(newVenue);
+
+      const home = await page.request.get('/');
+      expect(home.ok()).toBeTruthy();
+      expect(await home.text()).toContain(newVenue);
+      const about = await page.request.get('/about');
+      expect(about.ok()).toBeTruthy();
+      expect(await about.text()).toContain(newVenue);
+    } finally {
+      const restore = await page.request.post('/api/site-content', {
+        data: { updates: { 'shared.meeting.venue': oldVenue } },
+      });
+      expect(restore.ok()).toBeTruthy();
+    }
+  });
+
   test('public-facing admin controls explain their real website effects', async ({ page }) => {
     await signIn(page);
     await markTourCompleteAndClose(page);
