@@ -24,8 +24,9 @@ async function markTourCompleteAndClose(page: Page) {
 }
 
 test.describe('authenticated admin client workspace', () => {
-  test('full walkthrough covers the complete workspace and can finish', async ({ page }) => {
+  test('full walkthrough covers the complete workspace and can finish when requested', async ({ page }) => {
     await signIn(page);
+    await page.goto('/admin?tour=1');
 
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
@@ -189,7 +190,10 @@ test.describe('authenticated admin client workspace', () => {
     await expect(page.getByRole('heading', { name: 'Page Text' })).toBeVisible();
     await expect(page.getByText('Safe text only.')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Homepage', exact: true })).toBeVisible();
+    await expect(page.getByLabel('Which website page would you like to edit?')).toBeVisible();
+    await page.getByLabel('Which website page would you like to edit?').selectOption('about');
     await expect(page.getByRole('heading', { name: 'About ASCA', exact: true })).toBeVisible();
+    await page.getByLabel('Which website page would you like to edit?').selectOption('shared');
     await expect(page.getByRole('heading', { name: 'Shared Site Copy', exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: /View public page/ }).first()).toBeVisible();
     await expect(page.getByText(/dynamic records such as Events, Gallery Albums, Horses, Members/i)).toBeVisible();
