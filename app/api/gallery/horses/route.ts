@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       getAdminHorses(status ? { status: status as any } : undefined, pageSize, offset),
       countAdminHorses(status ? { status: status as any } : undefined),
     ]);
-    return NextResponse.json(horses, { headers: { 'X-Total-Count': String(total) } });
+    return NextResponse.json(horses, { headers: { 'X-Total-Count': String(total), 'X-Horses-Public-Enabled': String(isPublicPreviewEnabled()) } });
   } catch (error: any) {
     console.error('[HORSES GET]', error);
     if (error.message === 'Unauthorized') {
