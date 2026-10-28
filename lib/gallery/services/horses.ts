@@ -246,8 +246,19 @@ export async function createHorse(
       });
     }
 
-    const horse = await getHorseById(horseId);
-    if (!horse) throw new Error('Horse profile creation failed');
+    // Read through the same transaction: a separate connection cannot see
+    // the newly inserted horse until commit, and would incorrectly roll back.
+    const created = await db.execute({
+      sql: `
+        SELECT h.*,
+               (SELECT COUNT(*) FROM horse_profile_media WHERE horse_profile_id = h.id) as media_count
+        FROM horse_profiles h
+        WHERE h.deleted_at IS NULL AND h.id = ?
+      `,
+      args: [horseId],
+    });
+    if (created.rows.length === 0) throw new Error('Horse profile creation failed');
+    const horse = rowToHorse(created.rows[0], Number(created.rows[0].media_count ?? 0));
     const media = await horseMedia(db, horseId);
     return { ...horse, media };
   });
