@@ -19,6 +19,7 @@ import {
 } from '@/lib/gallery/services/horses';
 import { horseProfileInputSchema, horseProfileMediaInputSchema } from '@/lib/gallery/validation';
 import { invalidateHorses } from '@/lib/gallery/services/cache';
+import { isPublicPreviewEnabled } from '@/lib/gallery/feature-state';
 import { logActivity } from '@/lib/db/queries';
 
 function forbidden() {
@@ -44,7 +45,7 @@ export async function GET(request: NextRequest) {
       if (!canEdit(user) && horse.status !== 'published') {
         return NextResponse.json({ error: 'Not found' }, { status: 404 });
       }
-      return NextResponse.json(horse);
+      return NextResponse.json(horse, { headers: { 'X-Horses-Public-Enabled': String(isPublicPreviewEnabled()) } });
     }
 
     if (id) {
@@ -55,7 +56,7 @@ export async function GET(request: NextRequest) {
       if (!canEdit(user) && horse.status !== 'published') {
         return NextResponse.json({ error: 'Not found' }, { status: 404 });
       }
-      return NextResponse.json(horse);
+      return NextResponse.json(horse, { headers: { 'X-Horses-Public-Enabled': String(isPublicPreviewEnabled()) } });
     }
 
     if (!canEdit(user)) {
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest) {
         getPublicHorses(pageSize, offset),
         countPublicHorses(),
       ]);
-      return NextResponse.json(horses, { headers: { 'X-Total-Count': String(total) } });
+      return NextResponse.json(horses, { headers: { 'X-Total-Count': String(total), 'X-Horses-Public-Enabled': String(isPublicPreviewEnabled()) } });
     }
 
     const [horses, total] = await Promise.all([
