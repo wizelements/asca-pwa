@@ -79,3 +79,58 @@ Earlier ASCA reports identify another recurring acceptance failure: a photo/albu
 
 ## Not established
 This static code audit does not establish which user accounts currently succeed/fail login; does not provide a signed-in reproduction of the client's device; does not establish the actual reasons for every production album being missing; and does not verify production data mutations. Never label the admin "fully fixed" until the release gates pass.
+
+
+## October 28 follow-up: what complete success really means
+
+### The product is the public website plus the client workspace
+A content-management task succeeds only if **all five parts** work:
+1. **Find:** a nontechnical officer can identify the right action from its everyday name.
+2. **Edit:** the editor loads the actual saved record, offers comprehensible choices and guards against accidental data loss.
+3. **Commit:** the correct authorized action persists to the correct environment with clear saved/draft/published distinctions.
+4. **Show:** the relevant public page renders the intended text/image/event/album with privacy permissions, image availability and cache revalidation applied.
+5. **Prove and recover:** the client can open the public destination, understand why something is unavailable, and reverse or retry safely.
+
+An HTTP 200 or successful database save proves only one part. It is not an acceptable substitute for end-user verification.
+
+### Public-website acceptance in addition to admin acceptance
+| Visitor need | Public routes / components | Required evidence |
+| --- | --- | --- |
+| Understand club identity and mission in seconds | Home, About, Header | Clear saddle-club / equestrian purpose; legible contrast, no ambiguous stock/fabricated activities |
+| Find the next accurate meeting | Home meeting callout, About membership section, event calendar | Location/time agree for the same meeting; one-time exceptions explicitly labeled; no stale location fallback |
+| Find real upcoming activities | Event Calendar, event detail/CTAs | Correct date/time/venue, sensible TBA distinction, no past event mistaken for upcoming |
+| See actual ASCA activity photography | Gallery, album detail, homepage feature cards | Every published/eligible album discoverable; cover, category, privacy, media file and thumbnail all work; no promises for hidden albums |
+| Learn about the club's horses | Our Horses, horse detail | No dead-end site navigation; published/eligible profiles only; error-free images and pages |
+| Take a next step | Get Involved, membership application, contact, support | Working CTAs, forms, accessible validation, confirmed submission and correct destination/notification |
+| Use site comfortably | Mobile/desktop/PWA | WCAG 2.2 AA target, keyboard and focus, 44 px touch targets, responsive layout, readable text, Core Web Vitals and retry behavior |
+| Trust privacy and factual content | All public surfaces | Explicit permission for photos of children and other restricted subjects; no fabricated photographs or unverifiable activity claims |
+
+### Newly verified code findings and implemented changes
+- The public `/horses` and `/horses/[slug]` routes are gated by `GALLERY_FEATURE_STAGE`. A successful admin "Publish" operation alone cannot establish a visitor-visible horse profile.
+- The horse admin previously asserted "Public now" and linked to public detail even when that stage is disabled. The horses API now supplies effective deployment-side availability in `X-Horses-Public-Enabled`; the list/editor separate **published in the database** from **available on the website** and direct officers to verify the public page.
+- An existing horse edit page previously rendered editable defaults after the initial record fetch failed. It now blocks editing and offers a retry/back route so a transient error cannot accidentally overwrite saved content.
+- The public Our Horses navigation can remain visible even with the feature disabled. The list route now presents a truthful, useful visitor-facing explanation and routes to gallery/get involved instead of a dead-end 404; individual unpublished/disabled detail routes remain inaccessible.
+- Automated browser coverage was extended for horse-rollout visibility and failing record loads.
+- Vercel reports one historical grouped server-render failure on `/horses/[slug]` (five grouped instances on October 26, corresponding to `/horses/sage`). The public Sage page was retrievable in a fresh October 28 web fetch; the original production failure cause remains **unknown**, because grouped errors redact production details and full historical logs are beyond the available retention. Do not claim the defect is resolved based on one successful request.
+- An October 28 web retrieval of the public gallery identified **six discoverable albums**. That does not establish all eligible admin albums are represented; compare actual inventory in the appropriate environment before release.
+
+### Remaining high-priority dependencies
+1. **True client account testing:** an authorized officer must complete meeting-location, event, page-text, album and page-image changes uncoached on a real phone and desktop. A developer-run E2E suite is not sufficient evidence of usability.
+2. **Preview data isolation:** Vercel environment metadata cannot currently be listed with the connected credential (403). Until preview database/storage isolation is independently proven, **do not run mutating preview tests with real club data**.
+3. **Meeting data consistency:** future explicitly saved `Monthly Meeting` calendar events may carry their own location/time overrides. The recurring meeting editor changes the shared location/time but does not overwrite explicitly entered events. Need a deliberate future-only reconciliation flow, preserving special-venue exceptions and historical meetings.
+4. **Gallery discrepancy inventory:** reconcile every admin album with public eligibility, rollout mode, category status, attached cover, media existence, privacy status and homepage featuring; do not bypass restrictions to meet album counts.
+5. **Editable-page inventory:** map each public text, link, photo and CTA to an actual admin control or mark as intentional protected site code. Existing page text editor covers many, **not proven all**, visitor-visible strings.
+6. **Reliability/security:** role-by-role unauthorized mutation tests, safe backup and restoration, large-upload handling, expired-session recovery, rate-limits and privacy review; confirm production and preview caches invalidate correctly.
+7. **Operational outcome:** after safe production release, compare expected vs observed content on the live domain with screenshots/browser tests and check errors, requests and submissions.
+
+### Release decision / objective scorecard
+Do **not** call this rehabilitation complete until each of these gates is backed by evidence:
+- Latest exact commit: successful type-check/build, browser E2E and API/privacy tests; preview renders all public routes.
+- At least five uncoached officer tasks completed with **zero unintended edits**, **zero confusing "published but missing" outcomes**, and understandable recovery when a task is blocked.
+- Every publish action yields a **public URL and verified render** or a **specific truthful explanation** of why it is not public.
+- A read-only media/album reconciliation identifies and accounts for all client-reported missing assets without discarding or fabricating data.
+- Membership/contact paths, accessible forms and public CTAs are tested end to end.
+- Staging database and media are isolated or tests use only verified synthetic fixtures.
+- Client review is documented; production release, smoke check and rollback have evidence.
+
+**Scope truth:** branch work described here is implemented, but a full production certification and independent client signoff have not occurred. Keep the pull request as draft until these gates are met.
