@@ -22,6 +22,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: 'Operations',
     items: [
       { label: 'Events', href: '/admin/events' },
+      { label: 'Monthly meeting', href: '/admin/meeting' },
       { label: 'Messages', href: '/admin/forms' },
       { label: 'Tasks', href: '/admin/tasks' },
     ],
