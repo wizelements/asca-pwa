@@ -184,8 +184,9 @@ export default function AdminSettings() {
         </p>
         <div className="mt-5 grid gap-5 lg:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Public motto</label>
+            <label htmlFor="site-motto" className="mb-1 block text-sm font-semibold text-brand-fg-primary">Public motto</label>
             <input
+              id="site-motto"
               type="text"
               maxLength={80}
               value={settings.siteDescription || ''}
@@ -195,8 +196,9 @@ export default function AdminSettings() {
             <p className="mt-1 text-xs text-brand-fg-muted">Example: We Ride To Inspire</p>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Homepage hero description</label>
+            <label htmlFor="site-tagline" className="mb-1 block text-sm font-semibold text-brand-fg-primary">Homepage hero description</label>
             <textarea
+              id="site-tagline"
               rows={3}
               maxLength={240}
               value={settings.tagline || ''}
@@ -209,7 +211,7 @@ export default function AdminSettings() {
         <button
           onClick={() => handleSave('identity')}
           disabled={saving || !settings.siteDescription?.trim() || !settings.tagline?.trim()}
-          className="mt-5 rounded-lg bg-brand-forest px-5 py-2 font-semibold text-white hover:bg-brand-forest-muted disabled:opacity-50"
+          className="mt-5 min-h-[44px] rounded-lg bg-brand-forest px-5 py-2 font-semibold text-white hover:bg-brand-forest-muted disabled:opacity-50"
         >
           {saving ? 'Saving...' : 'Save Homepage Identity'}
         </button>
@@ -221,8 +223,9 @@ export default function AdminSettings() {
           This is the official email visitors see in the site footer and on Support ASCA for sponsorship questions. Website form submissions are saved in Messages whether or not an email alert is delivered.
         </p>
         <div className="mt-5 max-w-xl">
-          <label className="mb-1 block text-sm font-semibold text-brand-fg-primary">Official contact email</label>
+          <label htmlFor="site-contact-email" className="mb-1 block text-sm font-semibold text-brand-fg-primary">Official contact email</label>
           <input
+            id="site-contact-email"
             type="email"
             value={settings.contactEmail || ''}
             onChange={(e) => updateField('contactEmail', e.target.value)}
@@ -231,7 +234,7 @@ export default function AdminSettings() {
           <button
             onClick={() => handleSave('contact')}
             disabled={saving || !settings.contactEmail}
-            className="mt-4 rounded-lg bg-brand-forest px-5 py-2 font-semibold text-white hover:bg-brand-forest-muted disabled:opacity-50"
+            className="mt-4 min-h-[44px] rounded-lg bg-brand-forest px-5 py-2 font-semibold text-white hover:bg-brand-forest-muted disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Save Public Contact Email'}
           </button>
@@ -248,8 +251,9 @@ export default function AdminSettings() {
               { label: 'TikTok', key: 'social.tiktok' },
             ].map((field) => (
               <div key={field.key}>
-                <label className="block text-sm font-semibold text-brand-fg-primary mb-1">{field.label}</label>
+                <label htmlFor={field.key.replace('.', '-')} className="block text-sm font-semibold text-brand-fg-primary mb-1">{field.label}</label>
                 <input
+                  id={field.key.replace('.', '-')}
                   type="url"
                   value={settings.social?.[field.key.split('.')[1]] || ''}
                   onChange={(e) => updateField(field.key, e.target.value)}
@@ -263,7 +267,7 @@ export default function AdminSettings() {
             <button
               onClick={() => handleSave('social')}
               disabled={saving}
-              className="w-full py-2 px-4 rounded-lg bg-brand-forest text-white font-semibold hover:bg-brand-forest-muted disabled:opacity-50"
+              className="w-full min-h-[44px] py-2 px-4 rounded-lg bg-brand-forest text-white font-semibold hover:bg-brand-forest-muted disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save Social Links'}
             </button>
@@ -274,8 +278,9 @@ export default function AdminSettings() {
           <h2 className="text-2xl font-bold text-brand-fg-primary mb-6">Donation Methods</h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-brand-fg-primary mb-1">CashApp Handle</label>
+              <label htmlFor="site-cashapp" className="block text-sm font-semibold text-brand-fg-primary mb-1">CashApp Handle</label>
               <input
+                id="site-cashapp"
                 type="text"
                 value={settings.donation?.cashApp || ''}
                 onChange={(e) => updateField('donation.cashApp', e.target.value)}
@@ -283,8 +288,9 @@ export default function AdminSettings() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-brand-fg-primary mb-1">Zelle Email</label>
+              <label htmlFor="site-zelle" className="block text-sm font-semibold text-brand-fg-primary mb-1">Zelle Email</label>
               <input
+                id="site-zelle"
                 type="email"
                 value={settings.donation?.zelle || ''}
                 onChange={(e) => updateField('donation.zelle', e.target.value)}
@@ -294,7 +300,7 @@ export default function AdminSettings() {
             <button
               onClick={() => handleSave('donations')}
               disabled={saving}
-              className="w-full py-2 px-4 rounded-lg bg-brand-forest text-white font-semibold hover:bg-brand-forest-muted disabled:opacity-50"
+              className="w-full min-h-[44px] py-2 px-4 rounded-lg bg-brand-forest text-white font-semibold hover:bg-brand-forest-muted disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save Donation Settings'}
             </button>
