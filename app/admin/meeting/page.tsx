@@ -35,6 +35,7 @@ export default function MonthlyMeetingEditor() {
       if (response.status === 401) { await logout(); return; }
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || 'Unable to load the meeting information.');
+      if (data.writable === false) throw new Error('Meeting changes cannot be saved because page-text storage has not been set up in this environment. Ask the site administrator to run the database migration.');
       const current = toMeetingValues({ ...defaults, ...(data.values || {}) });
       setValues(current);
       setSavedValues(current);
