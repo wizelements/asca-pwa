@@ -186,6 +186,11 @@ export default function AdminDashboard() {
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <QuickAction
+              href="/admin/meeting"
+              label="Change monthly meeting location"
+              description="Update the recurring meeting address, place, day, or time shown on the website."
+            />
+            <QuickAction
               href="/admin/events"
               label="Update events"
               description="Publish meetings, rides, and community events."
