@@ -393,6 +393,23 @@ export default function AdminAlbumEditPage() {
     }
   };
 
+  const publishBlockers: string[] = [];
+  if (!categoryId) publishBlockers.push('Choose an album category and save.');
+  if (media.length === 0) publishBlockers.push('Attach at least one photo and save the album.');
+  if (!coverId || !media.some((item) => item.mediaAssetId === coverId)) {
+    publishBlockers.push('Choose a cover photo from the attached album photos.');
+  }
+  if (media.some((item) => !item.altText.trim() || item.altText.trim().length < 3)) {
+    publishBlockers.push('Add meaningful alternative text for every attached photo, then save.');
+  }
+  if (newMedia.length > 0) publishBlockers.push('Save the new photos before publishing.');
+  if (privacyReviewStatus === 'pending') {
+    publishBlockers.push('Privacy review is pending. An administrator must confirm that public display of these photos is allowed.');
+  }
+  if (privacyReviewStatus === 'restricted') {
+    publishBlockers.push('Privacy restriction is active. Do not publish unless the restriction has been resolved.');
+  }
+
   if (loading) {
     return (
       <>
@@ -572,7 +589,19 @@ export default function AdminAlbumEditPage() {
         {!isNew && isAdmin && (
           <section className="rounded-xl border border-admin-border-subtle bg-admin-surface p-5">
             <h2 className="text-lg font-bold text-admin-fg-primary">Review & publication</h2>
-            <p className="mt-1 text-sm text-admin-fg-secondary">Publishing is intentionally separate from editing so content and privacy can be reviewed first.</p>
+            <p className="mt-1 text-sm text-admin-fg-secondary">Publishing is intentionally separate from editing so content and privacy can be reviewed first. A successful draft save does not make the album public.</p>
+            <div className={`mt-4 rounded-xl border p-4 text-sm ${publishBlockers.length ? 'border-amber-200 bg-amber-50 text-amber-950' : 'border-green-200 bg-green-50 text-green-950'}`} role="status">
+              <p className="font-bold">{publishBlockers.length ? 'Not ready for the public website' : status === 'published' ? 'Published — check visibility on the website' : 'Ready for publication review'}</p>
+              {publishBlockers.length ? (
+                <>
+                  <p className="mt-2">Resolve these specific items before publishing:</p>
+                  <ul className="mt-2 list-disc space-y-1 pl-5">{publishBlockers.map((reason) => <li key={reason}>{reason}</li>)}</ul>
+                </>
+              ) : (
+                <p className="mt-2">All visible publishing prerequisites are met. If you changed album details or photos, save those changes first. Then publish and confirm the public visibility status from the album list.</p>
+              )}
+              <p className="mt-2">For a definitive public-site check, open <a className="font-semibold underline" href="/admin/albums">Gallery albums inventory</a>. It also reports inactive categories or a disabled public gallery.</p>
+            </div>
 
             <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
               <div className="rounded-lg bg-admin-bg-subtle p-3">
