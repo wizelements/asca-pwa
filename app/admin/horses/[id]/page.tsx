@@ -34,6 +34,8 @@ export default function AdminHorseEditPage() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!isNew);
   const [error, setError] = useState('');
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [publicHorsesEnabled, setPublicHorsesEnabled] = useState<boolean | null>(null);
 
   const removedMediaIds = useMemo(
     () => originalMediaIds.filter((mediaAssetId) => !media.some((item) => item.mediaAssetId === mediaAssetId)),
@@ -42,6 +44,9 @@ export default function AdminHorseEditPage() {
 
   useEffect(() => {
     if (!isNew) void fetchHorse();
+    else void fetch('/api/gallery/horses?page=1&pageSize=1', { headers: authHeaders() })
+      .then((response) => { if (response.ok) setPublicHorsesEnabled(response.headers.get('X-Horses-Public-Enabled') === 'true'); })
+      .catch(() => undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
@@ -51,9 +56,11 @@ export default function AdminHorseEditPage() {
   const fetchHorse = async () => {
     try {
       setError('');
+      setLoadFailed(false);
       const res = await fetch(`/api/gallery/horses?id=${id}`, { headers: authHeaders() });
       if (res.status === 401) { logout(); return; }
       if (!res.ok) throw new Error('Horse not found');
+      setPublicHorsesEnabled(res.headers.get('X-Horses-Public-Enabled') === 'true');
       const data = await res.json();
       const nextMedia: ManagedMediaItem[] = Array.isArray(data.media)
         ? data.media.map((m: any, idx: number) => ({
@@ -75,7 +82,8 @@ export default function AdminHorseEditPage() {
       setMedia(nextMedia);
       setOriginalMediaIds(nextMedia.map((item) => item.mediaAssetId));
     } catch {
-      setError('Unable to load horse profile.');
+      setLoadFailed(true);
+      setError('Unable to load this horse profile. No changes have been made.');
     } finally {
       setLoading(false);
     }
@@ -137,6 +145,7 @@ export default function AdminHorseEditPage() {
   const handleSubmit = async (e: React.FormEvent, publish = false) => {
     e.preventDefault();
     if (publish && !isAdmin) return;
+    if (loadFailed) return;
 
     setSaving(true);
     setError('');
@@ -211,9 +220,13 @@ export default function AdminHorseEditPage() {
         });
         const pubResult = await pubRes.json().catch(() => ({}));
         if (!pubRes.ok) throw new Error(typeof pubResult.error === 'string' ? pubResult.error : 'Publish failed');
-        toast.success('Horse profile saved and published. It is now visible on the public Our Horses page.');
+        toast.success(publicHorsesEnabled
+          ? 'Horse profile published. Open its public page to verify it appears correctly.'
+          : 'Horse profile published in admin, but the public horse pages are disabled on this deployment.');
       } else if (status === 'published') {
-        toast.success('Horse profile saved. Because this profile is already published, the public page now uses these changes.');
+        toast.success(publicHorsesEnabled
+          ? 'Horse profile saved. Check the public horse page to verify the changes.'
+          : 'Horse profile saved, but public horse pages are currently disabled.');
       } else {
         toast.success(isNew ? 'Horse profile created as a draft.' : 'Horse profile changes saved as a draft.');
       }
@@ -245,6 +258,21 @@ export default function AdminHorseEditPage() {
     );
   }
 
+  if (loadFailed) {
+    return (
+      <>
+        <AdminPageHeader title="Horse profile unavailable" subtitle="The existing record could not be loaded. Editing is disabled to protect its saved content." />
+        <div role="alert" className="max-w-3xl rounded-xl border border-red-200 bg-red-50 p-5 text-red-950">
+          <p>{error}</p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button type="button" className="btn-admin-primary" onClick={() => { setLoading(true); void fetchHorse(); }}>Try loading again</button>
+            <Link href="/admin/horses" className="btn-admin-secondary">Back to horses</Link>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <AdminPageHeader
@@ -252,7 +280,7 @@ export default function AdminHorseEditPage() {
         subtitle={isNew
           ? 'Create the horse page as a draft first. Add photography and alt text, then publish only when the public profile is ready.'
           : 'Everything here controls the public horse profile. Drafts and archived profiles stay off the public site.'}
-        primaryAction={!isNew && status === 'published' && slug ? (
+        primaryAction={!isNew && publicHorsesEnabled && status === 'published' && slug && primaryId ? (
           <Link
             href={`/horses/${slug}`}
             target="_blank"
@@ -266,15 +294,17 @@ export default function AdminHorseEditPage() {
       <div className="max-w-4xl space-y-5">
         {!isNew && (
           <div className={`rounded-xl border p-4 text-sm ${
-            status === 'published'
+            status === 'published' && publicHorsesEnabled
               ? 'border-green-200 bg-green-50 text-green-900'
               : status === 'archived'
                 ? 'border-gray-200 bg-gray-50 text-gray-800'
                 : 'border-amber-200 bg-amber-50 text-amber-900'
           }`}>
             <strong>Website visibility:</strong>{' '}
-            {status === 'published'
-              ? 'Public now. Saving changes updates the live horse profile.'
+            {!publicHorsesEnabled
+              ? 'This deployment does not currently show public horse pages. Publishing here will not make this profile visible on the website.'
+              : status === 'published'
+                ? 'Published and eligible for the public horse page. Open the page to confirm it appears correctly.'
               : status === 'archived'
                 ? 'Hidden from the public website until restored and published.'
                 : 'Draft only. Visitors cannot see this horse profile yet.'}
