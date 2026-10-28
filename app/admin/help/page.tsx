@@ -47,6 +47,13 @@ const sections = [
     publicEffect: 'Published event changes can appear on the public website immediately.',
   },
   {
+    label: 'Monthly meeting',
+    href: '/admin/meeting',
+    purpose: 'The recurring club meeting location, street address, schedule, and start time.',
+    workflow: 'Open Monthly meeting from Dashboard, update the details, save, then confirm the homepage and About page display the new information.',
+    publicEffect: 'Updates the recurring meeting callout on the homepage and About page, but does not automatically edit an independent Event Calendar entry.',
+  },
+  {
     label: 'Gallery albums',
     href: '/admin/albums',
     purpose: 'The canonical public photo-album system for ASCA activities.',
@@ -101,6 +108,10 @@ const taskRecipes = [
   {
     title: 'Someone submits a website inquiry',
     steps: 'Messages → open the inquiry → respond → mark Replied → create a Task if follow-up is still needed → mark Resolved when complete.',
+  },
+  {
+    title: 'Move the monthly meeting',
+    steps: 'Dashboard → Change monthly meeting location → update venue and address → Save monthly meeting → Check homepage and About page. If an independent calendar event exists, update it separately in Events.',
   },
   {
     title: 'Add or change an event',
