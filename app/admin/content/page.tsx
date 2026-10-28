@@ -47,7 +47,7 @@ export default function AdminPageText() {
       if (res.status === 401) { logout(); return; }
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Unable to load page text.');
-      const next = { ...defaults, ...(data.values || {}) };
+      const next: Values = { ...defaults, ...(data.values || {}) };
       setValues(next);
       setSavedValues(next);
     } catch (err) {
@@ -98,7 +98,7 @@ export default function AdminPageText() {
       if (res.status === 401) { logout(); return; }
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Unable to save page text.');
-      const next = { ...defaults, ...(data.values || {}) };
+      const next: Values = { ...defaults, ...(data.values || {}) };
       // Preserve unsaved edits on other pages when this page has saved successfully.
       const keys = new Set(Object.keys(pageUpdates(pageId)));
       setValues((current) => ({
