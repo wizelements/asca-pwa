@@ -27,22 +27,20 @@ export default function AdminHorsesPage() {
   const [horses, setHorses] = useState<Horse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [publicHorsesEnabled, setPublicHorsesEnabled] = useState<boolean | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    setPage(1);
-    fetchHorses(1, statusFilter);
-  }, [statusFilter]);
-
-  useEffect(() => {
-    fetchHorses(page, statusFilter);
-  }, [page]);
+    void fetchHorses(page, statusFilter);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, statusFilter]);
 
   const fetchHorses = async (p: number, status: string) => {
     setLoading(true);
     setError('');
+    setPublicHorsesEnabled(null);
     const token = getAdminToken();
     try {
       const params = new URLSearchParams({ page: String(p), pageSize: String(PAGE_SIZE) });
@@ -52,6 +50,7 @@ export default function AdminHorsesPage() {
       });
       if (res.status === 401) { logout(); return; }
       if (!res.ok) throw new Error('Failed to load horses');
+      setPublicHorsesEnabled(res.headers.get('X-Horses-Public-Enabled') === 'true');
       const data = await res.json();
       const totalHeader = res.headers.get('X-Total-Count');
       const total = totalHeader ? Number(totalHeader) : data.length;
@@ -81,7 +80,7 @@ export default function AdminHorsesPage() {
     }
     await fetchHorses(page, statusFilter);
     const messages: Record<string, string> = {
-      publish: 'Horse profile published.',
+      publish: publicHorsesEnabled ? 'Horse profile published. Open the public horse page to verify its appearance.' : 'Horse profile published in the admin database, but public horse pages are not enabled. It is not visible to visitors.',
       archive: 'Horse profile archived.',
       restore: 'Horse profile restored.',
     };
@@ -95,14 +94,21 @@ export default function AdminHorsesPage() {
     <>
       <AdminPageHeader
         title="Horses"
-        subtitle="Create and maintain the horse profiles shown on the public ASCA website."
+        subtitle="Create and maintain horse profiles, and check whether public horse pages are enabled."
         primaryAction={<Link href="/admin/horses/new" className="btn-admin-primary">Create horse profile</Link>}
       />
+      {!loading && !error && (
+        <p role="status" className={`mb-4 rounded-xl border p-4 text-sm ${publicHorsesEnabled ? 'border-green-200 bg-green-50 text-green-950' : 'border-amber-200 bg-amber-50 text-amber-950'}`}>
+          {publicHorsesEnabled
+            ? 'Public horse pages are enabled. Published profiles with approved cover photography can appear under Our Horses; open each public page to verify.'
+            : 'Public horse pages are currently disabled for this deployment. Publishing a horse in admin will not make its page visible to visitors. Contact the site administrator about the gallery rollout setting.'}
+        </p>
+      )}
       <div className="mb-4 flex items-center gap-4">
         <label className="text-sm font-medium text-admin-fg-secondary">Status:</label>
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={(e) => { setPage(1); setStatusFilter(e.target.value); }}
           className="rounded-md border border-admin-border-subtle bg-admin-surface px-3 py-2 text-sm text-admin-fg-primary"
         >
           <option value="">All</option>
@@ -123,6 +129,7 @@ export default function AdminHorsesPage() {
                 <th scope="col" className="px-4 py-3">Name</th>
                 <th scope="col" className="px-4 py-3">Status</th>
                 <th scope="col" className="px-4 py-3">Media</th>
+                <th scope="col" className="px-4 py-3">Public website</th>
                 <th scope="col" className="px-4 py-3">Actions</th>
               </tr>
             </thead>
@@ -134,12 +141,13 @@ export default function AdminHorsesPage() {
                   </td>
                   <td className="px-4 py-3 capitalize">{horse.status}</td>
                   <td className="px-4 py-3">{horse.mediaCount}</td>
+                  <td className="px-4 py-3 text-admin-fg-secondary">{!publicHorsesEnabled ? 'Unavailable — public horse pages disabled' : horse.status !== 'published' ? 'Not published' : !horse.primaryUrl ? 'Cover photo needed' : 'Eligible — verify page'}</td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-2">
                       <Link href={`/admin/horses/${horse.id}`} className="rounded-md bg-admin-bg-subtle px-2.5 py-1 text-xs font-medium text-admin-fg-primary hover:bg-admin-border-subtle">
                         Edit
                       </Link>
-                      {horse.status === 'published' && (
+                      {publicHorsesEnabled && horse.status === 'published' && horse.primaryUrl && (
                         <Link href={`/horses/${horse.slug}`} target="_blank" className="rounded-md border border-admin-border-subtle px-2.5 py-1 text-xs font-medium text-admin-fg-primary hover:bg-admin-bg-subtle">
                           View public ↗
                         </Link>
@@ -149,7 +157,7 @@ export default function AdminHorsesPage() {
                           onClick={() => action(horse.id, 'publish')}
                           className="rounded-md bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800 hover:bg-green-200"
                         >
-                          Publish
+                          Publish profile
                         </button>
                       )}
                       {isAdmin && horse.status !== 'archived' && (
