@@ -47,6 +47,7 @@ export default function AdminPageText() {
       if (res.status === 401) { logout(); return; }
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Unable to load page text.');
+      if (data.writable === false) throw new Error('This environment is missing the page-text storage table. Contact the site administrator to run the database migration before editing.');
       const next: Values = { ...defaults, ...(data.values || {}) };
       setValues(next);
       setSavedValues(next);
