@@ -137,6 +137,19 @@ test.describe('authenticated admin client workspace', () => {
     await expect(page.getByRole('heading', { name: 'Welcome to the ASCA Client Workspace' })).toBeVisible();
   });
 
+  test('meeting location has a direct editor and the right public destinations', async ({ page }) => {
+    await signIn(page);
+    await markTourCompleteAndClose(page);
+    await expect(page.getByRole('link', { name: 'Change monthly meeting location' })).toBeVisible();
+    await page.goto('/admin/meeting');
+    await expect(page.getByRole('heading', { name: 'Monthly Meeting' })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'Venue' })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'Address' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Check homepage/ })).toHaveAttribute('href', '/');
+    await expect(page.getByRole('link', { name: /Check About page/ })).toHaveAttribute('href', '/about');
+    await expect(page.getByRole('button', { name: 'No changes to save' })).toBeDisabled();
+  });
+
   test('public-facing admin controls explain their real website effects', async ({ page }) => {
     await signIn(page);
     await markTourCompleteAndClose(page);
