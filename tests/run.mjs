@@ -13,6 +13,9 @@ const files = globSync('tests/**/*.test.mjs', { cwd: root })
 run({ files })
   .on('test:fail', (data) => {
     console.error('FAIL', data.name);
+    // node:test programmatic runs do not automatically make this wrapper fail.
+    // Propagate the failure so CI cannot report a green build with broken tests.
+    process.exitCode = 1;
   })
   .compose(spec)
   .pipe(process.stdout);
