@@ -6,6 +6,7 @@ import { logActivity } from '@/lib/db/queries';
 import {
   CACHE_TAG_SITE_CONTENT,
   getSiteContent,
+  isSiteContentWritable,
   updateSiteContent,
 } from '@/lib/site-content';
 
@@ -16,7 +17,8 @@ function canWrite(role: string) {
 export async function GET(request: NextRequest) {
   try {
     await requireAuth(request);
-    return NextResponse.json({ values: await getSiteContent() });
+    const [values, writable] = await Promise.all([getSiteContent(), isSiteContentWritable()]);
+    return NextResponse.json({ values, writable });
   } catch (error: any) {
     if (error?.message === 'Unauthorized') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
