@@ -299,7 +299,12 @@ export async function updateHorse(
     }
 
     if (mediaUpdates?.remove?.length) {
+      // Assets are content-addressed: uploading an identical image may reuse
+      // an existing media ID. Explicitly re-added images must not be deleted
+      // by a simultaneous stale removal list.
+      const reattachedIds = new Set(additions.map((item) => item.mediaAssetId));
       for (const mediaAssetId of mediaUpdates.remove) {
+        if (reattachedIds.has(mediaAssetId)) continue;
         await db.execute({
           sql: 'DELETE FROM horse_profile_media WHERE horse_profile_id = ? AND media_asset_id = ?',
           args: [id, mediaAssetId],
