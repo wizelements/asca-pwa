@@ -140,7 +140,7 @@ test.describe('authenticated admin client workspace', () => {
   test('meeting location has a direct editor and the right public destinations', async ({ page }) => {
     await signIn(page);
     await markTourCompleteAndClose(page);
-    await expect(page.getByRole('link', { name: 'Change monthly meeting location' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Change monthly meeting location/ })).toBeVisible();
     await page.goto('/admin/meeting');
     await expect(page.getByRole('heading', { name: 'Monthly Meeting' })).toBeVisible();
     await expect(page.getByRole('textbox', { name: 'Venue' })).toBeVisible();
