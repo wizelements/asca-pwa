@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getAdminToken, logout } from '@/components/AdminGuard';
+import { logout } from '@/components/AdminGuard';
 import { DONATION_METHODS } from '@/lib/content/site';
 
 const DEFAULT_CASH_APP = DONATION_METHODS.find((method) => method.label === 'Cash App')?.handle || '$therealasca1';
@@ -54,8 +54,11 @@ export default function AdminSettings() {
   }, []);
 
   const fetchSettings = async () => {
+    setLoading(true);
+    setError('');
     try {
-      const res = await fetch('/api/settings');
+      const res = await fetch('/api/settings', { credentials: 'same-origin', cache: 'no-store' });
+      if (res.status === 401) { await logout(); return; }
       if (res.ok) {
         const data = await res.json();
         setSettings(normalizeSettings(data));
@@ -88,8 +91,6 @@ export default function AdminSettings() {
     setSaving(true);
     setMessage('');
     setError('');
-    const token = getAdminToken();
-
     try {
       const payload: any = {};
       if (section === 'identity') {
@@ -109,22 +110,32 @@ export default function AdminSettings() {
 
       const res = await fetch('/api/settings', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
       if (res.status === 401) {
-        logout();
+        await logout();
         return;
       }
 
       if (res.ok) {
         const updated = await res.json();
-        setSettings(normalizeSettings(updated));
-        setMessage('Saved successfully');
+        const normalized = normalizeSettings(updated);
+        // Only replace the saved section. Overwriting the entire editor here
+        // would silently discard changes made to other sections.
+        setSettings((current: any) => {
+          if (!current) return normalized;
+          if (section === 'identity') {
+            return { ...current, siteDescription: normalized.siteDescription, tagline: normalized.tagline };
+          }
+          if (section === 'contact') return { ...current, contactEmail: normalized.contactEmail };
+          if (section === 'social') return { ...current, social: normalized.social };
+          if (section === 'donations') return { ...current, donation: normalized.donation, venmo: normalized.venmo };
+          return current;
+        });
+        setMessage(section === 'identity' ? 'Homepage identity saved.' : section === 'contact' ? 'Contact email saved.' : section === 'social' ? 'Social links saved.' : 'Donation settings saved.');
       } else {
         const data = await res.json().catch(() => ({}));
         setError(data.error || 'Save failed');
@@ -144,9 +155,10 @@ export default function AdminSettings() {
     return (
       <div className="space-y-4">
         <h1 className="text-4xl font-bold text-brand-fg-primary">Public Site Settings</h1>
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
           {error || 'Unable to load public website settings.'}
         </div>
+        <button type="button" onClick={() => void fetchSettings()} className="btn-admin-secondary">Retry loading settings</button>
       </div>
     );
   }
@@ -160,10 +172,10 @@ export default function AdminSettings() {
             These controls are limited to settings the public website actually consumes: homepage identity copy, official contact email, social links, and donation handles. Each section below states where the change appears.
           </p>
         </div>
-        {message && <span className="text-sm font-medium text-green-600">{message}</span>}
+        {message && <span role="status" className="text-sm font-medium text-green-800">{message}</span>}
       </div>
 
-      {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>}
+      {error && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>}
 
       <div className="rounded-xl border border-brand-border-subtle bg-brand-bg-elevated p-6 shadow-sm">
         <h2 className="text-2xl font-bold text-brand-fg-primary">Homepage Identity</h2>
