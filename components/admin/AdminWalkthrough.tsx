@@ -177,12 +177,9 @@ export default function AdminWalkthrough({ restartNonce = 0 }: { restartNonce?: 
       ? requestedStep
       : 0;
 
-    try {
-      if (forced || localStorage.getItem(STORAGE_KEY) !== 'complete') {
-        setStep(initialStep);
-        setOpen(true);
-      }
-    } catch {
+    // Long walkthroughs should never interrupt the client's first task.
+    // The header and Help page allow the full tour to be started at any time.
+    if (forced) {
       setStep(initialStep);
       setOpen(true);
     }
