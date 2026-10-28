@@ -15,6 +15,9 @@ function isFile(path) {
 }
 
 export async function resolve(specifier, context, nextResolve) {
+  // Next.js resolves this server-component guard during application builds.
+  // Standalone Node tests need a no-op guard, not the browser-only error module.
+  if (specifier === 'server-only') return { url: 'data:text/javascript,', shortCircuit: true };
   if (specifier.startsWith('@/')) {
     const base = join(root, specifier.slice(2));
     for (const candidate of [base, `${base}.ts`, `${base}.tsx`, join(base, 'index.ts')]) {
