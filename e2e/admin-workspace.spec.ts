@@ -268,4 +268,36 @@ test.describe('authenticated admin client workspace', () => {
 
 
 
+
+  test('horse profile visibility shows the deployment rollout state rather than claiming publication', async ({ page }) => {
+    await signIn(page);
+    const response = await page.request.get('/api/gallery/horses?page=1&pageSize=1');
+    expect(response.ok()).toBeTruthy();
+    const enabled = response.headers()['x-horses-public-enabled'];
+    expect(['true', 'false']).toContain(enabled);
+
+    await page.goto('/admin/horses');
+    if (enabled === 'true') {
+      await expect(page.getByText('Public horse pages are enabled.', { exact: false })).toBeVisible();
+    } else {
+      await expect(page.getByText('Public horse pages are currently disabled', { exact: false })).toBeVisible();
+      await expect(page.getByRole('link', { name: 'View public ↗' })).toHaveCount(0);
+    }
+
+    await page.goto('/admin/horses/new');
+    await expect(page.getByRole('heading', { name: 'Create horse profile' })).toBeVisible();
+  });
+
+  test('horse load failure blocks editing to prevent overwriting an unloaded record', async ({ page }) => {
+    await signIn(page);
+    await page.route('**/api/gallery/horses?id=987654321', async (route) => {
+      await route.fulfill({ status: 500, contentType: 'application/json', body: '{"error":"Unavailable"}' });
+    });
+    await page.goto('/admin/horses/987654321');
+    await expect(page.getByRole('heading', { name: 'Horse profile unavailable' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Try loading again' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Save draft' })).toHaveCount(0);
+  });
+
+
 });
