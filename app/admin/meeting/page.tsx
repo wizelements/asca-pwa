@@ -137,7 +137,7 @@ export default function MonthlyMeetingEditor() {
             </div>
           </form>
         )}
-        <p className="text-sm text-admin-fg-secondary">For a one-time event or special meeting date, use <Link href="/admin/events" className="font-semibold underline">Events</Link>. The monthly meeting editor updates the recurring meeting information only.</p>
+        <p className="text-sm text-admin-fg-secondary">For a one-time event or special meeting date, use <Link href="/admin/events" className="font-semibold underline">Events</Link>. The monthly meeting editor updates the recurring meeting information only. If that meeting is also listed as an individual calendar event, update that event separately.</p>
       </div>
     </>
   );
