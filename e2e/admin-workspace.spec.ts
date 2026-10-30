@@ -24,42 +24,15 @@ async function markTourCompleteAndClose(page: Page) {
 }
 
 test.describe('authenticated admin client workspace', () => {
-  test('full walkthrough covers the complete workspace and can finish', async ({ page }) => {
+  test('task help supports search and direct navigation', async ({ page }) => {
     await signIn(page);
-
-    const dialog = page.getByRole('dialog');
+    await page.goto('/admin?tour=1');
+    const dialog = page.getByRole('dialog', { name: 'What do you need to do?' });
     await expect(dialog).toBeVisible();
-    await expect(dialog).toContainText('1 of 16');
-
-    const expectedTitles = [
-      'Welcome to the ASCA Client Workspace',
-      'Dashboard — your daily starting point',
-      'Messages — website inquiries',
-      'Contacts — relationship records',
-      'Members — official member records',
-      'Tasks — follow-up that cannot be forgotten',
-      'Events — the public calendar',
-      'Gallery albums — activity photos',
-      'Horses — public horse profiles',
-      'Page text — visitor-facing wording without code',
-      'Page images — photography used around the site',
-      'Appearance — brand settings',
-      'Public site settings — homepage identity, contact, social & giving',
-      'Account — protect admin access',
-      'Preview — verify what visitors actually see',
-      'Backups and Help — finish safely',
-    ];
-
-    for (let index = 0; index < expectedTitles.length; index += 1) {
-      await expect(page.getByRole('heading', { name: expectedTitles[index] })).toBeVisible();
-      await expect(dialog).toContainText((index + 1) + ' of 16');
-
-      if (index < expectedTitles.length - 1) {
-        await page.getByRole('button', { name: 'Next' }).click();
-      }
-    }
-
-    await page.getByRole('button', { name: 'Finish tour' }).click();
+    await dialog.getByRole('searchbox', { name: 'Find a task' }).fill('photos');
+    await dialog.getByRole('button', { name: 'Upload and publish photos' }).click();
+    await expect(dialog.getByRole('link', { name: 'Go to this task' })).toHaveAttribute('href', '/admin/albums');
+    await dialog.getByRole('button', { name: 'Close help' }).click();
     await expect(dialog).toBeHidden();
   });
 
@@ -113,8 +86,7 @@ test.describe('authenticated admin client workspace', () => {
     await page.goto('/admin/help');
     await page.getByRole('button', { name: 'Start admin walkthrough' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Welcome to the ASCA Client Workspace' })).toBeVisible();
-    await expect(page.getByRole('dialog')).toContainText('1 of 16');
+    await expect(page.getByRole('heading', { name: 'What do you need to do?' })).toBeVisible();
   });
   test('mobile client can open navigation and restart the guide', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
@@ -133,7 +105,54 @@ test.describe('authenticated admin client workspace', () => {
     await expect(page.getByRole('button', { name: 'Start admin walkthrough' })).toBeVisible();
     await page.getByRole('button', { name: 'Start admin walkthrough' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Welcome to the ASCA Client Workspace' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'What do you need to do?' })).toBeVisible();
+  });
+
+  test('meeting location has a direct editor and the right public destinations', async ({ page }) => {
+    await signIn(page);
+    await markTourCompleteAndClose(page);
+    await expect(page.getByRole('link', { name: /Change monthly meeting location/ })).toBeVisible();
+    await page.goto('/admin/meeting');
+    await expect(page.getByRole('heading', { name: 'Monthly Meeting' })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'Venue' })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'Address' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Check homepage/ })).toHaveAttribute('href', '/');
+    await expect(page.getByRole('link', { name: /Check About page/ })).toHaveAttribute('href', '/about');
+    await expect(page.getByRole('button', { name: 'No changes to save' })).toBeDisabled();
+  });
+
+  test('monthly meeting venue changes persist and reach the public homepage and About page', async ({ page }) => {
+    await signIn(page);
+    await markTourCompleteAndClose(page);
+
+    const original = await page.request.get('/api/site-content');
+    expect(original.ok()).toBeTruthy();
+    const existing = (await original.json()).values || {};
+    const oldVenue = existing['shared.meeting.venue'] || 'Piccadilly';
+    const newVenue = 'E2E Verification Meeting Place';
+
+    try {
+      await page.goto('/admin/meeting');
+      await page.getByRole('textbox', { name: 'Venue' }).fill(newVenue);
+      await expect(page.getByRole('button', { name: 'Save monthly meeting' })).toBeEnabled();
+      await page.getByRole('button', { name: 'Save monthly meeting' }).click();
+      await expect(page.getByText(/Monthly meeting saved/)).toBeVisible();
+
+      const current = await page.request.get('/api/site-content');
+      expect((await current.json()).values['shared.meeting.venue']).toBe(newVenue);
+
+      const home = await page.request.get('/');
+      expect(home.ok()).toBeTruthy();
+      expect(await home.text()).toContain(newVenue);
+      const about = await page.request.get('/about');
+      expect(about.ok()).toBeTruthy();
+      expect(await about.text()).toContain(newVenue);
+    } finally {
+      const restore = await page.request.post('/api/site-content', {
+        data: { updates: { 'shared.meeting.venue': oldVenue } },
+      });
+      expect(restore.ok()).toBeTruthy();
+    }
   });
 
   test('public-facing admin controls explain their real website effects', async ({ page }) => {
@@ -189,7 +208,10 @@ test.describe('authenticated admin client workspace', () => {
     await expect(page.getByRole('heading', { name: 'Page Text' })).toBeVisible();
     await expect(page.getByText('Safe text only.')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Homepage', exact: true })).toBeVisible();
+    await expect(page.getByLabel('Which website page would you like to edit?')).toBeVisible();
+    await page.getByLabel('Which website page would you like to edit?').selectOption('about');
     await expect(page.getByRole('heading', { name: 'About ASCA', exact: true })).toBeVisible();
+    await page.getByLabel('Which website page would you like to edit?').selectOption('shared');
     await expect(page.getByRole('heading', { name: 'Shared Site Copy', exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: /View public page/ }).first()).toBeVisible();
     await expect(page.getByText(/dynamic records such as Events, Gallery Albums, Horses, Members/i)).toBeVisible();
@@ -215,6 +237,38 @@ test.describe('authenticated admin client workspace', () => {
     await expect(page.getByText('E2E Trail Ride')).toBeVisible();
   });
 
+
+
+
+  test('horse profile visibility shows the deployment rollout state rather than claiming publication', async ({ page }) => {
+    await signIn(page);
+    const response = await page.request.get('/api/gallery/horses?page=1&pageSize=1');
+    expect(response.ok()).toBeTruthy();
+    const enabled = response.headers()['x-horses-public-enabled'];
+    expect(['true', 'false']).toContain(enabled);
+
+    await page.goto('/admin/horses');
+    if (enabled === 'true') {
+      await expect(page.getByText('Public horse pages are enabled.', { exact: false })).toBeVisible();
+    } else {
+      await expect(page.getByText('Public horse pages are currently disabled', { exact: false })).toBeVisible();
+      await expect(page.getByRole('link', { name: 'View public ↗' })).toHaveCount(0);
+    }
+
+    await page.goto('/admin/horses/new');
+    await expect(page.getByRole('heading', { name: 'Create horse profile' })).toBeVisible();
+  });
+
+  test('horse load failure blocks editing to prevent overwriting an unloaded record', async ({ page }) => {
+    await signIn(page);
+    await page.route('**/api/gallery/horses?id=987654321', async (route) => {
+      await route.fulfill({ status: 500, contentType: 'application/json', body: '{"error":"Unavailable"}' });
+    });
+    await page.goto('/admin/horses/987654321');
+    await expect(page.getByRole('heading', { name: 'Horse profile unavailable' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Try loading again' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Save draft' })).toHaveCount(0);
+  });
 
 
 });

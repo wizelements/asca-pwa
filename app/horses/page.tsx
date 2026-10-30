@@ -7,10 +7,11 @@ import Hero from '@/components/Hero';
 import Pagination from '@/components/gallery/Pagination';
 import { countPublicHorses, getPublicHorses } from '@/lib/gallery/services/horses';
 import { isPublicPreviewEnabled } from '@/lib/gallery/feature-state';
-import { notFound } from 'next/navigation';
 import Breadcrumbs from '@/components/gallery/Breadcrumbs';
 import PublicEmptyState from '@/components/gallery/PublicEmptyState';
 import { getCachedSiteContent, siteText } from '@/lib/site-content';
+import { getPublicManagedImages } from '@/lib/public-content';
+import { getManagedImage } from '@/lib/media';
 
 interface HorsesPageProps {
   searchParams?: Promise<{ page?: string }>;
@@ -23,18 +24,43 @@ export const metadata: Metadata = {
 
 export default async function HorsesPage({ searchParams }: HorsesPageProps) {
   if (!isPublicPreviewEnabled()) {
-    notFound();
+    // The primary navigation links to Our Horses even while the new gallery
+    // system is being rolled out. Never send visitors to a broken 404 here,
+    // and never expose draft or restricted horse profiles as a fallback.
+    return (
+      <>
+        <Header />
+        <main>
+          <section className="bg-brand-bg-subtle py-20">
+            <div className="container max-w-3xl">
+              <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Horses' }]} />
+              <h1 className="mt-8 font-display text-4xl font-bold text-brand-fg-primary">Our Horses</h1>
+              <p className="mt-5 text-lg text-brand-fg-secondary">
+                Individual horse profiles are not available on the website right now. We look forward to introducing more of the horses in our club.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-4">
+                <Link href="/gallery" className="inline-flex min-h-11 items-center rounded-full bg-brand-forest px-6 py-3 font-semibold text-white transition hover:bg-brand-forest-muted">See club photos</Link>
+                <Link href="/get-involved" className="inline-flex min-h-11 items-center rounded-full border border-brand-border-subtle bg-brand-bg-elevated px-6 py-3 font-semibold text-brand-fg-primary transition hover:bg-brand-bg-soft">Get involved with ASCA</Link>
+              </div>
+            </div>
+          </section>
+        </main>
+        <Footer />
+      </>
+    );
   }
 
   const params = await searchParams ?? {};
   const page = Math.max(1, Number(params.page || '1'));
   const pageSize = 12;
 
-  const [horses, total, copy] = await Promise.all([
+  const [horses, total, copy, siteImages] = await Promise.all([
     getPublicHorses(pageSize, (page - 1) * pageSize),
     countPublicHorses(),
     getCachedSiteContent(),
+    getPublicManagedImages(),
   ]);
+  const heroImage = getManagedImage(siteImages, 'gallery.hero');
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
@@ -42,8 +68,8 @@ export default async function HorsesPage({ searchParams }: HorsesPageProps) {
       <Header />
       <main>
         <Hero
-          image="/api/media/site/gallery.hero"
-          imageAlt="ASCA horses"
+          image={heroImage.src}
+          imageAlt={heroImage.alt}
           title={siteText(copy, 'horses.hero.title')}
           subtitle={siteText(copy, 'horses.hero.subtitle')}
         />

@@ -3,9 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { requireAuth } from '@/lib/auth';
 import { logActivity } from '@/lib/db/queries';
+import { CACHE_TAG_EVENTS } from '@/lib/db/queries-cache';
 import {
   CACHE_TAG_SITE_CONTENT,
   getSiteContent,
+  isSiteContentWritable,
   updateSiteContent,
 } from '@/lib/site-content';
 
@@ -16,7 +18,8 @@ function canWrite(role: string) {
 export async function GET(request: NextRequest) {
   try {
     await requireAuth(request);
-    return NextResponse.json({ values: await getSiteContent() });
+    const [values, writable] = await Promise.all([getSiteContent(), isSiteContentWritable()]);
+    return NextResponse.json({ values, writable });
   } catch (error: any) {
     if (error?.message === 'Unauthorized') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -44,6 +47,9 @@ export async function POST(request: NextRequest) {
 
     const values = await updateSiteContent(updates, Number(user.sub));
     revalidateTag(CACHE_TAG_SITE_CONTENT);
+    if (Object.keys(updates).some((key) => key.startsWith('shared.meeting.'))) {
+      revalidateTag(CACHE_TAG_EVENTS);
+    }
     await logActivity('site-content', 'Updated public page text', user.name || user.email);
     return NextResponse.json({ values });
   } catch (error: any) {

@@ -6,6 +6,7 @@ import {
 } from '@/lib/content/events';
 import { compareEvents } from '@/lib/date';
 import { getEvents as getDbEvents, type Event as DbEvent } from '@/lib/db/queries';
+import { getSiteContent, siteText } from '@/lib/site-content';
 
 function toDateOnly(date: Date): string {
   return date.toISOString().slice(0, 10);
@@ -67,8 +68,29 @@ export function dbEventToAscaEvent(event: DbEvent): AscaEvent {
 
 export async function getPublicEvents(): Promise<AscaEvent[]> {
   try {
-    const dbEvents = await getDbEvents(true);
-    const events = dbEvents.length > 0 ? dbEvents.map(dbEventToAscaEvent) : EVENTS;
+    const [dbEvents, meetingCopy] = await Promise.all([getDbEvents(true), getSiteContent()]);
+    const meetingLocation = [
+      siteText(meetingCopy, 'shared.meeting.venue'),
+      siteText(meetingCopy, 'shared.meeting.address'),
+    ].filter(Boolean).join(', ');
+    const meetingTime = siteText(meetingCopy, 'shared.meeting.time');
+
+    const events = dbEvents.length > 0
+      ? dbEvents.map((row) => {
+          const event = dbEventToAscaEvent(row);
+          // Never overwrite a specific location/time chosen in the Events editor.
+          if (row.title.trim().toLowerCase() === 'monthly meeting') {
+            if (!row.location) event.location = meetingLocation;
+            if (!row.time) event.time = meetingTime;
+          }
+          return event;
+        })
+      : EVENTS.map((event) => (
+          event.title.trim().toLowerCase() === 'monthly meeting'
+            ? { ...event, location: meetingLocation, time: meetingTime }
+            : event
+        ));
+
     return [...events].sort(compareEvents);
   } catch (error) {
     console.error('[PUBLIC EVENTS]', error);

@@ -246,8 +246,19 @@ export async function createHorse(
       });
     }
 
-    const horse = await getHorseById(horseId);
-    if (!horse) throw new Error('Horse profile creation failed');
+    // Read through the same transaction: a separate connection cannot see
+    // the newly inserted horse until commit, and would incorrectly roll back.
+    const created = await db.execute({
+      sql: `
+        SELECT h.*,
+               (SELECT COUNT(*) FROM horse_profile_media WHERE horse_profile_id = h.id) as media_count
+        FROM horse_profiles h
+        WHERE h.deleted_at IS NULL AND h.id = ?
+      `,
+      args: [horseId],
+    });
+    if (created.rows.length === 0) throw new Error('Horse profile creation failed');
+    const horse = rowToHorse(created.rows[0], Number(created.rows[0].media_count ?? 0));
     const media = await horseMedia(db, horseId);
     return { ...horse, media };
   });
@@ -288,7 +299,12 @@ export async function updateHorse(
     }
 
     if (mediaUpdates?.remove?.length) {
+      // Assets are content-addressed: uploading an identical image may reuse
+      // an existing media ID. Explicitly re-added images must not be deleted
+      // by a simultaneous stale removal list.
+      const reattachedIds = new Set(additions.map((item) => item.mediaAssetId));
       for (const mediaAssetId of mediaUpdates.remove) {
+        if (reattachedIds.has(mediaAssetId)) continue;
         await db.execute({
           sql: 'DELETE FROM horse_profile_media WHERE horse_profile_id = ? AND media_asset_id = ?',
           args: [id, mediaAssetId],

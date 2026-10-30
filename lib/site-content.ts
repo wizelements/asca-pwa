@@ -54,6 +54,17 @@ export async function getSiteContent(): Promise<SiteContentValues> {
   }
 }
 
+/** Check whether this deployment can persist administrator text edits. */
+export async function isSiteContentWritable(): Promise<boolean> {
+  try {
+    await getDb().execute('SELECT 1 FROM site_content LIMIT 1');
+    return true;
+  } catch (error) {
+    if (isMissingTableError(error)) return false;
+    throw error;
+  }
+}
+
 export const getCachedSiteContent = unstable_cache(
   async () => getSiteContent(),
   ['site-content-public-v1'],
