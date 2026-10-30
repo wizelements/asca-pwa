@@ -24,43 +24,15 @@ async function markTourCompleteAndClose(page: Page) {
 }
 
 test.describe('authenticated admin client workspace', () => {
-  test('full walkthrough covers the complete workspace and can finish when requested', async ({ page }) => {
+  test('task help supports search and direct navigation', async ({ page }) => {
     await signIn(page);
     await page.goto('/admin?tour=1');
-
-    const dialog = page.getByRole('dialog');
+    const dialog = page.getByRole('dialog', { name: 'What do you need to do?' });
     await expect(dialog).toBeVisible();
-    await expect(dialog).toContainText('1 of 16');
-
-    const expectedTitles = [
-      'Welcome to the ASCA Client Workspace',
-      'Dashboard — your daily starting point',
-      'Messages — website inquiries',
-      'Contacts — relationship records',
-      'Members — official member records',
-      'Tasks — follow-up that cannot be forgotten',
-      'Events — the public calendar',
-      'Gallery albums — activity photos',
-      'Horses — public horse profiles',
-      'Page text — visitor-facing wording without code',
-      'Page images — photography used around the site',
-      'Appearance — brand settings',
-      'Public site settings — homepage identity, contact, social & giving',
-      'Account — protect admin access',
-      'Preview — verify what visitors actually see',
-      'Backups and Help — finish safely',
-    ];
-
-    for (let index = 0; index < expectedTitles.length; index += 1) {
-      await expect(page.getByRole('heading', { name: expectedTitles[index] })).toBeVisible();
-      await expect(dialog).toContainText((index + 1) + ' of 16');
-
-      if (index < expectedTitles.length - 1) {
-        await page.getByRole('button', { name: 'Next' }).click();
-      }
-    }
-
-    await page.getByRole('button', { name: 'Finish tour' }).click();
+    await dialog.getByRole('searchbox', { name: 'Find a task' }).fill('photos');
+    await dialog.getByRole('button', { name: 'Upload and publish photos' }).click();
+    await expect(dialog.getByRole('link', { name: 'Go to this task' })).toHaveAttribute('href', '/admin/albums');
+    await dialog.getByRole('button', { name: 'Close help' }).click();
     await expect(dialog).toBeHidden();
   });
 
@@ -114,8 +86,7 @@ test.describe('authenticated admin client workspace', () => {
     await page.goto('/admin/help');
     await page.getByRole('button', { name: 'Start admin walkthrough' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Welcome to the ASCA Client Workspace' })).toBeVisible();
-    await expect(page.getByRole('dialog')).toContainText('1 of 16');
+    await expect(page.getByRole('heading', { name: 'What do you need to do?' })).toBeVisible();
   });
   test('mobile client can open navigation and restart the guide', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
@@ -134,7 +105,7 @@ test.describe('authenticated admin client workspace', () => {
     await expect(page.getByRole('button', { name: 'Start admin walkthrough' })).toBeVisible();
     await page.getByRole('button', { name: 'Start admin walkthrough' }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Welcome to the ASCA Client Workspace' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'What do you need to do?' })).toBeVisible();
   });
 
   test('meeting location has a direct editor and the right public destinations', async ({ page }) => {
